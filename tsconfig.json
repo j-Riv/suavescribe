@@ -1,0 +1,33 @@
+{
+  "extends": "@shopify/typescript-configs/application.json",
+  "ts-node": {
+    "transpileOnly": true
+  },
+  "compilerOptions": {
+    "target": "es6",
+    "baseUrl": ".",
+    "rootDir": ".",
+    "paths": {
+      "~/*": ["./*"],
+      "@/*": ["./*"]
+    },
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "strict": true,
+    "noEmit": false,
+    "noImplicitAny": false,
+    "isolatedModules": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "preserve"
+  },
+  "include": ["./app/**/*", "./client/**/*", "./server/**/*", "./tests/**/*"],
+  "exclude": ["node_modules", "./pages/**/*"]
+}
