@@ -1,5 +1,9 @@
-import ApolloClient from 'apollo-boost';
-import { ApolloProvider } from 'react-apollo';
+import {
+  ApolloClient,
+  ApolloProvider,
+  HttpLink,
+  InMemoryCache,
+} from '@apollo/client';
 // import App from 'next/app';
 import Head from 'next/head';
 // import type { AppProps, AppContext } from 'next/app';
@@ -14,10 +18,11 @@ function MyProvider(props) {
   const app = useAppBridge();
 
   const client = new ApolloClient({
-    fetch: authenticatedFetch(app),
-    fetchOptions: {
+    link: new HttpLink({
       credentials: 'include',
-    },
+      fetch: authenticatedFetch(app), // ensures all apollo client triggered requests are authenticated
+    }),
+    cache: new InMemoryCache(),
   });
 
   // const Component = props.Component;

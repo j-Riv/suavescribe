@@ -1,6 +1,4 @@
-// import React from 'react';
-import gql from 'graphql-tag';
-import { Query } from 'react-apollo';
+import { gql, useQuery } from '@apollo/client';
 import {
   Card,
   ResourceList,
@@ -43,65 +41,59 @@ function ResourceListWithProducts() {
   const twoWeeksFromNow = new Date(Date.now() + 12096e5).toDateString();
   console.log('RUNNING QUERY');
   console.log(store.get('ids'));
-  return (
-    <Query query={GET_PRODUCTS_BY_ID} variables={{ ids: store.get('ids') }}>
-      {(result: any) => {
-        const { loading, error, data } = result;
 
-        if (loading) return <div>Loading…</div>;
-        if (error) return <div>{error.message}</div>;
-        console.log('DATA ===>');
-        console.log(data);
-        return (
-          <Card>
-            <ResourceList
-              showHeader
-              resourceName={{ singular: 'Product', plural: 'Products' }}
-              items={data.nodes}
-              renderItem={(item: any) => {
-                const media = (
-                  <Thumbnail
-                    source={
-                      item.images.edges[0]
-                        ? item.images.edges[0].node.originalSrc
-                        : ''
-                    }
-                    alt={
-                      item.images.edges[0]
-                        ? item.images.edges[0].node.altText
-                        : ''
-                    }
-                  />
-                );
-                const price = item.variants.edges[0].node.price;
-                return (
-                  <ResourceList.Item
-                    id={item.id}
-                    media={media}
-                    accessibilityLabel={`View details for ${item.title}`}
-                    onClick={() => console.log('clicked')}
-                  >
-                    <Stack>
-                      <Stack.Item fill>
-                        <h3>
-                          <TextStyle variation="strong">{item.title}</TextStyle>
-                        </h3>
-                      </Stack.Item>
-                      <Stack.Item>
-                        <p>${price}</p>
-                      </Stack.Item>
-                      <Stack.Item>
-                        <p>Expires on {twoWeeksFromNow} </p>
-                      </Stack.Item>
-                    </Stack>
-                  </ResourceList.Item>
-                );
-              }}
+  const { loading, error, data } = useQuery(GET_PRODUCTS_BY_ID, {
+    variables: { ids: store.get('ids') },
+  });
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error! ${error.message}</div>;
+
+  return (
+    <Card>
+      <ResourceList
+        showHeader
+        resourceName={{ singular: 'Product', plural: 'Products' }}
+        items={data.nodes}
+        renderItem={(item: any) => {
+          const media = (
+            <Thumbnail
+              source={
+                item.images.edges[0]
+                  ? item.images.edges[0].node.originalSrc
+                  : ''
+              }
+              alt={
+                item.images.edges[0] ? item.images.edges[0].node.altText : ''
+              }
             />
-          </Card>
-        );
-      }}
-    </Query>
+          );
+          const price = item.variants.edges[0].node.price;
+          return (
+            <ResourceList.Item
+              id={item.id}
+              media={media}
+              accessibilityLabel={`View details for ${item.title}`}
+              onClick={() => console.log('clicked')}
+            >
+              <Stack>
+                <Stack.Item fill>
+                  <h3>
+                    <TextStyle variation="strong">{item.title}</TextStyle>
+                  </h3>
+                </Stack.Item>
+                <Stack.Item>
+                  <p>${price}</p>
+                </Stack.Item>
+                <Stack.Item>
+                  <p>Expires on {twoWeeksFromNow} </p>
+                </Stack.Item>
+              </Stack>
+            </ResourceList.Item>
+          );
+        }}
+      />
+    </Card>
   );
 }
 
