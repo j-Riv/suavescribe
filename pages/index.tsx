@@ -1,66 +1,82 @@
-import React, { useState } from 'react';
-import { EmptyState, Heading, Layout, Page, TextStyle } from '@shopify/polaris';
+import React, { useState, useEffect } from 'react';
+import { gql, useQuery } from '@apollo/client';
+import {
+  Card,
+  EmptyState,
+  Heading,
+  Layout,
+  Page,
+  TextStyle,
+} from '@shopify/polaris';
 import { ResourcePicker, TitleBar } from '@shopify/app-bridge-react';
-import store from 'store-js';
-import ResourceListWithProducts from '../components/ResourceList';
+// import store from 'store-js';
+// import ResourceListWithProducts from '../components/ResourceList';
+// import DataTableWithData from '../components/DataTable';
+import SellingPlanGroup from '../components/SellingPlanGroup';
 
 const img = 'https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg';
 
+const GET_ALL_SELLING_PLANS = gql`
+  query {
+    sellingPlanGroups(first: 5) {
+      edges {
+        node {
+          id
+          appId
+          description
+          options
+          name
+          summary
+          sellingPlans(first: 5) {
+            edges {
+              node {
+                id
+                name
+                options
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 function Index() {
-  const [open, setOpen] = useState(false);
-  // const [products, setProducts] = useState([]);
+  const [rows, setRows] = useState([]);
+  const { loading, error, data } = useQuery(GET_ALL_SELLING_PLANS);
 
-  const handleSelection = resources => {
-    const idsFromResources = resources.selection.map(product => product.id);
-    setOpen(false);
-    console.log(resources);
-    console.log(idsFromResources);
-    store.set('ids', idsFromResources);
-  };
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error! ${error.message}</div>;
 
-  // useEffect(() => {
-  //   setProducts();
-  // },[]);
-  const emptyState = !store.get('ids');
-  console.log('emptyState', emptyState);
-  console.log(store.get('ids'));
+  console.log('QUERY DATA');
+  console.log(data);
+
+  // const handleSelection = resources => {
+  //   const idsFromResources = resources.selection.map(product => product.id);
+  //   setOpen(false);
+  //   console.log(resources);
+  //   console.log(idsFromResources);
+  //   store.set('ids', idsFromResources);
+  // };
 
   return (
     <Page>
       <TitleBar
-        title="Sample App"
+        title="Selling Plan Groups"
         primaryAction={{
-          content: 'Select products',
-          onAction: () => setOpen(true),
+          content: 'Get Selling Plans',
+          onAction: () => console.log('clicked'),
         }}
       />
-      <ResourcePicker
-        resourceType="Product"
-        showVariants={false}
-        open={open}
-        onSelection={resources => handleSelection(resources)}
-        onCancel={() => setOpen(false)}
-      />
-      {/* <Heading>
+      <Heading>
         <TextStyle variation="positive">
           Shopify app with Node, React and TypeScript 🎉
         </TextStyle>
-      </Heading> */}
-      {emptyState ? (
-        <Layout>
-          <EmptyState
-            heading="View Products and Create Selling Plans"
-            action={{
-              content: 'Select products',
-              onAction: () => console.log('clicked'),
-            }}
-            image={img}
-          >
-            <p>Select products</p>
-          </EmptyState>
-        </Layout>
-      ) : (
-        <ResourceListWithProducts />
+      </Heading>
+      {/* {data && <DataTableWithData data={data} />} */}
+      {data && (
+        <SellingPlanGroup sellingPlanGroups={data.sellingPlanGroups.edges} />
       )}
     </Page>
   );
