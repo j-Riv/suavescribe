@@ -8,8 +8,9 @@ import {
 import Head from 'next/head';
 // import type { AppProps, AppContext } from 'next/app';
 import { AppProvider } from '@shopify/polaris';
-import { Provider, Context, useAppBridge } from '@shopify/app-bridge-react';
+import { Provider, useAppBridge } from '@shopify/app-bridge-react';
 import { authenticatedFetch } from '@shopify/app-bridge-utils';
+import deepMerge from '@shopify/app-bridge/actions/merge';
 import '@shopify/polaris/dist/styles.css';
 import translations from '@shopify/polaris/locales/en.json';
 import ClientRouter from '../components/ClientRouter';

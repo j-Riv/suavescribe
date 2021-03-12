@@ -11,6 +11,7 @@ import {
   TextField,
   TextStyle,
 } from '@shopify/polaris';
+import { TitleBar } from '@shopify/app-bridge-react';
 
 function AnnotatedLayout() {
   const [discount, setDiscount] = useState('10%');
@@ -33,6 +34,7 @@ function AnnotatedLayout() {
 
   return (
     <Page>
+      <TitleBar title="Annotated Layout" />
       <Layout>
         <Layout.AnnotatedSection
           title="Default discount"
