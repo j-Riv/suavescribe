@@ -1,40 +1,68 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { gql, useQuery } from '@apollo/client';
-import {
-  Card,
-  EmptyState,
-  Heading,
-  Layout,
-  Page,
-  TextStyle,
-} from '@shopify/polaris';
-import { ResourcePicker, TitleBar } from '@shopify/app-bridge-react';
-// import store from 'store-js';
-// import ResourceListWithProducts from '../components/ResourceList';
-// import DataTableWithData from '../components/DataTable';
-import SellingPlanGroup from '../components/SellingPlanGroup';
+import { Heading, Page, TextStyle } from '@shopify/polaris';
+import { TitleBar, useAppBridge } from '@shopify/app-bridge-react';
+import { Redirect } from '@shopify/app-bridge/actions';
+import styled from 'styled-components';
 
-const img = 'https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg';
+const TableRow = styled.div`
+  display: grid;
+  grid-template-columns: 15% 25% 15% 15% 15% 15%;
+  div {
+    padding: 5px;
+    word-wrap: break-word;
+  }
+  &.bold {
+    font-weight: bold;
+  }
+`;
 
-const GET_ALL_SELLING_PLANS = gql`
+const GET_ALL_SUBSCRIPTION_CONTRACTS = gql`
   query {
-    sellingPlanGroups(first: 5) {
+    subscriptionContracts(first: 10) {
       edges {
         node {
           id
-          appId
-          description
-          options
-          name
-          summary
-          sellingPlans(first: 5) {
+          createdAt
+          status
+          nextBillingDate
+          appAdminUrl
+          customer {
+            id
+            firstName
+            lastName
+            email
+          }
+          lines(first: 10) {
             edges {
               node {
                 id
-                name
-                options
+                productId
+                pricingPolicy {
+                  cycleDiscounts {
+                    adjustmentType
+                    adjustmentValue {
+                      __typename
+                    }
+                    computedPrice {
+                      amount
+                    }
+                  }
+                  basePrice {
+                    amount
+                    currencyCode
+                  }
+                }
               }
             }
+          }
+          billingPolicy {
+            interval
+            intervalCount
+          }
+          billingPolicy {
+            interval
+            intervalCount
           }
         }
       }
@@ -43,41 +71,72 @@ const GET_ALL_SELLING_PLANS = gql`
 `;
 
 function Index() {
-  const [rows, setRows] = useState([]);
-  const { loading, error, data } = useQuery(GET_ALL_SELLING_PLANS);
+  const app = useAppBridge();
+  const redirect = Redirect.create(app);
+  const { loading, error, data } = useQuery(GET_ALL_SUBSCRIPTION_CONTRACTS);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error! ${error.message}</div>;
+  if (loading) return <TextStyle variation="positive">Loading...</TextStyle>;
+  if (error)
+    return <TextStyle variation="negative">Error! ${error.message}</TextStyle>;
 
-  console.log('QUERY DATA');
-  console.log(data);
+  const handleClick = (href: string) => {
+    console.log('redirecting');
+    redirect.dispatch(Redirect.Action.APP, href);
+  };
 
-  // const handleSelection = resources => {
-  //   const idsFromResources = resources.selection.map(product => product.id);
-  //   setOpen(false);
-  //   console.log(resources);
-  //   console.log(idsFromResources);
-  //   store.set('ids', idsFromResources);
-  // };
+  const formatId = (id: string) => {
+    const strippedId = id.split('/');
+    return strippedId[strippedId.length - 1];
+  };
+
+  const formatDate = (date: string) => {
+    const formattedDate = date.split('T');
+    return formattedDate[0];
+  };
 
   return (
     <Page>
       <TitleBar
-        title="Selling Plan Groups"
-        primaryAction={{
-          content: 'Get Selling Plans',
-          onAction: () => console.log('clicked'),
-        }}
+        title="Subscriptions"
+        // primaryAction={{
+        //   content: 'Get Selling Plans',
+        //   onAction: () => console.log('clicked'),
+        // }}
       />
       <Heading>
-        <TextStyle variation="positive">
-          Shopify app with Node, React and TypeScript 🎉
-        </TextStyle>
+        <TextStyle variation="positive">Subscription Contracts</TextStyle>
       </Heading>
-      {/* {data && <DataTableWithData data={data} />} */}
-      {data && (
-        <SellingPlanGroup sellingPlanGroups={data.sellingPlanGroups.edges} />
-      )}
+      <div>
+        <TableRow className="bold">
+          <div>ID</div>
+          <div>Customer Email</div>
+          <div>Customer ID</div>
+          <div>Created At</div>
+          <div>Next Order Date</div>
+          <div>Action</div>
+        </TableRow>
+        {data &&
+          data.subscriptionContracts.edges.map(contract => (
+            <TableRow key={contract.node.id}>
+              <div>{formatId(contract.node.id)}</div>
+              <div>{contract.node.customer.email}</div>
+              <div>{formatId(contract.node.id)}</div>
+              <div>{formatDate(contract.node.createdAt)}</div>
+              <div>{formatDate(contract.node.nextBillingDate)}</div>
+              <div>
+                <button
+                  onClick={() =>
+                    handleClick(
+                      `/subscriptions?customer_id=${contract.node.customer.id}&id=${contract.node.id}`
+                    )
+                  }
+                >
+                  View
+                </button>
+              </div>
+            </TableRow>
+          ))}
+      </div>
     </Page>
   );
 }
