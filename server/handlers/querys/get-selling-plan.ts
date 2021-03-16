@@ -133,6 +133,8 @@ export const getSellingPlanById = async (ctx: Context) => {
       },
     })
     .then((response: { data: any }) => {
+      console.log('============= RESPONSE ====================');
+      console.log(response);
       const filtered = buildResponse(response.data.sellingPlanGroup);
       return filtered;
     });

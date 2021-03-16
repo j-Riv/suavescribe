@@ -24,7 +24,7 @@ Shopify.Context.initialize({
   API_SECRET_KEY: process.env.SHOPIFY_API_SECRET!,
   SCOPES: process.env.SCOPES!!.split(','),
   HOST_NAME: process.env.HOST!.replace(/https:\/\//, ''),
-  API_VERSION: ApiVersion.October20,
+  API_VERSION: ApiVersion.January21,
   IS_EMBEDDED_APP: true,
   // This should be replaced with your preferred storage strategy
   SESSION_STORAGE: new Shopify.Session.MemorySessionStorage(),
@@ -40,8 +40,13 @@ app.prepare().then(async () => {
 
   // Add cors & bodyparser
   server.use(cors());
+  // server.use(bodyParser());
+  server.use(async (ctx, next) => {
+    if (ctx.path === '/graphql') ctx.disableBodyParser = true;
+    await next();
+  });
   server.use(bodyParser({ enableTypes: ['json', 'text'] }));
-  server.use(session({ secure: true, sameSite: 'none' }, server));
+  // server.use(session({ secure: true, sameSite: 'none' }, server));
   server.use((ctx, next) => {
     ctx.state.ACTIVE_SHOPIFY_SHOP_ACCESS_TOKENS = ACTIVE_SHOPIFY_SHOP_ACCESS_TOKENS;
     return next();
@@ -79,6 +84,11 @@ app.prepare().then(async () => {
       },
     })
   );
+
+  // GraphQL proxy
+  router.post('/graphql', verifyRequest(), async (ctx, next) => {
+    await Shopify.Utils.graphqlProxy(ctx.req, ctx.res);
+  });
 
   const handleRequest = async ctx => {
     await handle(ctx.req, ctx.res);
