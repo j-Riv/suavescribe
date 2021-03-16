@@ -53,7 +53,7 @@ const DELETE_SELLING_PLAN_GROUP = gql`
   }
 `;
 
-function RemoveButton(props) {
+function RemoveButton(props: { id: string }) {
   const { id } = props;
   console.log('Removing', props.id);
   const [deleteSellingGroup, { loading, error, data }] = useMutation(
