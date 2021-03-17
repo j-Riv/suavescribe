@@ -39,8 +39,6 @@ function MyProvider({ children }) {
 }
 
 function MyApp({ Component, pageProps, shopOrigin }) {
-  console.log('shopOrigin_app', shopOrigin);
-
   return (
     <>
       <Head>
