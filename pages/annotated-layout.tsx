@@ -4,6 +4,7 @@ import {
   Card,
   Form,
   FormLayout,
+  Heading,
   Layout,
   Page,
   SettingToggle,
@@ -35,6 +36,9 @@ function AnnotatedLayout() {
   return (
     <Page>
       <TitleBar title="Annotated Layout" />
+      <Heading>
+        <TextStyle variation="positive">Sample Annotated Layout</TextStyle>
+      </Heading>
       <Layout>
         <Layout.AnnotatedSection
           title="Default discount"
