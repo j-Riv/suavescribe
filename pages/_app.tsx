@@ -22,7 +22,17 @@ function MyProvider({ children }) {
       credentials: 'include',
       fetch: authenticatedFetch(app), // ensures all apollo client triggered requests are authenticated
     }),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      typePolicies: {
+        Query: {
+          fields: {
+            subscriptionContracts: {
+              keyArgs: false,
+            },
+          },
+        },
+      },
+    }),
   });
 
   return <ApolloProvider client={client}>{children}</ApolloProvider>;

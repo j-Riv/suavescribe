@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { useRouter } from 'next/router';
-import { gql, useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import {
   Avatar,
   Button,
@@ -12,6 +12,7 @@ import {
 import { TitleBar, useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import styled from 'styled-components';
+import { GET_SUBSCRIPTION_BY_ID, UPDATE_PAYMENT_METHOD } from '../handlers';
 import { formatDate } from '../utils/formatters';
 
 const CustomerInfo = styled.div`
@@ -39,88 +40,6 @@ const SubscriptionInformation = styled.div`
     grid-template-columns: 50px auto;
     .information {
       padding: 10px;
-    }
-  }
-`;
-
-const GET_SUBSCRIPTION_BY_ID = gql`
-  query subscriptionContract($id: ID!) {
-    subscriptionContract(id: $id) {
-      id
-      status
-      nextBillingDate
-      customer {
-        id
-        firstName
-        lastName
-        email
-      }
-      customerPaymentMethod {
-        id
-      }
-      deliveryPrice {
-        currencyCode
-        amount
-      }
-      lineCount
-      lines(first: 10) {
-        edges {
-          node {
-            id
-            productId
-            title
-            quantity
-            requiresShipping
-            variantImage {
-              originalSrc
-              altText
-            }
-            pricingPolicy {
-              cycleDiscounts {
-                adjustmentType
-                adjustmentValue {
-                  __typename
-                }
-                computedPrice {
-                  amount
-                }
-              }
-              basePrice {
-                amount
-                currencyCode
-              }
-            }
-          }
-        }
-      }
-      originOrder {
-        legacyResourceId
-      }
-      status
-      lastPaymentStatus
-      customerPaymentMethod {
-        id
-      }
-      deliveryPolicy {
-        interval
-        intervalCount
-      }
-    }
-  }
-`;
-
-const UPDATE_PAYMENT_METHOD = gql`
-  mutation customerPaymentMethodSendUpdateEmail($customerPaymentMethodId: ID!) {
-    customerPaymentMethodSendUpdateEmail(
-      customerPaymentMethodId: $customerPaymentMethodId
-    ) {
-      customer {
-        id
-      }
-      userErrors {
-        field
-        message
-      }
     }
   }
 `;
@@ -153,7 +72,7 @@ function Subscriptions() {
   const redirect = Redirect.create(app);
   const router = useRouter();
 
-  const handleClick = (href: string) => {
+  const adminRedirect = (href: string) => {
     console.log('redirecting');
     redirect.dispatch(Redirect.Action.ADMIN_PATH, href);
   };
@@ -217,7 +136,7 @@ function Subscriptions() {
               <span className="bold">Original Order: </span>
               <Button
                 onClick={() =>
-                  handleClick(`/orders/${d.originOrder.legacyResourceId}`)
+                  adminRedirect(`/orders/${d.originOrder.legacyResourceId}`)
                 }
               >
                 View

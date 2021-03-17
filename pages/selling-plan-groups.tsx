@@ -1,8 +1,9 @@
 import React from 'react';
-import { gql, useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import { Button, Heading, Page, TextStyle } from '@shopify/polaris';
 import { TitleBar } from '@shopify/app-bridge-react';
 import styled from 'styled-components';
+import { GET_ALL_SELLING_PLANS, DELETE_SELLING_PLAN_GROUP } from '../handlers';
 
 const Group = styled.div`
   display: grid;
@@ -11,45 +12,6 @@ const Group = styled.div`
   margin: 10px 0;
   .bold {
     font-weight: bold;
-  }
-`;
-
-const GET_ALL_SELLING_PLANS = gql`
-  query {
-    sellingPlanGroups(first: 5) {
-      edges {
-        node {
-          id
-          appId
-          description
-          options
-          name
-          summary
-          sellingPlans(first: 5) {
-            edges {
-              node {
-                id
-                name
-                options
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-const DELETE_SELLING_PLAN_GROUP = gql`
-  mutation sellingPlanGroupDelete($id: ID!) {
-    sellingPlanGroupDelete(id: $id) {
-      deletedSellingPlanGroupId
-      userErrors {
-        code
-        field
-        message
-      }
-    }
   }
 `;
 
