@@ -8,10 +8,10 @@
     "old-build": "NEXT_TELEMETRY_DISABLED=1 next build",
     "old-start": "cross-env NODE_ENV=production node ./server/index.js",
     "lint": "eslint . --ext .ts",
-    "dev": "NODE_ENV=development nodemon server/server.ts",
-    "build": "tsc",
+    "dev": "cross-env NODE_ENV=development nodemon server/server.ts",
+    "build": "tsc && NEXT_TELEMETRY_DISABLED=1 next build",
     "prestart": "npm run build",
-    "start": "node ./dist/server/index.js"
+    "start": "cross-env NODE_ENV=production node ./dist/server/index.js"
   },
   "repository": {
     "type": "git",
