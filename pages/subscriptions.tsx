@@ -1,9 +1,19 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useRouter } from 'next/router';
-import { gql, useQuery } from '@apollo/client';
-import { Avatar, Heading, Page, TextStyle, Thumbnail } from '@shopify/polaris';
-import { TitleBar } from '@shopify/app-bridge-react';
+import { useQuery, useMutation } from '@apollo/client';
+import {
+  Avatar,
+  Button,
+  Heading,
+  Page,
+  TextStyle,
+  Thumbnail,
+} from '@shopify/polaris';
+import { TitleBar, useAppBridge } from '@shopify/app-bridge-react';
+import { Redirect } from '@shopify/app-bridge/actions';
 import styled from 'styled-components';
+import { GET_SUBSCRIPTION_BY_ID, UPDATE_PAYMENT_METHOD } from '../handlers';
+import { formatDate } from '../utils/formatters';
 
 const CustomerInfo = styled.div`
   font-size: 1em;
@@ -14,7 +24,7 @@ const CustomerInfo = styled.div`
   }
   .customer {
     display: grid;
-    grid-template-columns: 50px auto;
+    grid-template-columns: 50px auto auto;
   }
 `;
 
@@ -34,59 +44,38 @@ const SubscriptionInformation = styled.div`
   }
 `;
 
-const GET_SUBSCRIPTION_BY_ID = gql`
-  query subscriptionContract($id: ID!) {
-    subscriptionContract(id: $id) {
-      id
-      status
-      nextBillingDate
-      customer {
-        id
-        firstName
-        lastName
-        email
-      }
-      deliveryPrice {
-        currencyCode
-        amount
-      }
-      lineCount
-      lines(first: 10) {
-        edges {
-          node {
-            id
-            productId
-            title
-            quantity
-            requiresShipping
-            variantImage {
-              originalSrc
-              altText
-            }
-            pricingPolicy {
-              cycleDiscounts {
-                adjustmentType
-                adjustmentValue {
-                  __typename
-                }
-                computedPrice {
-                  amount
-                }
-              }
-              basePrice {
-                amount
-                currencyCode
-              }
-            }
-          }
-        }
-      }
+function UpdatePaymentMethod(props: { id: string }) {
+  const { id } = props;
+  console.log('Sending / Update', id);
+  const [updatePaymentMethod, { loading, error, data }] = useMutation(
+    UPDATE_PAYMENT_METHOD
+  );
+  const handleClick = (id: string) => {
+    if (!data) {
+      updatePaymentMethod({
+        variables: {
+          customerPaymentMethodId: id,
+        },
+      });
     }
-  }
-`;
+  };
+
+  return (
+    <Button onClick={() => handleClick(id)}>
+      Send Update Payment Method Email
+    </Button>
+  );
+}
 
 function Subscriptions() {
+  const app = useAppBridge();
+  const redirect = Redirect.create(app);
   const router = useRouter();
+
+  const adminRedirect = (href: string) => {
+    console.log('redirecting');
+    redirect.dispatch(Redirect.Action.ADMIN_PATH, href);
+  };
 
   if (!router?.query.id)
     return (
@@ -135,14 +124,27 @@ function Subscriptions() {
                   {d.customer.email}
                 </p>
               </div>
+              <div className="actions">
+                <UpdatePaymentMethod id={d.customerPaymentMethod.id} />
+              </div>
             </div>
           </CustomerInfo>
           <SubscriptionInformation>
             <h3>Subscription Information</h3>
             <hr />
             <p>
-              <span className="bold">Next Order Date: </span>{' '}
-              {d.nextBillingDate}
+              <span className="bold">Original Order: </span>
+              <Button
+                onClick={() =>
+                  adminRedirect(`/orders/${d.originOrder.legacyResourceId}`)
+                }
+              >
+                View
+              </Button>
+            </p>
+            <p>
+              <span className="bold">Next Order Date: </span>
+              {formatDate(d.nextBillingDate)}
             </p>
             <h4>Products</h4>
             <div className="products">

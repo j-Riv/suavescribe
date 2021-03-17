@@ -7,8 +7,8 @@ import { addProductVariantToSellingPlanGroups } from './mutations/add-product-va
 import { removeProductsFromSellingPlanGroup } from './mutations/remove-products-from-selling-plan-group';
 import { updateSellingPlanGroup } from './mutations/update-selling-plan-group';
 import { deleteSellingPlanGroup } from './mutations/delete-selling-plan-group';
-import { getSellingPlans } from './querys/get-all-selling-plans';
-import { getSellingPlanById } from './querys/get-selling-plan';
+import { getSellingPlans } from './queries/get-all-selling-plans';
+import { getSellingPlanById } from './queries/get-selling-plan';
 
 export {
   createClient,
