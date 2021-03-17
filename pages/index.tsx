@@ -1,9 +1,10 @@
 import React from 'react';
 import { gql, useQuery } from '@apollo/client';
-import { Heading, Page, TextStyle } from '@shopify/polaris';
+import { Button, Heading, Page, Pagination, TextStyle } from '@shopify/polaris';
 import { TitleBar, useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import styled from 'styled-components';
+import { first } from 'lodash';
 
 const TableRow = styled.div`
   display: grid;
@@ -15,12 +16,30 @@ const TableRow = styled.div`
   &.bold {
     font-weight: bold;
   }
+  &.row {
+    border-top: 1px solid #000;
+  }
 `;
 
 const GET_ALL_SUBSCRIPTION_CONTRACTS = gql`
-  query {
-    subscriptionContracts(first: 10) {
+  query subscriptionContracts(
+    $first: Int
+    $last: Int
+    $before: String
+    $after: String
+  ) {
+    subscriptionContracts(
+      first: $first
+      last: $last
+      before: $before
+      after: $after
+    ) {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+      }
       edges {
+        cursor
         node {
           id
           createdAt
@@ -73,11 +92,26 @@ const GET_ALL_SUBSCRIPTION_CONTRACTS = gql`
 function Index() {
   const app = useAppBridge();
   const redirect = Redirect.create(app);
-  const { loading, error, data } = useQuery(GET_ALL_SUBSCRIPTION_CONTRACTS);
+  const { loading, error, data, fetchMore } = useQuery(
+    GET_ALL_SUBSCRIPTION_CONTRACTS,
+    {
+      variables: {
+        first: 1,
+      },
+    }
+  );
 
   if (loading) return <TextStyle variation="positive">Loading...</TextStyle>;
   if (error)
     return <TextStyle variation="negative">Error! ${error.message}</TextStyle>;
+
+  const subscriptionContracts = data.subscriptionContracts.edges;
+  const pageInfo = data.subscriptionContracts.pageInfo;
+  const firstCursor = subscriptionContracts[0].cursor;
+  const lastCursor =
+    subscriptionContracts[subscriptionContracts.length - 1].cursor;
+  console.log('fCursor', firstCursor);
+  console.log('lCursor', lastCursor);
 
   const handleClick = (href: string) => {
     console.log('redirecting');
@@ -116,15 +150,15 @@ function Index() {
           <div>Action</div>
         </TableRow>
         {data &&
-          data.subscriptionContracts.edges.map(contract => (
-            <TableRow key={contract.node.id}>
+          subscriptionContracts.map(contract => (
+            <TableRow key={contract.node.id} className="row">
               <div>{formatId(contract.node.id)}</div>
               <div>{contract.node.customer.email}</div>
               <div>{formatId(contract.node.id)}</div>
               <div>{formatDate(contract.node.createdAt)}</div>
               <div>{formatDate(contract.node.nextBillingDate)}</div>
               <div>
-                <button
+                <Button
                   onClick={() =>
                     handleClick(
                       `/subscriptions?customer_id=${contract.node.customer.id}&id=${contract.node.id}`
@@ -132,10 +166,36 @@ function Index() {
                   }
                 >
                   View
-                </button>
+                </Button>
               </div>
             </TableRow>
           ))}
+        {data && (
+          <Pagination
+            hasPrevious={pageInfo.hasPreviousPage}
+            onPrevious={async () => {
+              console.log('Prev');
+              await fetchMore({
+                variables: {
+                  last: 1,
+                  before: lastCursor,
+                },
+              });
+            }}
+            hasNext={pageInfo.hasNextPage}
+            onNext={() => {
+              console.log('Next');
+              fetchMore({
+                variables: {
+                  after: lastCursor,
+                },
+                updateQuery: (previousResult, { fetchMoreResult }) => {
+                  console.log(fetchMoreResult);
+                },
+              });
+            }}
+          />
+        )}
       </div>
     </Page>
   );

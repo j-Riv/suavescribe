@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useRouter } from 'next/router';
-import { gql, useQuery } from '@apollo/client';
-import { Avatar, Heading, Page, TextStyle, Thumbnail } from '@shopify/polaris';
-import { TitleBar } from '@shopify/app-bridge-react';
+import { gql, useQuery, useMutation } from '@apollo/client';
+import {
+  Avatar,
+  Button,
+  Heading,
+  Page,
+  TextStyle,
+  Thumbnail,
+} from '@shopify/polaris';
+import { TitleBar, useAppBridge } from '@shopify/app-bridge-react';
+import { Redirect } from '@shopify/app-bridge/actions';
 import styled from 'styled-components';
+import { formatDate } from '../utils/formatters';
 
 const CustomerInfo = styled.div`
   font-size: 1em;
@@ -14,7 +23,7 @@ const CustomerInfo = styled.div`
   }
   .customer {
     display: grid;
-    grid-template-columns: 50px auto;
+    grid-template-columns: 50px auto auto;
   }
 `;
 
@@ -45,6 +54,9 @@ const GET_SUBSCRIPTION_BY_ID = gql`
         firstName
         lastName
         email
+      }
+      customerPaymentMethod {
+        id
       }
       deliveryPrice {
         currencyCode
@@ -81,12 +93,70 @@ const GET_SUBSCRIPTION_BY_ID = gql`
           }
         }
       }
+      originOrder {
+        legacyResourceId
+      }
+      status
+      lastPaymentStatus
+      customerPaymentMethod {
+        id
+      }
+      deliveryPolicy {
+        interval
+        intervalCount
+      }
     }
   }
 `;
 
+const UPDATE_PAYMENT_METHOD = gql`
+  mutation customerPaymentMethodSendUpdateEmail($customerPaymentMethodId: ID!) {
+    customerPaymentMethodSendUpdateEmail(
+      customerPaymentMethodId: $customerPaymentMethodId
+    ) {
+      customer {
+        id
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
+function UpdatePaymentMethod(props: { id: string }) {
+  const { id } = props;
+  console.log('Sending / Update', id);
+  const [updatePaymentMethod, { loading, error, data }] = useMutation(
+    UPDATE_PAYMENT_METHOD
+  );
+  const handleClick = (id: string) => {
+    if (!data) {
+      updatePaymentMethod({
+        variables: {
+          customerPaymentMethodId: id,
+        },
+      });
+    }
+  };
+
+  return (
+    <Button onClick={() => handleClick(id)}>
+      Send Update Payment Method Email
+    </Button>
+  );
+}
+
 function Subscriptions() {
+  const app = useAppBridge();
+  const redirect = Redirect.create(app);
   const router = useRouter();
+
+  const handleClick = (href: string) => {
+    console.log('redirecting');
+    redirect.dispatch(Redirect.Action.ADMIN_PATH, href);
+  };
 
   if (!router?.query.id)
     return (
@@ -135,14 +205,27 @@ function Subscriptions() {
                   {d.customer.email}
                 </p>
               </div>
+              <div className="actions">
+                <UpdatePaymentMethod id={d.customerPaymentMethod.id} />
+              </div>
             </div>
           </CustomerInfo>
           <SubscriptionInformation>
             <h3>Subscription Information</h3>
             <hr />
             <p>
-              <span className="bold">Next Order Date: </span>{' '}
-              {d.nextBillingDate}
+              <span className="bold">Original Order: </span>
+              <Button
+                onClick={() =>
+                  handleClick(`/orders/${d.originOrder.legacyResourceId}`)
+                }
+              >
+                View
+              </Button>
+            </p>
+            <p>
+              <span className="bold">Next Order Date: </span>
+              {formatDate(d.nextBillingDate)}
             </p>
             <h4>Products</h4>
             <div className="products">

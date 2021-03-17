@@ -55,7 +55,7 @@ const DELETE_SELLING_PLAN_GROUP = gql`
 
 function RemoveButton(props: { id: string }) {
   const { id } = props;
-  console.log('Removing', props.id);
+  console.log('Removing', id);
   const [deleteSellingGroup, { loading, error, data }] = useMutation(
     DELETE_SELLING_PLAN_GROUP
   );
@@ -93,9 +93,7 @@ function SellingPlanGroups() {
         }}
       />
       <Heading>
-        <Heading>
-          <TextStyle variation="positive">Selling Plan Groups</TextStyle>
-        </Heading>
+        <TextStyle variation="positive">Selling Plan Groups</TextStyle>
       </Heading>
       {data &&
         data.sellingPlanGroups.edges.map(group => (
