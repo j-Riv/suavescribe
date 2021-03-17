@@ -14,7 +14,7 @@ import '@shopify/polaris/dist/styles.css';
 import translations from '@shopify/polaris/locales/en.json';
 import ClientRouter from '../components/ClientRouter';
 
-function MyProvider(props) {
+function MyProvider({ children }) {
   const app = useAppBridge();
 
   const client = new ApolloClient({
@@ -25,17 +25,12 @@ function MyProvider(props) {
     cache: new InMemoryCache(),
   });
 
-  // const Component = props.Component;
-
-  return (
-    <ApolloProvider client={client}>
-      {/* <Component {...props} /> */}
-      {props.children}
-    </ApolloProvider>
-  );
+  return <ApolloProvider client={client}>{children}</ApolloProvider>;
 }
 
 function MyApp({ Component, pageProps, shopOrigin }) {
+  console.log('shopOrigin_app', shopOrigin);
+
   return (
     <>
       <Head>
@@ -56,7 +51,6 @@ function MyApp({ Component, pageProps, shopOrigin }) {
           <MyProvider>
             <Component {...pageProps} />
           </MyProvider>
-          {/* <MyProvider Component={Component} {...pageProps} /> */}
         </AppProvider>
       </Provider>
     </>
