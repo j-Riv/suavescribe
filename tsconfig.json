@@ -29,5 +29,5 @@
     "jsx": "preserve"
   },
   "include": ["./app/**/*", "./client/**/*", "./server/**/*", "./tests/**/*"],
-  "exclude": ["node_modules", "./pages/**/*"]
+  "exclude": ["node_modules", "./src/**/*"]
 }
