@@ -1,8 +1,9 @@
 import React from 'react';
-import { gql, useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import { Button, Heading, Page, TextStyle } from '@shopify/polaris';
 import { TitleBar } from '@shopify/app-bridge-react';
 import styled from 'styled-components';
+import { GET_ALL_SELLING_PLANS, DELETE_SELLING_PLAN_GROUP } from '../handlers';
 
 const Group = styled.div`
   display: grid;
@@ -14,48 +15,9 @@ const Group = styled.div`
   }
 `;
 
-const GET_ALL_SELLING_PLANS = gql`
-  query {
-    sellingPlanGroups(first: 5) {
-      edges {
-        node {
-          id
-          appId
-          description
-          options
-          name
-          summary
-          sellingPlans(first: 5) {
-            edges {
-              node {
-                id
-                name
-                options
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-const DELETE_SELLING_PLAN_GROUP = gql`
-  mutation sellingPlanGroupDelete($id: ID!) {
-    sellingPlanGroupDelete(id: $id) {
-      deletedSellingPlanGroupId
-      userErrors {
-        code
-        field
-        message
-      }
-    }
-  }
-`;
-
 function RemoveButton(props: { id: string }) {
   const { id } = props;
-  console.log('Removing', props.id);
+  console.log('Removing', id);
   const [deleteSellingGroup, { loading, error, data }] = useMutation(
     DELETE_SELLING_PLAN_GROUP
   );
@@ -93,9 +55,7 @@ function SellingPlanGroups() {
         }}
       />
       <Heading>
-        <Heading>
-          <TextStyle variation="positive">Selling Plan Groups</TextStyle>
-        </Heading>
+        <TextStyle variation="positive">Selling Plan Groups</TextStyle>
       </Heading>
       {data &&
         data.sellingPlanGroups.edges.map(group => (
