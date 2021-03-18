@@ -12,6 +12,7 @@ import {
 import { TitleBar } from '@shopify/app-bridge-react';
 import styled from 'styled-components';
 import { GET_ALL_SELLING_PLANS, DELETE_SELLING_PLAN_GROUP } from '../handlers';
+import EmptyPage from '../components/EmptyPage';
 
 const Group = styled.div`
   display: grid;
@@ -54,6 +55,7 @@ function SellingPlanGroups() {
     return (
       <Frame>
         <Loading />
+        <EmptyPage />
       </Frame>
     );
   if (error)
