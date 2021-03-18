@@ -104,16 +104,7 @@ function Index() {
                     )
                   }
                 >
-                  View
-                </Button>
-                <Button
-                  onClick={() =>
-                    appRedirect(
-                      `/edit-subscription?customer_id=${contract.node.customer.id}&id=${contract.node.id}`
-                    )
-                  }
-                >
-                  Edit
+                  View / Edit
                 </Button>
               </div>
             </TableRow>

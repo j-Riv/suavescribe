@@ -7,6 +7,7 @@ import { UPDATE_PAYMENT_METHOD } from './mutations/update-payment-method';
 import { UPDATE_SUBSCRIPTION_CONTRACT } from './mutations/update-subscription-contract';
 import { UPDATE_SUBSCRIPTION_DRAFT } from './mutations/update-subscription-draft';
 import { COMMIT_SUBSCRIPTION_DRAFT } from './mutations/commit-subscription-draft';
+import { UPDATE_SUBSCRIPTION_DRAFT_LINE } from './mutations/update-subscription-draft-line';
 
 export {
   GET_SUBSCRIPTION_CONTRACTS,
@@ -18,4 +19,5 @@ export {
   UPDATE_SUBSCRIPTION_CONTRACT,
   UPDATE_SUBSCRIPTION_DRAFT,
   COMMIT_SUBSCRIPTION_DRAFT,
+  UPDATE_SUBSCRIPTION_DRAFT_LINE,
 };

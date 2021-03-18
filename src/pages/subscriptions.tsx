@@ -1,183 +1,56 @@
 import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import { useQuery, useMutation } from '@apollo/client';
 import {
-  Avatar,
-  Button,
+  Badge,
+  Card,
+  Form,
+  FormLayout,
   Frame,
   Heading,
+  Layout,
   Loading,
   Page,
+  Select,
+  Stack,
+  TextField,
   TextStyle,
-  Thumbnail,
   Toast,
 } from '@shopify/polaris';
 import { TitleBar, useAppBridge } from '@shopify/app-bridge-react';
+import { useQuery } from '@apollo/client';
 import { Redirect } from '@shopify/app-bridge/actions';
-import styled from 'styled-components';
-import {
-  GET_SUBSCRIPTION_BY_ID,
-  UPDATE_PAYMENT_METHOD,
-  UPDATE_SUBSCRIPTION_CONTRACT,
-  UPDATE_SUBSCRIPTION_DRAFT,
-  COMMIT_SUBSCRIPTION_DRAFT,
-} from '../handlers';
-import { formatDate } from '../utils/formatters';
+import { GET_SUBSCRIPTION_BY_ID } from '../handlers';
+import { formatId } from '../utils/formatters';
+import LoadingEditSubscription from '../components/LoadingEditSubscription';
+import CustomerInformation from '../components/CustomerInformation';
+import SubscriptionInformation from '../components/SubscriptionInformation';
+import UpdateSubscriptionButton from '../components/UpdateSubscriptionButton';
+import UpdatePaymentMethodButton from '../components/UpdatePaymentMethodButton';
 
-const CustomerInfo = styled.div`
-  font-size: 1em;
-  margin: 20px 0;
-  h3,
-  .bold {
-    font-weight: bold;
-  }
-  .customer {
-    display: grid;
-    grid-template-columns: 50px auto auto;
-  }
-`;
-
-const SubscriptionInformation = styled.div`
-  margin: 20px 0;
-  h3,
-  h4,
-  .bold {
-    font-weight: bold;
-  }
-  .product {
-    display: grid;
-    grid-template-columns: 50px auto;
-    .information {
-      padding: 10px;
-    }
-  }
-`;
-
-function UpdatePaymentMethod(props: {
-  id: string;
-  toggleActive: () => void;
-  setMsg: (msg: string) => void;
-}) {
-  const { id, toggleActive, setMsg } = props;
-  // send the payment update email, update toast message and make it active
-  const [updatePaymentMethod] = useMutation(UPDATE_PAYMENT_METHOD, {
-    onCompleted: () => {
-      setMsg('Sent Update Payment Email');
-      toggleActive();
-    },
-  });
-
-  const handleClick = (id: string) => {
-    updatePaymentMethod({
-      variables: {
-        customerPaymentMethodId: id,
-      },
-    });
-  };
-
-  return (
-    <Button onClick={() => handleClick(id)}>
-      Send Update Payment Method Email
-    </Button>
-  );
-}
-
-function UpdateSubscriptionContract(props: {
-  id: string;
-  toggleActive: () => void;
-  setMsg: (msg: string) => void;
-}) {
-  const { id, toggleActive, setMsg } = props;
-  // update subscription contract -> draft id
-  const [updateSubscriptionContract] = useMutation(
-    UPDATE_SUBSCRIPTION_CONTRACT,
-    {
-      onCompleted: data =>
-        updateDraft(data.subscriptionContractUpdate.draft.id),
-    }
-  );
-  // update subscription draft -> draft id
-  const [updateSubscriptionDraft] = useMutation(UPDATE_SUBSCRIPTION_DRAFT, {
-    onCompleted: data => commitDraft(data.subscriptionDraftUpdate.draft.id),
-  });
-  // commit subscription draft -> update toast msg and make it active
-  const [commitSubscriptionDraft] = useMutation(COMMIT_SUBSCRIPTION_DRAFT, {
-    onCompleted: () => {
-      setMsg('Updated Subscription');
-      toggleActive();
-    },
-  });
-
-  const handleClick = (id: string) => {
-    console.log('Handling Update Click', id);
-    try {
-      updateSubscriptionContract({
-        variables: {
-          contractId: id,
-        },
-      });
-    } catch (e) {
-      console.log('Update Contract Error', e.message);
-    }
-  };
-
-  const updateDraft = (draftId: string) => {
-    console.log('Updateing Draft', draftId);
-    const input = {
-      nextBillingDate: new Date('3/19/2021'),
-    };
-    try {
-      updateSubscriptionDraft({
-        variables: {
-          draftId: draftId,
-          input: input,
-        },
-      });
-    } catch (e) {
-      console.log('Update Draft Error', e.message);
-    }
-  };
-
-  const commitDraft = (draftId: string) => {
-    console.log('Committing Draft', draftId);
-    try {
-      commitSubscriptionDraft({
-        variables: {
-          draftId: draftId,
-        },
-      });
-    } catch (e) {
-      console.log('Commit Draft Error', e.message);
-    }
-  };
-
-  return (
-    <Button onClick={() => handleClick(id)}>
-      Update Subscription Contract
-    </Button>
-  );
-}
-
-function Subscriptions() {
+function EditSubscription() {
+  // Get id from path
+  const router = useRouter();
+  // Create redirects
   const app = useAppBridge();
   const redirect = Redirect.create(app);
-  const router = useRouter();
+  // State
+  const [contractId, setContractId] = useState<string>();
+  const [nextBillingDate, setNextBillingDate] = useState<string>();
+  const [lineItems, setLineItems] = useState<any[]>();
+  const [lineItem, setLineItem] = useState<string>();
+  const [lineId, setLineId] = useState<string>();
+  const [lineItemQuantity, setLineItemQuantity] = useState<string>();
+  const [paymentMethod, setPaymentMethod] = useState<string>();
 
-  const [active, setActive] = useState(false);
-  const [toastMsg, setToastMsg] = useState('');
-
+  const [active, setActive] = useState<boolean>(false);
+  const [toastMsg, setToastMsg] = useState<string>('');
   const toggleActive = useCallback(() => setActive(active => !active), []);
   const setMsg = useCallback(msg => setToastMsg(msg), []);
-
+  // Toast
   const toastMarkup = active ? (
     <Toast content={toastMsg} onDismiss={toggleActive} />
   ) : null;
-
-  const adminRedirect = (href: string) => {
-    console.log('redirecting');
-    redirect.dispatch(Redirect.Action.ADMIN_PATH, href);
-  };
-
+  // Exit if no id
   if (!router?.query.id)
     return (
       <div>
@@ -186,108 +59,190 @@ function Subscriptions() {
         </TextStyle>
       </div>
     );
-
-  const { loading, error, data } = useQuery(GET_SUBSCRIPTION_BY_ID, {
+  // Get Data
+  const { loading, error, data, refetch } = useQuery(GET_SUBSCRIPTION_BY_ID, {
     variables: {
       id: router.query.id,
     },
+    onCompleted: data => setInitialData(data),
   });
+  // Set Data
+  const setInitialData = (data: any) => {
+    const d = data.subscriptionContract;
+    setContractId(d.id);
+    setNextBillingDate(d.nextBillingDate.split('T')[0]);
+    setLineItem(d.lines.edges[0].node.productId);
+    setLineId(d.lines.edges[0].node.id);
+    setLineItemQuantity(String(d.lines.edges[0].node.quantity));
+    setLineItems(d.lines.edges);
+    setPaymentMethod(d.customerPaymentMethod.id);
+  };
+
+  const handleNextBillingDateChange = (date: string) => {
+    setNextBillingDate(date);
+    console.log('hasChanged', nextBillingDate);
+  };
+
+  const handleLineItemChange = (productId: string) => {
+    lineItems.map(node => {
+      if (node.productId === productId) {
+        console.log('Setting Quantity in Loop', node.quantity);
+        setLineItemQuantity(node.quantity);
+        setLineId(node.id);
+      }
+    });
+    setLineItem(productId);
+  };
+
+  const handleLineItemQuantityChange = (quantity: string) => {
+    setLineItemQuantity(quantity);
+  };
+
+  const adminRedirect = (href: string) => {
+    console.log('redirecting');
+    redirect.dispatch(Redirect.Action.ADMIN_PATH, href);
+  };
+
+  const appRedirect = () => {
+    console.log('redirecting');
+    redirect.dispatch(Redirect.Action.APP, '/');
+  };
 
   if (loading)
     return (
       <Frame>
         <Loading />
+        <LoadingEditSubscription />
       </Frame>
     );
   if (error)
     return <TextStyle variation="negative">Error! ${error.message}</TextStyle>;
-  const d = data.subscriptionContract;
 
   return (
-    <Page>
+    <Page
+      breadcrumbs={[{ content: 'Dashboard', onAction: appRedirect }]}
+      title="Edit Subscription"
+      titleMetadata={
+        <Badge status={data.subscriptionContract.status}>
+          {data.subscriptionContract.status}
+        </Badge>
+      }
+    >
       <Frame>
-        <TitleBar title="Subscription Contract" />
+        <TitleBar title="Edit Subscription" />
         <Heading>
-          <TextStyle variation="positive">Subscription Contract</TextStyle>
+          <TextStyle variation="positive">
+            Subscription ({formatId(data.subscriptionContract.id)})
+          </TextStyle>
         </Heading>
-        {data && (
-          <>
-            <CustomerInfo>
-              <h3>Customer Information</h3>
-              <hr />
-              <div className="customer">
-                <Avatar
-                  customer
-                  size="medium"
-                  name={`${d.customer.firstName} ${d.customer.lastName}`}
-                />
-                <div>
-                  <p>
-                    <span className="bold">Name: </span>
-                    {`${d.customer.firstName} ${d.customer.lastName}`}
-                  </p>
-                  <p>
-                    <span className="bold">Email: </span>
-                    {d.customer.email}
-                  </p>
-                </div>
-                <div className="actions">
-                  <UpdatePaymentMethod
-                    id={d.customerPaymentMethod.id}
-                    toggleActive={toggleActive}
-                    setMsg={setMsg}
+        <Layout>
+          <Layout.Section>
+            <CustomerInformation data={data} />
+          </Layout.Section>
+          <Layout.Section>
+            <SubscriptionInformation
+              data={data}
+              adminRedirect={adminRedirect}
+            />
+          </Layout.Section>
+          <Layout.AnnotatedSection
+            title="Next Billing Date"
+            description="Change / Update Next Billing Date"
+          >
+            <Card sectioned>
+              <Form onSubmit={() => console.log('submited')}>
+                <FormLayout>
+                  <TextField
+                    value={nextBillingDate}
+                    onChange={nextBillingDate =>
+                      handleNextBillingDateChange(nextBillingDate)
+                    }
+                    label="Next Billing Date"
+                    type="date"
                   />
-                  <UpdateSubscriptionContract
-                    id={d.id}
-                    toggleActive={toggleActive}
-                    setMsg={setMsg}
-                  />
-                </div>
-              </div>
-            </CustomerInfo>
-            <SubscriptionInformation>
-              <h3>Subscription Information</h3>
-              <hr />
-              <p>
-                <span className="bold">Original Order: </span>
-                <Button
-                  onClick={() =>
-                    adminRedirect(`/orders/${d.originOrder.legacyResourceId}`)
-                  }
-                >
-                  View
-                </Button>
-              </p>
-              <p>
-                <span className="bold">Next Order Date: </span>
-                {formatDate(d.nextBillingDate)}
-              </p>
-              <h4>Products</h4>
-              <div className="products">
-                {d.lines.edges.map(line => (
-                  <div key={line.node.id} className="product">
-                    <Thumbnail
-                      source={line.node.variantImage.originalSrc}
-                      alt={line.node.variantImage.altText}
+                  <Stack distribution="trailing">
+                    <UpdateSubscriptionButton
+                      contractId={contractId}
+                      input={{ nextBillingDate: new Date(nextBillingDate) }}
+                      lineId={null}
+                      toggleActive={toggleActive}
+                      setMsg={setMsg}
+                      refetch={refetch}
                     />
-                    <div className="information">
-                      {line.node.title} {line.node.variantTitle} x{' '}
-                      {line.node.quantity} @{' '}
-                      {
-                        line.node.pricingPolicy.cycleDiscounts[0].computedPrice
-                          .amount
-                      }
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </SubscriptionInformation>
-          </>
-        )}
+                  </Stack>
+                </FormLayout>
+              </Form>
+            </Card>
+          </Layout.AnnotatedSection>
+          <Layout.AnnotatedSection
+            title="Product"
+            description="Select Product to Update Quantity"
+          >
+            <Card sectioned>
+              <Form onSubmit={() => console.log('submited')}>
+                <FormLayout>
+                  <Select
+                    label="Item"
+                    options={data.subscriptionContract.lines.edges.map(line => {
+                      return {
+                        label: `${line.node.title} - ${line.node.variantTitle}`,
+                        value: line.node.productId,
+                      };
+                    })}
+                    onChange={lineItem => handleLineItemChange(lineItem)}
+                    value={lineItem}
+                  />
+                  <TextField
+                    value={lineItemQuantity}
+                    onChange={lineItemQuantity =>
+                      handleLineItemQuantityChange(lineItemQuantity)
+                    }
+                    label="Quantity"
+                    type="number"
+                  />
+                  <Stack distribution="trailing">
+                    <UpdateSubscriptionButton
+                      contractId={contractId}
+                      input={{ quantity: Number(lineItemQuantity) }}
+                      lineId={lineId}
+                      toggleActive={toggleActive}
+                      setMsg={setMsg}
+                      refetch={refetch}
+                    />
+                  </Stack>
+                </FormLayout>
+              </Form>
+            </Card>
+          </Layout.AnnotatedSection>
+          <Layout.AnnotatedSection
+            title="Payment Method"
+            description="Send Update Payment Method Email"
+          >
+            <Card sectioned>
+              <Form onSubmit={() => console.log('clicked')}>
+                <FormLayout>
+                  <TextField
+                    label="Payment Method ID"
+                    disabled
+                    value={paymentMethod}
+                  />
+                  <Stack distribution="trailing">
+                    <UpdatePaymentMethodButton
+                      id={paymentMethod}
+                      toggleActive={toggleActive}
+                      setMsg={setMsg}
+                      refetch={refetch}
+                    />
+                  </Stack>
+                </FormLayout>
+              </Form>
+            </Card>
+          </Layout.AnnotatedSection>
+        </Layout>
         {toastMarkup}
       </Frame>
     </Page>
   );
 }
 
-export default Subscriptions;
+export default EditSubscription;
