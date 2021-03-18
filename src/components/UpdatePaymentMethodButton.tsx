@@ -7,7 +7,7 @@ function UpdatePaymentMethodButton(props: {
   id: string;
   toggleActive: () => void;
   setMsg: (msg: string) => void;
-  refetch: any;
+  refetch: () => void;
 }) {
   const { id, toggleActive, setMsg, refetch } = props;
   const [loading, setLoading] = useState<boolean>(false);

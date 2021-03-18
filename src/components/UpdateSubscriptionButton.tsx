@@ -14,7 +14,7 @@ function UpdateSubscriptionButton(props: {
   lineId?: string;
   toggleActive: () => void;
   setMsg: (msg: string) => void;
-  refetch: any;
+  refetch: () => void;
 }) {
   const { contractId, input, lineId, toggleActive, setMsg, refetch } = props;
   const [loading, setLoading] = useState<boolean>(false);
