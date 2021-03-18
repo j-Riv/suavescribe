@@ -1,6 +1,14 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
-import { Button, Heading, Page, TextStyle } from '@shopify/polaris';
+import {
+  Button,
+  Frame,
+  Heading,
+  Loading,
+  Page,
+  TextStyle,
+  Toast,
+} from '@shopify/polaris';
 import { TitleBar } from '@shopify/app-bridge-react';
 import styled from 'styled-components';
 import { GET_ALL_SELLING_PLANS, DELETE_SELLING_PLAN_GROUP } from '../handlers';
@@ -15,21 +23,19 @@ const Group = styled.div`
   }
 `;
 
-function RemoveButton(props: { id: string }) {
-  const { id } = props;
-  console.log('Removing', id);
-  const [deleteSellingGroup, { loading, error, data }] = useMutation(
-    DELETE_SELLING_PLAN_GROUP
-  );
+function RemoveButton(props: { id: string; toggleActive: () => void }) {
+  const { id, toggleActive } = props;
+  // delete selling plan group
+  const [deleteSellingGroup] = useMutation(DELETE_SELLING_PLAN_GROUP, {
+    onCompleted: () => toggleActive(),
+  });
   const handleClick = (id: string) => {
-    if (!data) {
-      deleteSellingGroup({
-        variables: {
-          id: id,
-        },
-        refetchQueries: [{ query: GET_ALL_SELLING_PLANS }],
-      });
-    }
+    deleteSellingGroup({
+      variables: {
+        id: id,
+      },
+      refetchQueries: [{ query: GET_ALL_SELLING_PLANS }],
+    });
   };
 
   return <Button onClick={() => handleClick(id)}>Remove</Button>;
@@ -38,7 +44,18 @@ function RemoveButton(props: { id: string }) {
 function SellingPlanGroups() {
   const { loading, error, data, refetch } = useQuery(GET_ALL_SELLING_PLANS);
 
-  if (loading) return <TextStyle variation="positive">Loading...</TextStyle>;
+  const [active, setActive] = useState(false);
+  const toggleActive = useCallback(() => setActive(active => !active), []);
+  const toastMarkup = active ? (
+    <Toast content="Removed" onDismiss={toggleActive} />
+  ) : null;
+
+  if (loading)
+    return (
+      <Frame>
+        <Loading />
+      </Frame>
+    );
   if (error)
     return <TextStyle variation="negative">Error! ${error.message}</TextStyle>;
 
@@ -65,10 +82,11 @@ function SellingPlanGroups() {
               <p>{group.node.summary}</p>
             </div>
             <div>
-              <RemoveButton id={group.node.id} />
+              <RemoveButton id={group.node.id} toggleActive={toggleActive} />
             </div>
           </Group>
         ))}
+      <Frame>{toastMarkup}</Frame>
     </Page>
   );
 }

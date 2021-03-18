@@ -1,6 +1,14 @@
 import React from 'react';
 import { useQuery } from '@apollo/client';
-import { Button, Heading, Page, Pagination, TextStyle } from '@shopify/polaris';
+import {
+  Button,
+  Frame,
+  Heading,
+  Loading,
+  Page,
+  Pagination,
+  TextStyle,
+} from '@shopify/polaris';
 import { TitleBar, useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import styled from 'styled-components';
@@ -32,12 +40,17 @@ function Index() {
     GET_SUBSCRIPTION_CONTRACTS,
     {
       variables: {
-        first: 1,
+        first: 10,
       },
     }
   );
 
-  if (loading) return <TextStyle variation="positive">Loading...</TextStyle>;
+  if (loading)
+    return (
+      <Frame>
+        <Loading />
+      </Frame>
+    );
   if (error)
     return <TextStyle variation="negative">Error! ${error.message}</TextStyle>;
 
@@ -93,6 +106,15 @@ function Index() {
                 >
                   View
                 </Button>
+                <Button
+                  onClick={() =>
+                    appRedirect(
+                      `/edit-subscription?customer_id=${contract.node.customer.id}&id=${contract.node.id}`
+                    )
+                  }
+                >
+                  Edit
+                </Button>
               </div>
             </TableRow>
           ))}
@@ -104,7 +126,7 @@ function Index() {
               fetchMore({
                 query: GET_PREV_SUBSCRIPTION_CONTRACTS,
                 variables: {
-                  last: 1,
+                  last: 10,
                   before: lastCursor,
                 },
               });
@@ -114,7 +136,7 @@ function Index() {
               console.log('Next');
               fetchMore({
                 variables: {
-                  first: 1,
+                  first: 10,
                   after: lastCursor,
                 },
               });
