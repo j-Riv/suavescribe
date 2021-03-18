@@ -1,27 +1,29 @@
 import React, { useState, useCallback } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
+import { useRouter } from 'next/router';
+import { Redirect } from '@shopify/app-bridge/actions';
 import {
   Button,
+  Card,
   Frame,
-  Heading,
   Loading,
   Page,
   TextStyle,
   Toast,
 } from '@shopify/polaris';
-import { TitleBar } from '@shopify/app-bridge-react';
+import { TitleBar, useAppBridge } from '@shopify/app-bridge-react';
 import styled from 'styled-components';
-import { GET_ALL_SELLING_PLANS, DELETE_SELLING_PLAN_GROUP } from '../handlers';
+import {
+  GET_ALL_SELLING_PLAN_GROUPS,
+  DELETE_SELLING_PLAN_GROUP,
+} from '../handlers';
+import Table from '../components/Table';
 import EmptyPage from '../components/EmptyPage';
 
-const Group = styled.div`
+const Actions = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  border-top: 1px solid #000;
-  margin: 10px 0;
-  .bold {
-    font-weight: bold;
-  }
+  grid-template-columns: auto auto;
+  gap: 2rem;
 `;
 
 function RemoveButton(props: { id: string; toggleActive: () => void }) {
@@ -35,16 +37,30 @@ function RemoveButton(props: { id: string; toggleActive: () => void }) {
       variables: {
         id: id,
       },
-      refetchQueries: [{ query: GET_ALL_SELLING_PLANS }],
+      refetchQueries: [{ query: GET_ALL_SELLING_PLAN_GROUPS }],
     });
   };
 
-  return <Button onClick={() => handleClick(id)}>Remove</Button>;
+  return (
+    <Button plain onClick={() => handleClick(id)}>
+      Remove
+    </Button>
+  );
 }
 
 function SellingPlanGroups() {
-  const { loading, error, data, refetch } = useQuery(GET_ALL_SELLING_PLANS);
+  // Create redirects
+  const app = useAppBridge();
+  const redirect = Redirect.create(app);
+  const appRedirect = (href: string) => {
+    console.log('redirecting');
+    redirect.dispatch(Redirect.Action.APP, href);
+  };
 
+  const { loading, error, data, refetch } = useQuery(
+    GET_ALL_SELLING_PLAN_GROUPS
+  );
+  // Toast
   const [active, setActive] = useState(false);
   const toggleActive = useCallback(() => setActive(active => !active), []);
   const toastMarkup = active ? (
@@ -65,30 +81,48 @@ function SellingPlanGroups() {
   console.log(data);
 
   return (
-    <Page>
-      <TitleBar
-        title="Selling Plan Groups"
-        primaryAction={{
-          content: 'Get Selling Plans',
-          onAction: () => refetch,
-        }}
-      />
-      <Heading>
-        <TextStyle variation="positive">Selling Plan Groups</TextStyle>
-      </Heading>
-      {data &&
-        data.sellingPlanGroups.edges.map(group => (
-          <Group key={group.node.id}>
-            <div>
-              <p className="bold">{group.node.name}</p>
-              <p>{group.node.summary}</p>
-            </div>
-            <div>
-              <RemoveButton id={group.node.id} toggleActive={toggleActive} />
-            </div>
-          </Group>
-        ))}
-      <Frame>{toastMarkup}</Frame>
+    <Page
+      title="Selling Plan Groups"
+      subtitle="Selling Plans represent how a product can be sold and purchased."
+    >
+      <Frame>
+        <TitleBar
+          title="Selling Plan Groups"
+          // primaryAction={{
+          //   content: 'Get Selling Plans',
+          //   onAction: () => refetch,
+          // }}
+        />
+        <Card sectioned>
+          {data && (
+            <Table
+              contentTypes={['text', 'text', 'text']}
+              headings={['Name', 'Summary', 'Actions']}
+              rows={data.sellingPlanGroups.edges.map(group => {
+                return [
+                  group.node.name,
+                  group.node.summary,
+                  <Actions>
+                    <RemoveButton
+                      id={group.node.id}
+                      toggleActive={toggleActive}
+                    />
+                    <Button
+                      plain
+                      onClick={() =>
+                        appRedirect(`/selling-plan-group/?id=${group.node.id}`)
+                      }
+                    >
+                      View
+                    </Button>
+                  </Actions>,
+                ];
+              })}
+            />
+          )}
+        </Card>
+        {toastMarkup}
+      </Frame>
     </Page>
   );
 }

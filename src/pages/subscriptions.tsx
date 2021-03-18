@@ -122,19 +122,21 @@ function EditSubscription() {
     <Page
       breadcrumbs={[{ content: 'Dashboard', onAction: appRedirect }]}
       title="Edit Subscription"
+      subtitle={`Subscription (${formatId(data.subscriptionContract.id)}) `}
       titleMetadata={
-        <Badge status={data.subscriptionContract.status}>
+        <Badge
+          status={
+            data.subscriptionContract.status === 'ACTIVE'
+              ? 'success'
+              : 'attention'
+          }
+        >
           {data.subscriptionContract.status}
         </Badge>
       }
     >
       <Frame>
         <TitleBar title="Edit Subscription" />
-        <Heading>
-          <TextStyle variation="positive">
-            Subscription ({formatId(data.subscriptionContract.id)})
-          </TextStyle>
-        </Heading>
         <Layout>
           <Layout.Section>
             <CustomerInformation data={data} />
