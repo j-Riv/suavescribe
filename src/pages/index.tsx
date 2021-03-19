@@ -18,6 +18,7 @@ import {
 } from '../handlers';
 import { formatDate, formatId } from '../utils/formatters';
 import Table from '../components/Table';
+import LoadingIndex from '../components/LoadingIndex';
 
 function Index() {
   const app = useAppBridge();
@@ -31,12 +32,7 @@ function Index() {
     }
   );
 
-  if (loading)
-    return (
-      <Frame>
-        <Loading />
-      </Frame>
-    );
+  if (loading) return <LoadingIndex tableRows={5} />;
   if (error)
     return <TextStyle variation="negative">Error! ${error.message}</TextStyle>;
 

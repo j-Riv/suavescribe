@@ -18,7 +18,7 @@ import {
   DELETE_SELLING_PLAN_GROUP,
 } from '../handlers';
 import Table from '../components/Table';
-import EmptyPage from '../components/EmptyPage';
+import LoadingSellingPlans from '../components/LoadingSellingPlans';
 
 const Actions = styled.div`
   display: grid;
@@ -67,13 +67,7 @@ function SellingPlanGroups() {
     <Toast content="Removed" onDismiss={toggleActive} />
   ) : null;
 
-  if (loading)
-    return (
-      <Frame>
-        <Loading />
-        <EmptyPage />
-      </Frame>
-    );
+  if (loading) return <LoadingSellingPlans tableRows={5} />;
   if (error)
     return <TextStyle variation="negative">Error! ${error.message}</TextStyle>;
 
