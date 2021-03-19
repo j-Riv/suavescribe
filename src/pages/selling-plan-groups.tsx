@@ -2,15 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { useRouter } from 'next/router';
 import { Redirect } from '@shopify/app-bridge/actions';
-import {
-  Button,
-  Card,
-  Frame,
-  Loading,
-  Page,
-  TextStyle,
-  Toast,
-} from '@shopify/polaris';
+import { Button, Card, Frame, Page, TextStyle, Toast } from '@shopify/polaris';
 import { TitleBar, useAppBridge } from '@shopify/app-bridge-react';
 import styled from 'styled-components';
 import {
@@ -80,13 +72,7 @@ function SellingPlanGroups() {
       subtitle="Selling Plans represent how a product can be sold and purchased."
     >
       <Frame>
-        <TitleBar
-          title="Selling Plan Groups"
-          // primaryAction={{
-          //   content: 'Get Selling Plans',
-          //   onAction: () => refetch,
-          // }}
-        />
+        <TitleBar title="Selling Plan Groups" />
         <Card sectioned>
           {data && (
             <Table

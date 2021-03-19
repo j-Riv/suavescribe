@@ -16,10 +16,44 @@ const Container = styled.div`
   }
 `;
 
-function SubscriptionInformation(props: {
-  data: any;
+interface Props {
+  data: {
+    subscriptionContract: {
+      nextBillingDate: string;
+      originOrder: {
+        legacyResourceId: string;
+      };
+      lines: {
+        edges: [
+          {
+            node: {
+              id: string;
+              title: string;
+              quantity: string;
+              variantTitle: string;
+              variantImage: {
+                originalSrc: string;
+                altText: string;
+              };
+              pricingPolicy: {
+                cycleDiscounts: [
+                  {
+                    computedPrice: {
+                      amount;
+                    };
+                  }
+                ];
+              };
+            };
+          }
+        ];
+      };
+    };
+  };
   adminRedirect: (url: string) => void;
-}) {
+}
+
+function SubscriptionInformation(props: Props) {
   const { data, adminRedirect } = props;
 
   return (

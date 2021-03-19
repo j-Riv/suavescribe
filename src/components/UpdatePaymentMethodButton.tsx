@@ -3,12 +3,14 @@ import { Button } from '@shopify/polaris';
 import { useMutation } from '@apollo/client';
 import { UPDATE_PAYMENT_METHOD } from '../handlers';
 
-function UpdatePaymentMethodButton(props: {
+interface Props {
   id: string;
   toggleActive: () => void;
   setMsg: (msg: string) => void;
   refetch: () => void;
-}) {
+}
+
+function UpdatePaymentMethodButton(props: Props) {
   const { id, toggleActive, setMsg, refetch } = props;
   const [loading, setLoading] = useState<boolean>(false);
   // send the payment update email, update toast message and make it active

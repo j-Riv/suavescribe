@@ -10,7 +10,19 @@ const Container = styled.div`
   }
 `;
 
-function CustomerInformation(props) {
+interface Props {
+  data: {
+    subscriptionContract: {
+      customer: {
+        firstName: string;
+        lastName: string;
+        email: string;
+      };
+    };
+  };
+}
+
+function CustomerInformation(props: Props) {
   const { data } = props;
 
   return (
