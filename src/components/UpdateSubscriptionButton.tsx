@@ -8,14 +8,16 @@ import {
   COMMIT_SUBSCRIPTION_DRAFT,
 } from '../handlers';
 
-function UpdateSubscriptionButton(props: {
+interface Props {
   contractId: string;
   input: any;
   lineId?: string;
   toggleActive: () => void;
   setMsg: (msg: string) => void;
   refetch: () => void;
-}) {
+}
+
+function UpdateSubscriptionButton(props: Props) {
   const { contractId, input, lineId, toggleActive, setMsg, refetch } = props;
   const [loading, setLoading] = useState<boolean>(false);
   // Update subscription contract -> draft id

@@ -4,8 +4,6 @@ import {
   Badge,
   Button,
   Card,
-  Frame,
-  Loading,
   Page,
   Pagination,
   TextStyle,
@@ -55,13 +53,7 @@ function Index() {
       titleMetadata={<Badge status="info">Something</Badge>}
       subtitle="Subscription Contracts"
     >
-      <TitleBar
-        title="Subscriptions"
-        // primaryAction={{
-        //   content: 'Get Selling Plans',
-        //   onAction: () => console.log('clicked'),
-        // }}
-      />
+      <TitleBar title="Subscriptions" />
       <Card sectioned>
         {data && (
           <Table

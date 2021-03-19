@@ -169,7 +169,7 @@ function SellingPlanGroup() {
               </TextStyle>
               {data.sellingPlanGroup.products.edges.map(product => {
                 return (
-                  <Product key={product.id}>
+                  <Product key={product.node.id}>
                     <Thumbnail
                       source={product.node.featuredImage.originalSrc}
                       alt={product.node.featuredImage.altTxt}
