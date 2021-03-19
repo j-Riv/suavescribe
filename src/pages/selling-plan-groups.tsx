@@ -34,7 +34,7 @@ function RemoveButton(props: { id: string; toggleActive: () => void }) {
   };
 
   return (
-    <Button plain onClick={() => handleClick(id)}>
+    <Button plain destructive onClick={() => handleClick(id)}>
       Remove
     </Button>
   );

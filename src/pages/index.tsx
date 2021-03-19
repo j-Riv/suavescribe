@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import {
   Badge,
@@ -10,6 +10,7 @@ import {
 } from '@shopify/polaris';
 import { TitleBar, useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
+import styled from 'styled-components';
 import {
   GET_SUBSCRIPTION_CONTRACTS,
   GET_PREV_SUBSCRIPTION_CONTRACTS,
@@ -18,7 +19,13 @@ import { formatDate, formatId } from '../utils/formatters';
 import Table from '../components/Table';
 import LoadingIndex from '../components/LoadingIndex';
 
+const SearchBar = styled.div`
+  display: inline-grid;
+  grid-template-columns: 9fr 1fr;
+`;
+
 function Index() {
+  // search state
   const app = useAppBridge();
   const redirect = Redirect.create(app);
   const { loading, error, data, fetchMore } = useQuery(
@@ -39,8 +46,6 @@ function Index() {
   const firstCursor = subscriptionContracts[0]?.cursor;
   const lastCursor =
     subscriptionContracts[subscriptionContracts.length - 1].cursor;
-  console.log('fCursor', firstCursor);
-  console.log('lCursor', lastCursor);
 
   const appRedirect = (href: string) => {
     console.log('redirecting');
@@ -54,7 +59,7 @@ function Index() {
       subtitle="Subscription Contracts"
     >
       <TitleBar title="Subscriptions" />
-      <Card sectioned>
+      <Card title="Subscriptions" sectioned>
         {data && (
           <Table
             contentTypes={['text', 'text', 'text', 'text', 'text', 'text']}
@@ -81,7 +86,7 @@ function Index() {
                     )
                   }
                 >
-                  View / Edit
+                  View
                 </Button>,
               ];
             })}

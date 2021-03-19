@@ -13,6 +13,7 @@ interface Props {
   sellingPlans: any[];
   toggleActive: () => void;
   setMsg: (msg: string) => void;
+  setToastError: (error: boolean) => void;
   refetch: () => void;
 }
 
@@ -47,7 +48,7 @@ interface SellingPlan {
 }
 
 function UpdateSellingPlanGroupButton(props: Props) {
-  const { setMsg, toggleActive, refetch } = props;
+  const { setMsg, toggleActive, setToastError, refetch } = props;
 
   const [loading, setLoading] = useState<boolean>(false);
   const [updateSellingPlanGroup] = useMutation(UPDATE_SELLING_PLAN_GROUP, {
@@ -71,6 +72,9 @@ function UpdateSellingPlanGroupButton(props: Props) {
       });
     } catch (e) {
       console.log('Update Selling Plan Group Error', e.message);
+      setToastError(true);
+      setMsg('Error Updating Selling Plan Group');
+      toggleActive();
     }
   };
 
