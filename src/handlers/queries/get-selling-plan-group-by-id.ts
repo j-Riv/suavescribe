@@ -9,6 +9,33 @@ export const GET_SELLING_PLAN_GROUP_BY_ID = gql`
       merchantCode
       productCount
       productVariantCount
+      options
+      sellingPlans(first: 3) {
+        edges {
+          node {
+            id
+            name
+            options
+            position
+            billingPolicy {
+              ... on SellingPlanRecurringBillingPolicy {
+                interval
+                intervalCount
+              }
+            }
+            pricingPolicies {
+              ... on SellingPlanFixedPricingPolicy {
+                adjustmentType
+                adjustmentValue {
+                  ... on SellingPlanPricingPolicyPercentageValue {
+                    percentage
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
       products(first: 10) {
         edges {
           node {

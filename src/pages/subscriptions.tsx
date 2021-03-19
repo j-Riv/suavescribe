@@ -21,7 +21,7 @@ import { useQuery } from '@apollo/client';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { GET_SUBSCRIPTION_BY_ID } from '../handlers';
 import { formatId } from '../utils/formatters';
-import LoadingEditSubscription from '../components/LoadingEditSubscription';
+import LoadingSubscription from '../components/LoadingSubscription';
 import CustomerInformation from '../components/CustomerInformation';
 import SubscriptionInformation from '../components/SubscriptionInformation';
 import UpdateSubscriptionButton from '../components/UpdateSubscriptionButton';
@@ -108,13 +108,7 @@ function EditSubscription() {
     redirect.dispatch(Redirect.Action.APP, '/');
   };
 
-  if (loading)
-    return (
-      <Frame>
-        <Loading />
-        <LoadingEditSubscription />
-      </Frame>
-    );
+  if (loading) return <LoadingSubscription />;
   if (error)
     return <TextStyle variation="negative">Error! ${error.message}</TextStyle>;
 
