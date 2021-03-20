@@ -27,7 +27,6 @@ dotenv.config();
 
 export const getAllSubscriptionGroups = async (ctx: Context) => {
   console.log('SHOPIFY GET ALL SUBSCRIPTION PLANS CONTROLLER');
-  console.log(ctx.state.ACTIVE_SHOPIFY_SHOP_ACCESS_TOKENS);
   const token = ctx.request.headers['x-suavescribe-token'];
   console.log('TOKEN', token);
   if (!token) return (ctx.status = 401);
@@ -42,7 +41,7 @@ export const getAllSubscriptionGroups = async (ctx: Context) => {
     // this will have to call db and get store + accessToken
     ctx.client = createClient(
       store,
-      ctx.state.ACTIVE_SHOPIFY_SHOP_ACCESS_TOKENS[store]
+      ctx.state.ACTIVE_SHOPIFY_SHOPS[store].accessToken
     );
     const plans = await getSellingPlans(ctx);
     console.log('THE SELLING PLANS', plans);
@@ -54,7 +53,6 @@ export const getAllSubscriptionGroups = async (ctx: Context) => {
 
 export const getSubscriptionGroup = async (ctx: Context) => {
   console.log('SHOPIFY GET SUBSCRIPTION GROUP CONTROLLER');
-  console.log(ctx.state.ACTIVE_SHOPIFY_SHOP_ACCESS_TOKENS);
   const token = ctx.request.headers['x-suavescribe-token'];
   console.log('TOKEN', token);
   if (!token) return (ctx.status = 401);
@@ -69,7 +67,7 @@ export const getSubscriptionGroup = async (ctx: Context) => {
     // this will have to call db and get store + accessToken
     ctx.client = createClient(
       store,
-      ctx.state.ACTIVE_SHOPIFY_SHOP_ACCESS_TOKENS[store]
+      ctx.state.ACTIVE_SHOPIFY_SHOPS[store].accessToken
     );
     const plan = await getSellingPlanById(ctx);
     console.log('THE SELLING PLAN', plan);
@@ -85,7 +83,6 @@ export const addProductToSubscriptionPlanGroup = async (ctx: Context) => {
   // productId, variantId, selectedPlans[]
   console.log(body);
   console.log('SHOPIFY ADD PRODUCT TO SELLING PLAN CONTROLLER');
-  console.log(ctx.state.ACTIVE_SHOPIFY_SHOP_ACCESS_TOKENS);
   const token = ctx.request.headers['x-suavescribe-token'];
   console.log('TOKEN', token);
   if (!token) return (ctx.status = 401);
@@ -100,7 +97,7 @@ export const addProductToSubscriptionPlanGroup = async (ctx: Context) => {
     // this will have to call db and get store + accessToken
     ctx.client = createClient(
       store,
-      ctx.state.ACTIVE_SHOPIFY_SHOP_ACCESS_TOKENS[store]
+      ctx.state.ACTIVE_SHOPIFY_SHOPS[store].accessToken
     );
     const product = await addProductToSellingPlanGroups(ctx);
     console.log('THE PRODUCT', product);
@@ -112,7 +109,6 @@ export const addProductToSubscriptionPlanGroup = async (ctx: Context) => {
 
 export const createSubscriptionPlanGroup = async (ctx: Context) => {
   console.log('SHOPIFY CREATE SUBSCRIPTION PLAN GROUP CONTROLLER');
-  console.log(ctx.state.ACTIVE_SHOPIFY_SHOP_ACCESS_TOKENS);
   const body = ctx.request.body;
   // productId, variantId, planTitle, percentageOff, deliveryFrequency
   console.log('BODY=======>', JSON.stringify(body));
@@ -130,7 +126,7 @@ export const createSubscriptionPlanGroup = async (ctx: Context) => {
     // this will have to call db and get store + accessToken
     ctx.client = createClient(
       store,
-      ctx.state.ACTIVE_SHOPIFY_SHOP_ACCESS_TOKENS[store]
+      ctx.state.ACTIVE_SHOPIFY_SHOPS[store].accessToken
     );
     const id = await createSellingPlanGroup(ctx);
     console.log('THE SELLING PLAN GROUP ID', id);
@@ -144,7 +140,6 @@ export const createSubscriptionPlanGroup = async (ctx: Context) => {
 
 export const editSubscriptionPlanGroup = async (ctx: Context) => {
   console.log('SHOPIFY EDIT SUBSCRIPTION PLAN GROUP CONTROLLER');
-  console.log(ctx.state.ACTIVE_SHOPIFY_SHOP_ACCESS_TOKENS);
   const body = ctx.request.body;
   // productId, variantId, planTitle, percentageOff, deliveryFrequency
   console.log('BODY=======>', JSON.stringify(body));
@@ -162,7 +157,7 @@ export const editSubscriptionPlanGroup = async (ctx: Context) => {
     // this will have to call db and get store + accessToken
     ctx.client = createClient(
       store,
-      ctx.state.ACTIVE_SHOPIFY_SHOP_ACCESS_TOKENS[store]
+      ctx.state.ACTIVE_SHOPIFY_SHOPS[store].accessToken
     );
     const id = await updateSellingPlanGroup(ctx);
     console.log('THE SELLING PLAN GROUP ID', id);
@@ -180,7 +175,6 @@ export const removeProductFromSubscriptionPlanGroup = async (ctx: Context) => {
   // productId, variantId, variantIds, sellingPlanGroupId
   console.log(body);
   console.log('SHOPIFY REMOVE PRODUCT FROM SELLING PLAN CONTROLLER');
-  console.log(ctx.state.ACTIVE_SHOPIFY_SHOP_ACCESS_TOKENS);
   const token = ctx.request.headers['x-suavescribe-token'];
   console.log('TOKEN', token);
   if (!token) return (ctx.status = 401);
@@ -195,7 +189,7 @@ export const removeProductFromSubscriptionPlanGroup = async (ctx: Context) => {
     // this will have to call db and get store + accessToken
     ctx.client = createClient(
       store,
-      ctx.state.ACTIVE_SHOPIFY_SHOP_ACCESS_TOKENS[store]
+      ctx.state.ACTIVE_SHOPIFY_SHOPS[store].accessToken
     );
     const products = await removeProductsFromSellingPlanGroup(ctx);
     console.log('THE PRODUCTS', products);
@@ -211,7 +205,6 @@ export const deleteSubscriptionPlanGroup = async (ctx: Context) => {
   // productId, variantId, variantIds, sellingPlanGroupId
   console.log(body);
   console.log('SHOPIFY DELETE SELLING PLAN CONTROLLER');
-  console.log(ctx.state.ACTIVE_SHOPIFY_SHOP_ACCESS_TOKENS);
   const token = ctx.request.headers['x-suavescribe-token'];
   console.log('TOKEN', token);
   if (!token) return (ctx.status = 401);
@@ -226,7 +219,7 @@ export const deleteSubscriptionPlanGroup = async (ctx: Context) => {
     // this will have to call db and get store + accessToken
     ctx.client = createClient(
       store,
-      ctx.state.ACTIVE_SHOPIFY_SHOP_ACCESS_TOKENS[store]
+      ctx.state.ACTIVE_SHOPIFY_SHOPS[store].accessToken
     );
     const id = await deleteSellingPlanGroup(ctx);
     console.log('DELETED PLAN ID', id);

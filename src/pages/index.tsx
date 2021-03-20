@@ -82,7 +82,9 @@ function Index() {
                   plain
                   onClick={() =>
                     appRedirect(
-                      `/subscriptions?customer_id=${contract.node.customer.id}&id=${contract.node.id}`
+                      `/subscriptions?customer_id=${formatId(
+                        contract.node.customer.id
+                      )}&id=${formatId(contract.node.id)}`
                     )
                   }
                 >
