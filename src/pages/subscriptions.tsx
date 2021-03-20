@@ -60,7 +60,7 @@ function EditSubscription() {
   // Get Data
   const { loading, error, data, refetch } = useQuery(GET_SUBSCRIPTION_BY_ID, {
     variables: {
-      id: router.query.id,
+      id: `gid://shopify/SubscriptionContract/${router.query.id}`,
     },
     onCompleted: data => setInitialData(data),
   });
