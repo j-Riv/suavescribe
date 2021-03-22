@@ -3,17 +3,18 @@ import dotenv from 'dotenv';
 import 'isomorphic-fetch';
 import createShopifyAuth, { verifyRequest } from '@shopify/koa-shopify-auth';
 import Shopify, { ApiVersion } from '@shopify/shopify-api';
-import Koa from 'koa';
+import Koa, { Context, Next } from 'koa';
 import next from 'next';
 import Router from 'koa-router';
 import cors from '@koa/cors';
 import bodyParser from 'koa-bodyparser';
-// import session from 'koa-session';
 import subscriptionRouter from './routes/subscriptions';
-import RedisStore from './redis-store';
+// import RedisStore from './redis-store';
+import PgStore from './pg-store';
 
 dotenv.config();
-const sessionStorage = new RedisStore();
+// const sessionStorage = new RedisStore();
+const sessionStorage = new PgStore();
 const port = parseInt(process.env.PORT as string, 10) || 8081;
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({
@@ -39,24 +40,23 @@ Shopify.Context.initialize({
 
 // Storing the currently active shops in memory will force them to re-login when your server restarts. You should
 // persist this object in your app.
-const ACTIVE_SHOPIFY_SHOPS = {};
-ACTIVE_SHOPIFY_SHOPS[process.env.SHOP] = {
-  scope: process.env.SCOPES,
-  accessToken: process.env.ACCESS_TOKEN,
-};
+// const ACTIVE_SHOPIFY_SHOPS = {};
 
 app.prepare().then(async () => {
-  const server = new Koa();
+  const ACTIVE_SHOPIFY_SHOPS = await sessionStorage.loadActiveShops();
+  console.log(
+    '++++++++++++++ ACTIVE_SHOPIFY_SHOPS ++++++++++++++',
+    ACTIVE_SHOPIFY_SHOPS
+  );
 
+  const server = new Koa();
   // Add cors & bodyparser
   server.use(cors());
-  // server.use(bodyParser());
   server.use(async (ctx, next) => {
     if (ctx.path === '/graphql') ctx.disableBodyParser = true;
     await next();
   });
   server.use(bodyParser({ enableTypes: ['json', 'text'] }));
-  // server.use(session({ secure: true, sameSite: 'none' }, server));
   server.use((ctx, next) => {
     ctx.state.ACTIVE_SHOPIFY_SHOPS = ACTIVE_SHOPIFY_SHOPS;
     return next();
@@ -69,7 +69,9 @@ app.prepare().then(async () => {
       async afterAuth(ctx) {
         // Access token and shop available in ctx.state.shopify
         const { shop, accessToken, scope } = ctx.state.shopify;
-        ACTIVE_SHOPIFY_SHOPS[shop] = { scope, accessToken };
+        ACTIVE_SHOPIFY_SHOPS[shop] = { shop, scope, accessToken };
+        // save active shop
+        sessionStorage.storeActiveShop({ shop, scope, accessToken });
 
         const response = await Shopify.Webhooks.Registry.register({
           shop,
@@ -94,19 +96,17 @@ app.prepare().then(async () => {
   );
 
   // GraphQL proxy
-  router.post('/graphql', verifyRequest(), async (ctx, next) => {
+  router.post('/graphql', verifyRequest(), async (ctx: Context, next: Next) => {
     await Shopify.Utils.graphqlProxy(ctx.req, ctx.res);
   });
 
-  const handleRequest = async ctx => {
+  const handleRequest = async (ctx: Context) => {
     await handle(ctx.req, ctx.res);
-    // console.log('SESSION STORAGE ======>');
-    // console.log(Shopify.Context.SESSION_STORAGE);
     ctx.respond = false;
     ctx.res.statusCode = 200;
   };
 
-  router.get('/', async ctx => {
+  router.get('/', async (ctx: Context) => {
     const shop = ctx.query.shop;
     console.log('SHOP ====>', shop);
     // This shop hasn't been seen yet, go through OAuth to create a session
@@ -119,7 +119,7 @@ app.prepare().then(async () => {
     }
   });
 
-  router.post('/webhooks', async ctx => {
+  router.post('/webhooks', async (ctx: Context) => {
     try {
       await Shopify.Webhooks.Registry.process(ctx.req, ctx.res);
       console.log(`Webhook processed, returned status code 200`);
