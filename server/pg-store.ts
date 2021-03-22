@@ -49,11 +49,31 @@ class PgStore {
   loadCurrentShop = async (name: string) => {
     console.log('LOADING ACTIVE SHOP', name);
     const query = `
-      SELECT * FROM active_shops WHERE id = '${name};  
+      SELECT * FROM active_shops WHERE id = '${name}';  
     `;
     try {
-      const reply = await this.client.query(query);
-      return reply.rows[0];
+      const res = await this.client.query(query);
+      return res.rows[0];
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
+  /*
+   This removes a store from Active Shops.
+  */
+  deleteActiveShop = async (name: string) => {
+    console.log('DELETING ACTIVE SHOP', name);
+    const query = `
+      DELETE FROM active_shops WHERE id = '${name}';
+    `;
+    try {
+      const res = await this.client.query(query);
+      if (res) {
+        return true;
+      } else {
+        return false;
+      }
     } catch (err) {
       throw new Error(err);
     }

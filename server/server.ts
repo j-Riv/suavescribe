@@ -80,6 +80,7 @@ app.prepare().then(async () => {
           topic: 'APP_UNINSTALLED',
           webhookHandler: async (topic, shop, body) => {
             delete ACTIVE_SHOPIFY_SHOPS[shop];
+            sessionStorage.deleteActiveShop(shop);
           },
         });
 
