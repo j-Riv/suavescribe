@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import {
-  Button,
   Card,
   Frame,
   Layout,
@@ -20,7 +19,7 @@ import {
   GET_SELLING_PLAN_GROUP_BY_ID,
   DELETE_SELLING_PLAN_GROUP,
 } from '../handlers';
-import { formatDate, formatId } from '../utils/formatters';
+import { formatId } from '../utils/formatters';
 import LoadingSellingPlan from '../components/LoadingSellingPlan';
 import UpdateSellingPlanGroupButton from '../components/UpdateSellingPlanGroupButton';
 
@@ -68,12 +67,14 @@ function SellingPlanGroup() {
 
   const [active, setActive] = useState<boolean>(false);
   const [toastMsg, setToastMsg] = useState<string>('');
+  const [isError, setIsError] = useState<boolean>(false);
 
   // Toast
   const toggleActive = useCallback(() => setActive(active => !active), []);
   const setMsg = useCallback(msg => setToastMsg(msg), []);
+  const setToastError = useCallback(error => setIsError(error), []);
   const toastMarkup = active ? (
-    <Toast content={toastMsg} onDismiss={toggleActive} />
+    <Toast content={toastMsg} onDismiss={toggleActive} error={isError} />
   ) : null;
 
   // Get Data
@@ -140,6 +141,7 @@ function SellingPlanGroup() {
           primaryAction={{
             content: 'Delete',
             onAction: () => handleDelete(data.sellingPlanGroup.id),
+            destructive: true,
           }}
         />
         <Layout>
@@ -231,6 +233,7 @@ function SellingPlanGroup() {
                     sellingPlans={data.sellingPlanGroup.sellingPlans.edges}
                     toggleActive={toggleActive}
                     setMsg={setMsg}
+                    setToastError={setToastError}
                     refetch={refetch}
                   />
                 </Layout.Section>

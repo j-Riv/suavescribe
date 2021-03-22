@@ -14,11 +14,20 @@ interface Props {
   lineId?: string;
   toggleActive: () => void;
   setMsg: (msg: string) => void;
+  setToastError: (error: boolean) => void;
   refetch: () => void;
 }
 
 function UpdateSubscriptionButton(props: Props) {
-  const { contractId, input, lineId, toggleActive, setMsg, refetch } = props;
+  const {
+    contractId,
+    input,
+    lineId,
+    toggleActive,
+    setMsg,
+    setToastError,
+    refetch,
+  } = props;
   const [loading, setLoading] = useState<boolean>(false);
   // Update subscription contract -> draft id
   const [updateSubscriptionContract] = useMutation(
@@ -70,6 +79,9 @@ function UpdateSubscriptionButton(props: Props) {
       });
     } catch (e) {
       console.log('Update Draft Error', e.message);
+      setToastError(true);
+      setMsg('Error Updating Subscription');
+      toggleActive();
     }
   };
 
