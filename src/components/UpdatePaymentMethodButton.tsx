@@ -7,11 +7,12 @@ interface Props {
   id: string;
   toggleActive: () => void;
   setMsg: (msg: string) => void;
+  setToastError: (error: boolean) => void;
   refetch: () => void;
 }
 
 function UpdatePaymentMethodButton(props: Props) {
-  const { id, toggleActive, setMsg, refetch } = props;
+  const { id, toggleActive, setMsg, setToastError, refetch } = props;
   const [loading, setLoading] = useState<boolean>(false);
   // send the payment update email, update toast message and make it active
   const [updatePaymentMethod] = useMutation(UPDATE_PAYMENT_METHOD, {
@@ -24,12 +25,19 @@ function UpdatePaymentMethodButton(props: Props) {
   });
 
   const handleClick = (id: string) => {
-    setLoading(true);
-    updatePaymentMethod({
-      variables: {
-        customerPaymentMethodId: id,
-      },
-    });
+    try {
+      setLoading(true);
+      updatePaymentMethod({
+        variables: {
+          customerPaymentMethodId: id,
+        },
+      });
+    } catch (e) {
+      console.log('Error Sending Payment Method', e.message);
+      setToastError(true);
+      setMsg('Error Sending Payment Method Email');
+      toggleActive();
+    }
   };
 
   return (

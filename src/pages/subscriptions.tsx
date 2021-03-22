@@ -3,8 +3,6 @@ import { useRouter } from 'next/router';
 import {
   Badge,
   Card,
-  Form,
-  FormLayout,
   Frame,
   Layout,
   Page,
@@ -42,8 +40,10 @@ function EditSubscription() {
 
   const [active, setActive] = useState<boolean>(false);
   const [toastMsg, setToastMsg] = useState<string>('');
+  const [isError, setIsError] = useState<boolean>(false);
   const toggleActive = useCallback(() => setActive(active => !active), []);
   const setMsg = useCallback(msg => setToastMsg(msg), []);
+  const setToastError = useCallback(error => setIsError(error), []);
   // Toast
   const toastMarkup = active ? (
     <Toast content={toastMsg} onDismiss={toggleActive} />
@@ -60,7 +60,7 @@ function EditSubscription() {
   // Get Data
   const { loading, error, data, refetch } = useQuery(GET_SUBSCRIPTION_BY_ID, {
     variables: {
-      id: router.query.id,
+      id: `gid://shopify/SubscriptionContract/${router.query.id}`,
     },
     onCompleted: data => setInitialData(data),
   });
@@ -144,28 +144,25 @@ function EditSubscription() {
             description="Change / Update Next Billing Date"
           >
             <Card sectioned>
-              <Form onSubmit={() => console.log('submited')}>
-                <FormLayout>
-                  <TextField
-                    value={nextBillingDate}
-                    onChange={nextBillingDate =>
-                      handleNextBillingDateChange(nextBillingDate)
-                    }
-                    label="Next Billing Date"
-                    type="date"
-                  />
-                  <Stack distribution="trailing">
-                    <UpdateSubscriptionButton
-                      contractId={contractId}
-                      input={{ nextBillingDate: new Date(nextBillingDate) }}
-                      lineId={null}
-                      toggleActive={toggleActive}
-                      setMsg={setMsg}
-                      refetch={refetch}
-                    />
-                  </Stack>
-                </FormLayout>
-              </Form>
+              <TextField
+                value={nextBillingDate}
+                onChange={nextBillingDate =>
+                  handleNextBillingDateChange(nextBillingDate)
+                }
+                label="Next Billing Date"
+                type="date"
+              />
+              <Stack distribution="trailing">
+                <UpdateSubscriptionButton
+                  contractId={contractId}
+                  input={{ nextBillingDate: new Date(nextBillingDate) }}
+                  lineId={null}
+                  toggleActive={toggleActive}
+                  setMsg={setMsg}
+                  setToastError={setToastError}
+                  refetch={refetch}
+                />
+              </Stack>
             </Card>
           </Layout.AnnotatedSection>
           <Layout.AnnotatedSection
@@ -173,39 +170,36 @@ function EditSubscription() {
             description="Select Product to Update Quantity"
           >
             <Card sectioned>
-              <Form onSubmit={() => console.log('submited')}>
-                <FormLayout>
-                  <Select
-                    label="Item"
-                    options={data.subscriptionContract.lines.edges.map(line => {
-                      return {
-                        label: `${line.node.title} - ${line.node.variantTitle}`,
-                        value: line.node.productId,
-                      };
-                    })}
-                    onChange={lineItem => handleLineItemChange(lineItem)}
-                    value={lineItem}
-                  />
-                  <TextField
-                    value={lineItemQuantity}
-                    onChange={lineItemQuantity =>
-                      handleLineItemQuantityChange(lineItemQuantity)
-                    }
-                    label="Quantity"
-                    type="number"
-                  />
-                  <Stack distribution="trailing">
-                    <UpdateSubscriptionButton
-                      contractId={contractId}
-                      input={{ quantity: Number(lineItemQuantity) }}
-                      lineId={lineId}
-                      toggleActive={toggleActive}
-                      setMsg={setMsg}
-                      refetch={refetch}
-                    />
-                  </Stack>
-                </FormLayout>
-              </Form>
+              <Select
+                label="Item"
+                options={data.subscriptionContract.lines.edges.map(line => {
+                  return {
+                    label: `${line.node.title} - ${line.node.variantTitle}`,
+                    value: line.node.productId,
+                  };
+                })}
+                onChange={lineItem => handleLineItemChange(lineItem)}
+                value={lineItem}
+              />
+              <TextField
+                value={lineItemQuantity}
+                onChange={lineItemQuantity =>
+                  handleLineItemQuantityChange(lineItemQuantity)
+                }
+                label="Quantity"
+                type="number"
+              />
+              <Stack distribution="trailing">
+                <UpdateSubscriptionButton
+                  contractId={contractId}
+                  input={{ quantity: Number(lineItemQuantity) }}
+                  lineId={lineId}
+                  toggleActive={toggleActive}
+                  setMsg={setMsg}
+                  setToastError={setToastError}
+                  refetch={refetch}
+                />
+              </Stack>
             </Card>
           </Layout.AnnotatedSection>
           <Layout.AnnotatedSection
@@ -213,23 +207,20 @@ function EditSubscription() {
             description="Send Update Payment Method Email"
           >
             <Card sectioned>
-              <Form onSubmit={() => console.log('clicked')}>
-                <FormLayout>
-                  <TextField
-                    label="Payment Method ID"
-                    disabled
-                    value={paymentMethod}
-                  />
-                  <Stack distribution="trailing">
-                    <UpdatePaymentMethodButton
-                      id={paymentMethod}
-                      toggleActive={toggleActive}
-                      setMsg={setMsg}
-                      refetch={refetch}
-                    />
-                  </Stack>
-                </FormLayout>
-              </Form>
+              <TextField
+                label="Payment Method ID"
+                disabled
+                value={paymentMethod}
+              />
+              <Stack distribution="trailing">
+                <UpdatePaymentMethodButton
+                  id={paymentMethod}
+                  toggleActive={toggleActive}
+                  setMsg={setMsg}
+                  setToastError={setToastError}
+                  refetch={refetch}
+                />
+              </Stack>
             </Card>
           </Layout.AnnotatedSection>
         </Layout>
