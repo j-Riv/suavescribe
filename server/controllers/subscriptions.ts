@@ -15,14 +15,14 @@ import {
 import PgStore from '../pg-store';
 dotenv.config();
 
-const sessionStorage = new PgStore();
+const pgStorage = new PgStore();
 
 export const getAllSubscriptionGroups = async (ctx: Context) => {
   console.log('SHOPIFY GET ALL SUBSCRIPTION PLANS CONTROLLER');
   try {
     const store = ctx.state.shop;
     // this will have to call db and get accessToken
-    const res = await sessionStorage.loadCurrentShop(store);
+    const res = await pgStorage.loadCurrentShop(store);
     if (res) {
       ctx.client = createClient(store, res.accessToken);
       const plans = await getSellingPlans(ctx);
@@ -32,6 +32,7 @@ export const getAllSubscriptionGroups = async (ctx: Context) => {
       return (ctx.status = 401);
     }
   } catch (err) {
+    console.log('Error', err);
     return (ctx.status = 500);
   }
 };
@@ -41,7 +42,7 @@ export const getSubscriptionGroup = async (ctx: Context) => {
   try {
     const store = ctx.state.shop;
     // this will have to call db and get accessToken
-    const res = await sessionStorage.loadCurrentShop(store);
+    const res = await pgStorage.loadCurrentShop(store);
     if (res) {
       ctx.client = createClient(store, res.accessToken);
       const plan = await getSellingPlanById(ctx);
@@ -51,6 +52,7 @@ export const getSubscriptionGroup = async (ctx: Context) => {
       return (ctx.status = 401);
     }
   } catch (err) {
+    console.log('Error', err);
     return (ctx.status = 500);
   }
 };
@@ -59,7 +61,7 @@ export const addProductToSubscriptionPlanGroup = async (ctx: Context) => {
   try {
     const store = ctx.state.shop;
     // this will have to call db and get accessToken
-    const res = await sessionStorage.loadCurrentShop(store);
+    const res = await pgStorage.loadCurrentShop(store);
     if (res) {
       ctx.client = createClient(store, res.accessToken);
       const product = await addProductToSellingPlanGroups(ctx);
@@ -68,6 +70,7 @@ export const addProductToSubscriptionPlanGroup = async (ctx: Context) => {
       return (ctx.status = 401);
     }
   } catch (err) {
+    console.log('Error', err);
     return (ctx.status = 500);
   }
 };
@@ -77,7 +80,7 @@ export const createSubscriptionPlanGroup = async (ctx: Context) => {
   try {
     const store = ctx.state.shop;
     // this will have to call db and get accessToken
-    const res = await sessionStorage.loadCurrentShop(store);
+    const res = await pgStorage.loadCurrentShop(store);
     if (res) {
       ctx.client = createClient(store, res.accessToken);
       const id = await createSellingPlanGroup(ctx);
@@ -86,8 +89,7 @@ export const createSubscriptionPlanGroup = async (ctx: Context) => {
       return (ctx.status = 401);
     }
   } catch (err) {
-    console.log('ERROR');
-    console.log(err);
+    console.log('Error', err);
     return (ctx.status = 500);
   }
 };
@@ -97,7 +99,7 @@ export const editSubscriptionPlanGroup = async (ctx: Context) => {
   try {
     const store = ctx.state.shop;
     // this will have to call db and get accessToken
-    const res = await sessionStorage.loadCurrentShop(store);
+    const res = await pgStorage.loadCurrentShop(store);
     if (res) {
       ctx.client = createClient(store, res.accessToken);
       const id = await updateSellingPlanGroup(ctx);
@@ -106,8 +108,7 @@ export const editSubscriptionPlanGroup = async (ctx: Context) => {
       return (ctx.status = 401);
     }
   } catch (err) {
-    console.log('ERROR');
-    console.log(err);
+    console.log('Error', err);
     return (ctx.status = 500);
   }
 };
@@ -117,7 +118,7 @@ export const removeProductFromSubscriptionPlanGroup = async (ctx: Context) => {
   try {
     const store = ctx.state.shop;
     // this will have to call db and get accessToken
-    const res = await sessionStorage.loadCurrentShop(store);
+    const res = await pgStorage.loadCurrentShop(store);
     if (res) {
       ctx.client = createClient(store, res.accessToken);
       const products = await removeProductsFromSellingPlanGroup(ctx);
@@ -126,6 +127,7 @@ export const removeProductFromSubscriptionPlanGroup = async (ctx: Context) => {
       return (ctx.status = 401);
     }
   } catch (err) {
+    console.log('Error', err);
     return (ctx.status = 500);
   }
 };
@@ -135,7 +137,7 @@ export const deleteSubscriptionPlanGroup = async (ctx: Context) => {
   try {
     const store = ctx.state.shop;
     // this will have to call db and get accessToken
-    const res = await sessionStorage.loadCurrentShop(store);
+    const res = await pgStorage.loadCurrentShop(store);
     if (res) {
       ctx.client = createClient(store, res.accessToken);
       const id = await deleteSellingPlanGroup(ctx);
@@ -144,6 +146,7 @@ export const deleteSubscriptionPlanGroup = async (ctx: Context) => {
       return (ctx.status = 401);
     }
   } catch (err) {
+    console.log('Error', err);
     return (ctx.status = 500);
   }
 };

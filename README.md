@@ -21,7 +21,9 @@ PG_PORT = 'DATABASE_PORT';
 
 ## Database Setup
 
-Install PostgreSQL.
+Install [Redis](https://redis.io/topics/quickstart): Session Management.
+
+Install [PostgreSQL](https://www.postgresql.org/download/): Data Storage.
 
 Create a new user with limited permissions.
 
