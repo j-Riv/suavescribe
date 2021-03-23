@@ -12,40 +12,25 @@ import {
   getSellingPlans,
   getSellingPlanById,
 } from '../handlers';
+import PgStore from '../pg-store';
 dotenv.config();
 
-// Extension routes
-// const verifyJwt = (ctx, token) => {
-//   try {
-//     const decoded = jwt.verify(token, process.env.SHOPIFY_API_SECRET!);
-//     return decoded;
-//   } catch (err) {
-//     console.log(err);
-//     return (ctx.status = 500);
-//   }
-// };
+const sessionStorage = new PgStore();
 
 export const getAllSubscriptionGroups = async (ctx: Context) => {
   console.log('SHOPIFY GET ALL SUBSCRIPTION PLANS CONTROLLER');
-  const token = ctx.request.headers['x-suavescribe-token'];
-  console.log('TOKEN', token);
-  if (!token) return (ctx.status = 401);
-
   try {
-    const decoded: any = jwt.verify(
-      token as string,
-      process.env.SHOPIFY_API_SECRET!
-    );
-    const store = decoded.dest.replace(/https:\/\//, '');
-    console.log('STORE', store);
-    // this will have to call db and get store + accessToken
-    ctx.client = createClient(
-      store,
-      ctx.state.ACTIVE_SHOPIFY_SHOPS[store].accessToken
-    );
-    const plans = await getSellingPlans(ctx);
-    console.log('THE SELLING PLANS', plans);
-    ctx.body = plans;
+    const store = ctx.state.shop;
+    // this will have to call db and get accessToken
+    const res = await sessionStorage.loadCurrentShop(store);
+    if (res) {
+      ctx.client = createClient(store, res.accessToken);
+      const plans = await getSellingPlans(ctx);
+      console.log('THE SELLING PLANS', plans);
+      ctx.body = plans;
+    } else {
+      return (ctx.status = 401);
+    }
   } catch (err) {
     return (ctx.status = 500);
   }
@@ -53,55 +38,35 @@ export const getAllSubscriptionGroups = async (ctx: Context) => {
 
 export const getSubscriptionGroup = async (ctx: Context) => {
   console.log('SHOPIFY GET SUBSCRIPTION GROUP CONTROLLER');
-  const token = ctx.request.headers['x-suavescribe-token'];
-  console.log('TOKEN', token);
-  if (!token) return (ctx.status = 401);
-
   try {
-    const decoded: any = jwt.verify(
-      token as string,
-      process.env.SHOPIFY_API_SECRET!
-    );
-    const store = decoded.dest.replace(/https:\/\//, '');
-    console.log('STORE', store);
-    // this will have to call db and get store + accessToken
-    ctx.client = createClient(
-      store,
-      ctx.state.ACTIVE_SHOPIFY_SHOPS[store].accessToken
-    );
-    const plan = await getSellingPlanById(ctx);
-    console.log('THE SELLING PLAN', plan);
-    ctx.body = plan;
+    const store = ctx.state.shop;
+    // this will have to call db and get accessToken
+    const res = await sessionStorage.loadCurrentShop(store);
+    if (res) {
+      ctx.client = createClient(store, res.accessToken);
+      const plan = await getSellingPlanById(ctx);
+      console.log('THE SELLING PLAN', plan);
+      ctx.body = plan;
+    } else {
+      return (ctx.status = 401);
+    }
   } catch (err) {
     return (ctx.status = 500);
   }
 };
 
 export const addProductToSubscriptionPlanGroup = async (ctx: Context) => {
-  const body = ctx.request.body;
-  console.log('ADD --- BODY');
-  // productId, variantId, selectedPlans[]
-  console.log(body);
-  console.log('SHOPIFY ADD PRODUCT TO SELLING PLAN CONTROLLER');
-  const token = ctx.request.headers['x-suavescribe-token'];
-  console.log('TOKEN', token);
-  if (!token) return (ctx.status = 401);
-
   try {
-    const decoded: any = jwt.verify(
-      token as string,
-      process.env.SHOPIFY_API_SECRET!
-    );
-    const store = decoded.dest.replace(/https:\/\//, '');
-    console.log('STORE', store);
-    // this will have to call db and get store + accessToken
-    ctx.client = createClient(
-      store,
-      ctx.state.ACTIVE_SHOPIFY_SHOPS[store].accessToken
-    );
-    const product = await addProductToSellingPlanGroups(ctx);
-    console.log('THE PRODUCT', product);
-    ctx.body = product;
+    const store = ctx.state.shop;
+    // this will have to call db and get accessToken
+    const res = await sessionStorage.loadCurrentShop(store);
+    if (res) {
+      ctx.client = createClient(store, res.accessToken);
+      const product = await addProductToSellingPlanGroups(ctx);
+      ctx.body = product;
+    } else {
+      return (ctx.status = 401);
+    }
   } catch (err) {
     return (ctx.status = 500);
   }
@@ -109,28 +74,17 @@ export const addProductToSubscriptionPlanGroup = async (ctx: Context) => {
 
 export const createSubscriptionPlanGroup = async (ctx: Context) => {
   console.log('SHOPIFY CREATE SUBSCRIPTION PLAN GROUP CONTROLLER');
-  const body = ctx.request.body;
-  // productId, variantId, planTitle, percentageOff, deliveryFrequency
-  console.log('BODY=======>', JSON.stringify(body));
-  const token = ctx.request.headers['x-suavescribe-token'];
-  console.log('TOKEN', token);
-  if (!token) return (ctx.status = 401);
-
   try {
-    const decoded: any = jwt.verify(
-      token as string,
-      process.env.SHOPIFY_API_SECRET!
-    );
-    const store = decoded.dest.replace(/https:\/\//, '');
-    console.log('STORE', store);
-    // this will have to call db and get store + accessToken
-    ctx.client = createClient(
-      store,
-      ctx.state.ACTIVE_SHOPIFY_SHOPS[store].accessToken
-    );
-    const id = await createSellingPlanGroup(ctx);
-    console.log('THE SELLING PLAN GROUP ID', id);
-    ctx.body = id;
+    const store = ctx.state.shop;
+    // this will have to call db and get accessToken
+    const res = await sessionStorage.loadCurrentShop(store);
+    if (res) {
+      ctx.client = createClient(store, res.accessToken);
+      const id = await createSellingPlanGroup(ctx);
+      ctx.body = id;
+    } else {
+      return (ctx.status = 401);
+    }
   } catch (err) {
     console.log('ERROR');
     console.log(err);
@@ -140,28 +94,17 @@ export const createSubscriptionPlanGroup = async (ctx: Context) => {
 
 export const editSubscriptionPlanGroup = async (ctx: Context) => {
   console.log('SHOPIFY EDIT SUBSCRIPTION PLAN GROUP CONTROLLER');
-  const body = ctx.request.body;
-  // productId, variantId, planTitle, percentageOff, deliveryFrequency
-  console.log('BODY=======>', JSON.stringify(body));
-  const token = ctx.request.headers['x-suavescribe-token'];
-  console.log('TOKEN', token);
-  if (!token) return (ctx.status = 401);
-
   try {
-    const decoded: any = jwt.verify(
-      token as string,
-      process.env.SHOPIFY_API_SECRET!
-    );
-    const store = decoded.dest.replace(/https:\/\//, '');
-    console.log('STORE', store);
-    // this will have to call db and get store + accessToken
-    ctx.client = createClient(
-      store,
-      ctx.state.ACTIVE_SHOPIFY_SHOPS[store].accessToken
-    );
-    const id = await updateSellingPlanGroup(ctx);
-    console.log('THE SELLING PLAN GROUP ID', id);
-    ctx.body = id;
+    const store = ctx.state.shop;
+    // this will have to call db and get accessToken
+    const res = await sessionStorage.loadCurrentShop(store);
+    if (res) {
+      ctx.client = createClient(store, res.accessToken);
+      const id = await updateSellingPlanGroup(ctx);
+      ctx.body = id;
+    } else {
+      return (ctx.status = 401);
+    }
   } catch (err) {
     console.log('ERROR');
     console.log(err);
@@ -170,60 +113,36 @@ export const editSubscriptionPlanGroup = async (ctx: Context) => {
 };
 
 export const removeProductFromSubscriptionPlanGroup = async (ctx: Context) => {
-  const body = ctx.request.body;
-  console.log('REMOVE --- BODY');
-  // productId, variantId, variantIds, sellingPlanGroupId
-  console.log(body);
   console.log('SHOPIFY REMOVE PRODUCT FROM SELLING PLAN CONTROLLER');
-  const token = ctx.request.headers['x-suavescribe-token'];
-  console.log('TOKEN', token);
-  if (!token) return (ctx.status = 401);
-
   try {
-    const decoded: any = jwt.verify(
-      token as string,
-      process.env.SHOPIFY_API_SECRET!
-    );
-    const store = decoded.dest.replace(/https:\/\//, '');
-    console.log('STORE', store);
-    // this will have to call db and get store + accessToken
-    ctx.client = createClient(
-      store,
-      ctx.state.ACTIVE_SHOPIFY_SHOPS[store].accessToken
-    );
-    const products = await removeProductsFromSellingPlanGroup(ctx);
-    console.log('THE PRODUCTS', products);
-    ctx.body = products;
+    const store = ctx.state.shop;
+    // this will have to call db and get accessToken
+    const res = await sessionStorage.loadCurrentShop(store);
+    if (res) {
+      ctx.client = createClient(store, res.accessToken);
+      const products = await removeProductsFromSellingPlanGroup(ctx);
+      ctx.body = products;
+    } else {
+      return (ctx.status = 401);
+    }
   } catch (err) {
     return (ctx.status = 500);
   }
 };
 
 export const deleteSubscriptionPlanGroup = async (ctx: Context) => {
-  const body = ctx.request.body;
-  console.log('DELETE SUBSCRIPTION PLAN --- BODY');
-  // productId, variantId, variantIds, sellingPlanGroupId
-  console.log(body);
   console.log('SHOPIFY DELETE SELLING PLAN CONTROLLER');
-  const token = ctx.request.headers['x-suavescribe-token'];
-  console.log('TOKEN', token);
-  if (!token) return (ctx.status = 401);
-
   try {
-    const decoded: any = jwt.verify(
-      token as string,
-      process.env.SHOPIFY_API_SECRET!
-    );
-    const store = decoded.dest.replace(/https:\/\//, '');
-    console.log('STORE', store);
-    // this will have to call db and get store + accessToken
-    ctx.client = createClient(
-      store,
-      ctx.state.ACTIVE_SHOPIFY_SHOPS[store].accessToken
-    );
-    const id = await deleteSellingPlanGroup(ctx);
-    console.log('DELETED PLAN ID', id);
-    ctx.body = id;
+    const store = ctx.state.shop;
+    // this will have to call db and get accessToken
+    const res = await sessionStorage.loadCurrentShop(store);
+    if (res) {
+      ctx.client = createClient(store, res.accessToken);
+      const id = await deleteSellingPlanGroup(ctx);
+      ctx.body = id;
+    } else {
+      return (ctx.status = 401);
+    }
   } catch (err) {
     return (ctx.status = 500);
   }

@@ -57,10 +57,6 @@ app.prepare().then(async () => {
     await next();
   });
   server.use(bodyParser({ enableTypes: ['json', 'text'] }));
-  server.use((ctx, next) => {
-    ctx.state.ACTIVE_SHOPIFY_SHOPS = ACTIVE_SHOPIFY_SHOPS;
-    return next();
-  });
 
   const router = new Router();
   server.keys = [Shopify.Context.API_SECRET_KEY];
