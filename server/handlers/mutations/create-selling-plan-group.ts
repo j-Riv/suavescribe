@@ -43,7 +43,6 @@ const createInput = (body: Body) => {
     numberOfPlans,
     planGroupOption,
   } = body;
-  console.log('planTitle', planTitle);
   // Set interval for naming
   const intervalTitle = cleanInterval(intervalOption);
   // Set number of plans
@@ -76,8 +75,6 @@ const createInput = (body: Body) => {
         },
       ],
     };
-    console.log(`Selling Plan ${i}`);
-    console.log(sellingPlan);
     sellingPlans.push(sellingPlan);
   }
   const variables = {
@@ -91,16 +88,12 @@ const createInput = (body: Body) => {
       sellingPlansToCreate: sellingPlans,
     },
   };
-  console.log('VARIABLES', variables);
   return variables;
 };
 
 export const createSellingPlanGroup = async (ctx: Context) => {
-  console.log('CREATING SELLING PLAN');
   const { client } = ctx;
   const body = JSON.parse(ctx.request.body);
-  console.log('CTX.REQUEST.BODY');
-  console.log(body);
   // create input
   const variables = createInput(body);
   const sellingPlanGroupId = await client
@@ -108,13 +101,19 @@ export const createSellingPlanGroup = async (ctx: Context) => {
       mutation: SELLING_PLAN_CREATE(),
       variables: variables,
     })
-    .then(response => {
-      console.log('RESPONSE ID ===>');
-      console.log(response.data.sellingPlanGroupCreate.userErrors);
-      return response;
-      // console.log(response.data.sellingPlanGroupCreate.sellingPlanGroup.id);
-      // return response.data.sellingPlanGroupCreate.sellingPlanGroup.id;
-    });
+    .then(
+      (response: {
+        data: {
+          sellingPlanGroupCreate: {
+            sellingPlanGroup: {
+              id: string;
+            };
+          };
+        };
+      }) => {
+        return response.data.sellingPlanGroupCreate.sellingPlanGroup.id;
+      }
+    );
 
   return sellingPlanGroupId;
 };

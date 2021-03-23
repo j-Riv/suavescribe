@@ -133,9 +133,20 @@ export const updateSellingPlanGroup = async (ctx: Context) => {
       mutation: SELLING_PLAN_GROUP_UPDATE(),
       variables: variables,
     })
-    .then(response => {
-      return response.data.sellingPlanGroupUpdate.sellingPlanGroup.id;
-    });
+    .then(
+      (response: {
+        data: {
+          sellingPlanGroupUpdate: {
+            deletedSellingPlanIds: string;
+            sellingPlanGroup: {
+              id: string;
+            };
+          };
+        };
+      }) => {
+        return response.data.sellingPlanGroupUpdate.sellingPlanGroup.id;
+      }
+    );
 
   return updatedSellingPlanGroupId;
 };

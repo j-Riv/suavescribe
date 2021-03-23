@@ -31,8 +31,16 @@ export const getOneTimeUrl = async (ctx: Context) => {
       mutation: ONETIME_CREATE(process.env.HOST!),
     })
     .then(
-      (response: { data: any }) =>
-        response.data.appPurchaseOneTimeCreate.confirmationUrl
+      (response: {
+        data: {
+          appPurchaseOneTimeCreate: {
+            confirmationUrl: string;
+            appPurchaseOneTime: {
+              id: string;
+            };
+          };
+        };
+      }) => response.data.appPurchaseOneTimeCreate.confirmationUrl
     );
   return ctx.redirect(confirmationUrl);
 };

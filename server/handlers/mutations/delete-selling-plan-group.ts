@@ -29,9 +29,17 @@ export const deleteSellingPlanGroup = async (ctx: Context) => {
       mutation: SELLING_PLAN_GROUP_DELETE(),
       variables: variables,
     })
-    .then((response: { data: any }) => {
-      return response.data.sellingPlanGroupUpdate.deletedSellingPlanGroupId;
-    });
+    .then(
+      (response: {
+        data: {
+          sellingPlanGroupDelete: {
+            deletedSellingPlanGroupId: string;
+          };
+        };
+      }) => {
+        return response.data.sellingPlanGroupDelete.deletedSellingPlanGroupId;
+      }
+    );
 
   return deletedSellingPlanGroupId;
 };

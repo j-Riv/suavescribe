@@ -38,9 +38,19 @@ export const addProductToSellingPlanGroups = async (ctx: Context) => {
       mutation: SELLING_PLAN_ADD_PRODUCT(),
       variables: variables,
     })
-    .then((response: { data: any }) => {
-      return response.data;
-    });
+    .then(
+      (response: {
+        data: {
+          productJoinSellingPlanGroups: {
+            product: {
+              id: string;
+            };
+          };
+        };
+      }) => {
+        return response.data;
+      }
+    );
 
   return product;
 };
