@@ -21,6 +21,7 @@ import {
 } from '../handlers';
 import { formatId } from '../utils/formatters';
 import LoadingSellingPlan from '../components/LoadingSellingPlan';
+import ErrorState from '../components/ErrorState';
 import UpdateSellingPlanGroupButton from '../components/UpdateSellingPlanGroupButton';
 
 const Information = styled.div`
@@ -124,8 +125,7 @@ function SellingPlanGroup() {
   };
 
   if (loading) return <LoadingSellingPlan />;
-  if (error)
-    return <TextStyle variation="negative">Error! ${error.message}</TextStyle>;
+  if (error) return <ErrorState err={error.message} />;
 
   return (
     <Page
@@ -134,6 +134,10 @@ function SellingPlanGroup() {
       ]}
       title="Selling Plan Group"
       subtitle={`ID: (${formatId(data.sellingPlanGroup.id)}) `}
+      primaryAction={{
+        content: 'Cancel',
+        onAction: () => appRedirect(),
+      }}
     >
       <Frame>
         <TitleBar

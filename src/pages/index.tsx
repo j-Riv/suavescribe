@@ -1,16 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@apollo/client';
-import {
-  Badge,
-  Button,
-  Card,
-  Page,
-  Pagination,
-  TextStyle,
-} from '@shopify/polaris';
+import { Badge, Button, Card, Page, Pagination } from '@shopify/polaris';
 import { TitleBar, useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
-import styled from 'styled-components';
 import {
   GET_SUBSCRIPTION_CONTRACTS,
   GET_PREV_SUBSCRIPTION_CONTRACTS,
@@ -18,11 +10,7 @@ import {
 import { formatDate, formatId } from '../utils/formatters';
 import Table from '../components/Table';
 import LoadingIndex from '../components/LoadingIndex';
-
-const SearchBar = styled.div`
-  display: inline-grid;
-  grid-template-columns: 9fr 1fr;
-`;
+import ErrorState from '../components/ErrorState';
 
 function Index() {
   // search state
@@ -38,8 +26,7 @@ function Index() {
   );
 
   if (loading) return <LoadingIndex tableRows={5} />;
-  if (error)
-    return <TextStyle variation="negative">Error! ${error.message}</TextStyle>;
+  if (error) return <ErrorState err={error.message} />;
 
   const subscriptionContracts = data?.subscriptionContracts?.edges;
   const pageInfo = data?.subscriptionContracts?.pageInfo;

@@ -116,6 +116,7 @@ const buildResponse = (data: SellingPlanGroup) => {
     percentageOff:
       data.sellingPlans.edges[0].node.pricingPolicies[0].adjustmentValue
         .percentage,
+    interval: data.sellingPlans.edges[0].node.billingPolicy.interval,
     sellingPlans: plans,
   };
   return response;
@@ -133,8 +134,6 @@ export const getSellingPlanById = async (ctx: Context) => {
       },
     })
     .then((response: { data: any }) => {
-      console.log('============= RESPONSE ====================');
-      console.log(response);
       const filtered = buildResponse(response.data.sellingPlanGroup);
       return filtered;
     });

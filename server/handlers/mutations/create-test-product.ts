@@ -29,9 +29,21 @@ export const createTestProduct = async (ctx: Context) => {
         input: { title: 'test product', productType: 'test type' },
       },
     })
-    .then((response: { data: any }) => {
-      return response.data;
-    });
+    .then(
+      (response: {
+        data: {
+          productCreate: {
+            product: {
+              id: string;
+              title: string;
+              productType: string;
+            };
+          };
+        };
+      }) => {
+        return response.data;
+      }
+    );
 
   return testProduct;
 };
