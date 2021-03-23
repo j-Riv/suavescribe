@@ -1,7 +1,6 @@
 import { Session } from '@shopify/shopify-api/dist/auth/session';
 import { Client } from 'pg';
 import dotenv from 'dotenv';
-import { toUpper } from 'lodash';
 dotenv.config();
 
 class PgStore {
@@ -53,7 +52,15 @@ class PgStore {
     `;
     try {
       const res = await this.client.query(query);
-      return res.rows[0];
+      if (res.rowCount) {
+        return {
+          shop: res.rows[0].id,
+          scope: res.rows[0].scope,
+          accessToken: res.rows[0].access_token,
+        };
+      } else {
+        return undefined;
+      }
     } catch (err) {
       throw new Error(err);
     }
@@ -87,8 +94,8 @@ class PgStore {
     scope: string;
     accessToken: string;
   }) => {
-    console.log('STORING ACTIVE SHOP', JSON.stringify(data));
     const { shop, scope, accessToken } = data;
+    console.log('STORING ACTIVE SHOP', shop);
     const query = `
       INSERT INTO active_shops (id, scope, access_token) VALUES ('${shop}', '${scope}', '${accessToken}') RETURNING *;
     `;
@@ -127,7 +134,7 @@ class PgStore {
     Otherwise, return false
   */
   storeCallback = async (session: Session) => {
-    console.log('STORING SESSION', JSON.stringify(session));
+    console.log('STORING SESSION', session.id);
     const query = `
       INSERT INTO sessions (id, session) VALUES ('${
         session.id
@@ -148,7 +155,6 @@ class PgStore {
       if (exists.rowCount > 0) {
         console.log('UPDATING ===>', session.id);
         const res = await this.client.query(updateQuery);
-        console.log('UPDATED', JSON.stringify(res), 4);
         if (res.rows[0]) {
           return res.rows[0];
         } else {
@@ -157,7 +163,6 @@ class PgStore {
       } else {
         console.log('CREATING ===>', session.id);
         const res = await this.client.query(query);
-        console.log('CREATED', JSON.stringify(res), 4);
         if (res.rows[0]) {
           return res.rows[0];
         } else {
@@ -176,16 +181,15 @@ class PgStore {
      Otherwise, return undefined
   */
   loadCallback = async (id: string) => {
-    console.log('LOADING SESSION', JSON.stringify(id));
+    console.log('LOADING SESSION', id);
     const query = `
       SELECT * FROM sessions WHERE id = '${id}';
     `;
     try {
       const res = await this.client.query(query);
-      console.log('REPLY ======>', JSON.stringify(res.rows[0].session));
       if (res.rows[0].session) {
+        console.log('SESSION FOUND');
         const json = res.rows[0].session;
-        console.log(JSON.stringify(json), 4);
         const newSession = new Session(json.id);
         const keys = Object.keys(json);
         keys.forEach(key => {
@@ -194,6 +198,7 @@ class PgStore {
         newSession.expires = json.expires ? new Date(json.expires) : new Date();
         return newSession;
       } else {
+        console.log('NO SESSION FOUND');
         return undefined;
       }
     } catch (err) {

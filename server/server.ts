@@ -57,15 +57,12 @@ app.prepare().then(async () => {
     await next();
   });
   server.use(bodyParser({ enableTypes: ['json', 'text'] }));
-  server.use((ctx, next) => {
-    ctx.state.ACTIVE_SHOPIFY_SHOPS = ACTIVE_SHOPIFY_SHOPS;
-    return next();
-  });
 
   const router = new Router();
   server.keys = [Shopify.Context.API_SECRET_KEY];
   server.use(
     createShopifyAuth({
+      accessMode: 'offline',
       async afterAuth(ctx) {
         // Access token and shop available in ctx.state.shopify
         const { shop, accessToken, scope } = ctx.state.shopify;
