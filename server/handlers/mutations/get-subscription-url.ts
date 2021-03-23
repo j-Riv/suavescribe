@@ -46,8 +46,16 @@ export const getSubscriptionUrl = async (ctx: Context) => {
       mutation: RECURRING_CREATE(process.env.HOST!),
     })
     .then(
-      (response: { data: any }) =>
-        response.data.appSubscriptionCreate.confirmationUrl
+      (response: {
+        data: {
+          appSubscriptionCreate: {
+            confirmationUrl: string;
+            appSubscription: {
+              id: string;
+            };
+          };
+        };
+      }) => response.data.appSubscriptionCreate.confirmationUrl
     );
 
   return ctx.redirect(confirmationUrl);

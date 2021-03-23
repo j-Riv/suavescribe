@@ -35,9 +35,38 @@ export const getSellingPlans = async (ctx: Context) => {
     .query({
       query: SELLING_PLAN_GET(),
     })
-    .then((response: { data: any }) => {
-      return response.data.sellingPlanGroups.edges;
-    });
+    .then(
+      (response: {
+        data: {
+          sellingPlanGroups: {
+            edges: [
+              {
+                node: {
+                  id: string;
+                  appId: string;
+                  description: string;
+                  options: string;
+                  name: string;
+                  sellingPlans: {
+                    edges: [
+                      {
+                        node: {
+                          id: string;
+                          name: string;
+                          options: string;
+                        };
+                      }
+                    ];
+                  };
+                };
+              }
+            ];
+          };
+        };
+      }) => {
+        return response.data.sellingPlanGroups.edges;
+      }
+    );
 
   return sellingPlanGroups;
 };
