@@ -52,7 +52,15 @@ class PgStore {
     `;
     try {
       const res = await this.client.query(query);
-      return res.rows[0];
+      if (res.rowCount) {
+        return {
+          shop: res.rows[0].id,
+          scope: res.rows[0].scope,
+          accessToken: res.rows[0].access_token,
+        };
+      } else {
+        return undefined;
+      }
     } catch (err) {
       throw new Error(err);
     }
