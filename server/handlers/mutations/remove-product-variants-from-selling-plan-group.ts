@@ -37,10 +37,18 @@ export const removeProductVariantsFromSellingPlanGroup = async (
       mutation: SELLING_PLAN_REMOVE_PRODUCT_VARIANTS(),
       variables: variables,
     })
-    .then((response: { data: any }) => {
-      return response.data.sellingPlanGroupRemoveProductVariants
-        .removedProductVariantIds;
-    });
+    .then(
+      (response: {
+        data: {
+          sellingPlanGroupRemoveProductVariants: {
+            removedProductVariantIds: string[];
+          };
+        };
+      }) => {
+        return response.data.sellingPlanGroupRemoveProductVariants
+          .removedProductVariantIds;
+      }
+    );
 
   return productVariants;
 };

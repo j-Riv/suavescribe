@@ -38,9 +38,19 @@ export const addProductVariantToSellingPlanGroups = async (ctx: Context) => {
       mutation: SELLING_PLAN_ADD_PRODUCT_VARIANT(),
       variables: variables,
     })
-    .then((response: { data: any }) => {
-      return response.data;
-    });
+    .then(
+      (response: {
+        data: {
+          productVariantJoinSellingPlanGroups: {
+            productVariant: {
+              id: string;
+            };
+          };
+        };
+      }) => {
+        return response.data;
+      }
+    );
 
   return productVariant;
 };

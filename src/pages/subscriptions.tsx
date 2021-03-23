@@ -18,6 +18,7 @@ import { Redirect } from '@shopify/app-bridge/actions';
 import { GET_SUBSCRIPTION_BY_ID } from '../handlers';
 import { formatId } from '../utils/formatters';
 import LoadingSubscription from '../components/LoadingSubscription';
+import ErrorState from '../components/ErrorState';
 import CustomerInformation from '../components/CustomerInformation';
 import SubscriptionInformation from '../components/SubscriptionInformation';
 import UpdateSubscriptionButton from '../components/UpdateSubscriptionButton';
@@ -107,8 +108,7 @@ function EditSubscription() {
   };
 
   if (loading) return <LoadingSubscription />;
-  if (error)
-    return <TextStyle variation="negative">Error! ${error.message}</TextStyle>;
+  if (error) return <ErrorState err={error.message} />;
 
   return (
     <Page
