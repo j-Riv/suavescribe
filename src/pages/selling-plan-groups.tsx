@@ -1,8 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
-import { useRouter } from 'next/router';
 import { Redirect } from '@shopify/app-bridge/actions';
-import { Button, Card, Frame, Page, TextStyle, Toast } from '@shopify/polaris';
+import { Button, Card, Frame, Page, Toast } from '@shopify/polaris';
 import { TitleBar, useAppBridge } from '@shopify/app-bridge-react';
 import styled from 'styled-components';
 import {
@@ -11,6 +10,7 @@ import {
 } from '../handlers';
 import Table from '../components/Table';
 import LoadingSellingPlans from '../components/LoadingSellingPlans';
+import ErrorState from '../components/ErrorState';
 
 const Actions = styled.div`
   display: grid;
@@ -49,9 +49,7 @@ function SellingPlanGroups() {
     redirect.dispatch(Redirect.Action.APP, href);
   };
 
-  const { loading, error, data, refetch } = useQuery(
-    GET_ALL_SELLING_PLAN_GROUPS
-  );
+  const { loading, error, data } = useQuery(GET_ALL_SELLING_PLAN_GROUPS);
   // Toast
   const [active, setActive] = useState(false);
   const toggleActive = useCallback(() => setActive(active => !active), []);
@@ -60,8 +58,7 @@ function SellingPlanGroups() {
   ) : null;
 
   if (loading) return <LoadingSellingPlans tableRows={5} />;
-  if (error)
-    return <TextStyle variation="negative">Error! ${error.message}</TextStyle>;
+  if (error) return <ErrorState err={error.message} />;
 
   console.log('QUERY DATA');
   console.log(data);
