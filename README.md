@@ -21,6 +21,8 @@ PG_PORT = 'DATABASE_PORT';
 
 ## Database Setup
 
+Install PostgreSQL.
+
 Create a new user with limited permissions.
 
 ```bash
