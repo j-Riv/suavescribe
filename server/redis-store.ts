@@ -7,9 +7,15 @@ import { promisify } from 'util';
 
 class RedisStore {
   private client: redis.RedisClient;
-  private getAsync;
-  private setAsync;
-  private delAsync;
+  private getAsync: {
+    (arg0: string): any;
+    (arg1: string): Promise<string | null>;
+  };
+  private setAsync: {
+    (arg0: string, arg1: string): any;
+    (arg1: string, arg2: string): Promise<unknown>;
+  };
+  private delAsync: { (arg0: string): any; (): Promise<number> };
 
   constructor() {
     // Create a new redis client
@@ -27,7 +33,7 @@ class RedisStore {
     Otherwise, return false
   */
   storeCallback = async (session: Session) => {
-    console.log('STORING SESSION', JSON.stringify(session));
+    console.log('STORING SESSION', JSON.stringify(session.id));
     try {
       // Inside our try, we use the `setAsync` method to save our session.
       // This method returns a boolean (true is successful, false if not)
@@ -49,15 +55,15 @@ class RedisStore {
       // Inside our try, we use `getAsync` to access the method by id
       // If we receive data back, we parse and return it
       // If not, we return `undefined`
-      let reply = await this.getAsync(id);
-      if (reply) {
-        const json = JSON.parse(reply);
+      const res = await this.getAsync(id);
+      if (res) {
+        const json = JSON.parse(res);
         const newSession = new Session(json.id);
         const keys = Object.keys(json);
         keys.forEach(key => {
           newSession[key] = json[key];
         });
-        newSession.expires = new Date(json.expires);
+        newSession.expires = json.expires ? new Date(json.expires) : new Date();
         return newSession;
       } else {
         return undefined;
