@@ -26,9 +26,18 @@ class PgStore {
     const query = `
       SELECT * FROM active_shops;  
     `;
+
+    interface Shops {
+      [key: string]: {
+        shop: string;
+        scope: string;
+        accessToken: string;
+      };
+    }
+
     try {
       const reply = await this.client.query(query);
-      const shops = {};
+      const shops: Shops = {};
       reply.rows.forEach(row => {
         shops[row.id] = {
           shop: row.id,
@@ -187,7 +196,8 @@ class PgStore {
     `;
     try {
       const res = await this.client.query(query);
-      if (res.rows[0].session) {
+      console.log('RESULT', res.rowCount);
+      if (res.rowCount > 0) {
         console.log('SESSION FOUND');
         const json = res.rows[0].session;
         const newSession = new Session(json.id);

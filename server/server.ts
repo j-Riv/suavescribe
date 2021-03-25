@@ -9,12 +9,12 @@ import Router from 'koa-router';
 import cors from '@koa/cors';
 import bodyParser from 'koa-bodyparser';
 import subscriptionRouter from './routes/subscriptions';
-// import RedisStore from './redis-store';
+import RedisStore from './redis-store';
 import PgStore from './pg-store';
 
 dotenv.config();
-// const sessionStorage = new RedisStore();
-const sessionStorage = new PgStore();
+const sessionStorage = new RedisStore();
+const pgStorage = new PgStore();
 const port = parseInt(process.env.PORT as string, 10) || 8081;
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({
@@ -43,7 +43,7 @@ Shopify.Context.initialize({
 // const ACTIVE_SHOPIFY_SHOPS = {};
 
 app.prepare().then(async () => {
-  const ACTIVE_SHOPIFY_SHOPS = await sessionStorage.loadActiveShops();
+  const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
   console.log(
     '++++++++++++++ ACTIVE_SHOPIFY_SHOPS ++++++++++++++',
     ACTIVE_SHOPIFY_SHOPS
@@ -62,13 +62,13 @@ app.prepare().then(async () => {
   server.keys = [Shopify.Context.API_SECRET_KEY];
   server.use(
     createShopifyAuth({
-      accessMode: 'offline',
+      // accessMode: 'offline',
       async afterAuth(ctx) {
         // Access token and shop available in ctx.state.shopify
         const { shop, accessToken, scope } = ctx.state.shopify;
         ACTIVE_SHOPIFY_SHOPS[shop] = { shop, scope, accessToken };
         // save active shop
-        sessionStorage.storeActiveShop({ shop, scope, accessToken });
+        pgStorage.storeActiveShop({ shop, scope, accessToken });
 
         const response = await Shopify.Webhooks.Registry.register({
           shop,
@@ -76,8 +76,9 @@ app.prepare().then(async () => {
           path: '/webhooks',
           topic: 'APP_UNINSTALLED',
           webhookHandler: async (topic, shop, body) => {
+            console.log('App uninstalled');
             delete ACTIVE_SHOPIFY_SHOPS[shop];
-            sessionStorage.deleteActiveShop(shop);
+            pgStorage.deleteActiveShop(shop);
           },
         });
 
@@ -85,6 +86,8 @@ app.prepare().then(async () => {
           console.log(
             `Failed to register APP_UNINSTALLED webhook: ${response.result}`
           );
+        } else {
+          console.log('Response', response.result);
         }
 
         // Redirect to app with shop parameter upon auth
@@ -126,17 +129,17 @@ app.prepare().then(async () => {
     }
   });
 
-  router.get('(/_next/static/.*)', handleRequest); // Static content is clear
-  router.get('/_next/webpack-hmr', handleRequest); // Webpack content is clear
-  // router.get('(.*)', verifyRequest(), handleRequest); // Everything else must have sessions
-  // removed verifyRequest because it was causing Admin link -> App to completely reload. Will need to fis this.
-  router.get('(.*)', handleRequest);
-  // Subscriptions
+  // App Extension
   server.use(subscriptionRouter.routes());
   server.use(subscriptionRouter.allowedMethods());
 
+  router.get('(/_next/static/.*)', handleRequest); // Static content is clear
+  router.get('/_next/webpack-hmr', handleRequest); // Webpack content is clear
+  router.get('(.*)', verifyRequest(), handleRequest);
+
   server.use(router.allowedMethods());
   server.use(router.routes());
+
   server.listen(port, () => {
     console.log(`> Ready on http://localhost:${port}`);
   });
