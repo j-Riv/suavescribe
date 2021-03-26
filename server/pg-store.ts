@@ -262,7 +262,7 @@ class PgStore {
     const interval = contract.billingPolicy.interval;
     const intervalCount = contract.billingPolicy.intervalCount;
     const query = `
-        INSERT INTO subscription_contracts (id, shop, status, next_biling_date, interval, interval_count, contract) VALUES ('${
+        INSERT INTO subscription_contracts (id, shop, status, next_billing_date, interval, interval_count, contract) VALUES ('${
           contract.id
         }', '${shop}', '${contract.status}', '${
       contract.nextBillingDate
@@ -294,9 +294,9 @@ class PgStore {
   */
   getLocalContractsByShop = async (shop: string) => {
     console.log('GETTING ALL CONTRACTS FOR SHOP:', shop);
-    // const today = new Date().toISOString().substring(0, 10) + 'T00:00:00Z';
+    const today = new Date().toISOString().substring(0, 10) + 'T00:00:00Z';
     // testing
-    const today = '2021-03-29T00:00:00Z';
+    // const today = '2021-03-25T00:00:00Z';
     try {
       const query = `
         SELECT * FROM subscription_contracts WHERE next_billing_date = '${today}' AND shop = '${shop}'; 

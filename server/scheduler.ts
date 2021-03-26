@@ -1,29 +1,22 @@
 import schedule from 'node-schedule';
 import PgStore from './pg-store';
 import 'isomorphic-fetch';
-import {
-  createClient,
-  getSubscriptionContracts,
-  createSubscriptionBillingAttempt,
-} from './handlers';
+import { createClient, createSubscriptionBillingAttempt } from './handlers';
 
 const pgStorage = new PgStore();
 
-// export const scheduler = () => {
-//   console.log('SCHEDULER HAS STARTED +++++++++++++');
-//   // 5 sec for testing
-//   const rule = '*/5 * * * * *';
-//   // let rule = new schedule.RecurrenceRule();
-//   // rule.second = 30;
-//   // rule.tz = 'Etc/UTC';
+export const scheduler = () => {
+  console.log('SCHEDULER INIT +++++++++++++');
+  // const rule = '*/10 * * * *'; // every 10 seconds for testing
+  const rule = '0 0 6 * * *'; // every day at 6 am
 
-//   const job = schedule.scheduleJob(rule, async function () {
-//     console.log('A new day has begun!');
-//     console.log('Rule', rule);
-//   });
-// };
+  const job = schedule.scheduleJob(rule, async function () {
+    console.log('Rule', rule);
+    run();
+  });
+};
 
-export const scheduler = async () => {
+const run = async () => {
   console.log('SCHEDULER HAS STARTED +++++++++++++');
   // get active shopify stores
   const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
