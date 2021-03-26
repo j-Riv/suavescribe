@@ -63,6 +63,10 @@ export const GET_SUBSCRIPTION_BY_ID = gql`
         interval
         intervalCount
       }
+      billingPolicy {
+        interval
+        intervalCount
+      }
     }
   }
 `;

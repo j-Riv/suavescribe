@@ -70,6 +70,7 @@ function UpdateSubscriptionButton(props: Props) {
 
   const updateDraft = (draftId: string, input: any) => {
     console.log('Updating Draft', draftId);
+    console.log('THE FUCKING INPUT', input);
     try {
       updateSubscriptionDraft({
         variables: {

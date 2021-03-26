@@ -1,6 +1,16 @@
 import { Session } from '@shopify/shopify-api/dist/auth/session';
 import { Client } from 'pg';
+import 'isomorphic-fetch';
 import dotenv from 'dotenv';
+import {
+  createClient,
+  getSubscriptionContract,
+  updateSubscriptionContract,
+  updateSubscriptionDraft,
+  commitSubscriptionDraft,
+} from './handlers';
+import DefaultClient from 'apollo-boost';
+import { generateNextBillingDate } from './utils';
 dotenv.config();
 
 class PgStore {
@@ -235,6 +245,165 @@ class PgStore {
       }
     } catch (err) {
       throw new Error(err);
+    }
+  };
+
+  // Local Contract Helpers
+  // get local contract by id
+  getLocalContract = async (id: string) => {
+    const contract = await this.client.query(
+      `SELECT * FROM subscription_contracts WHERE id = '${id}';`
+    );
+    return contract;
+  };
+  // create local contract
+  createLocalContract = async (shop: string, contract: any) => {
+    // get interval and interval count
+    const interval = contract.billingPolicy.interval;
+    const intervalCount = contract.billingPolicy.intervalCount;
+    const query = `
+        INSERT INTO subscription_contracts (id, shop, status, next_biling_date, interval, interval_count, contract) VALUES ('${
+          contract.id
+        }', '${shop}', '${contract.status}', '${
+      contract.nextBillingDate
+    }', '${interval}', '${intervalCount}', '${JSON.stringify(
+      contract
+    )}') RETURNING *;
+      `;
+    return await this.client.query(query);
+  };
+  // udpate local contract
+  updateLocalContract = async (shop: string, contract: any) => {
+    // get interval and interval count
+    const interval = contract.billingPolicy.interval;
+    const intervalCount = contract.billingPolicy.intervalCount;
+    const query = `
+          UPDATE subscription_contracts SET status = '${
+            contract.status
+          }', next_billing_date = '${
+      contract.nextBillingDate
+    }', interval = '${interval}', interval_count = '${intervalCount}', contract = '${JSON.stringify(
+      contract
+    )}' WHERE id = '${contract.id}' RETURNING *;
+      `;
+    return await this.client.query(query);
+  };
+
+  /*
+    Gets all contracts with Next Billing Date of Today for a given store.
+  */
+  getLocalContractsByShop = async (shop: string) => {
+    console.log('GETTING ALL CONTRACTS FOR SHOP:', shop);
+    // const today = new Date().toISOString().substring(0, 10) + 'T00:00:00Z';
+    // testing
+    const today = '2021-03-29T00:00:00Z';
+    try {
+      const query = `
+        SELECT * FROM subscription_contracts WHERE next_billing_date = '${today}' AND shop = '${shop}'; 
+      `;
+      const res = await this.client.query(query);
+      console.log('RESPONSE', res.rows);
+      return res.rows;
+    } catch (err) {
+      console.log('ERROR GETTING CONTRACTS', err);
+    }
+  };
+
+  // Webhooks
+  createContract = async (shop: string, token: string, body: any) => {
+    console.log('CREATING CONTRACT');
+    body = JSON.parse(body);
+
+    try {
+      const client: DefaultClient<unknown> = createClient(shop, token);
+      const contract = await getSubscriptionContract(
+        client,
+        body.admin_graphql_api_id
+      );
+      const res = await this.createLocalContract(shop, contract);
+      return res.rowCount > 0;
+    } catch (err) {
+      console.log('Error Saving Contract', err);
+    }
+  };
+
+  updateContract = async (shop: string, token: string, body: any) => {
+    body = JSON.parse(body);
+    const id = body.admin_graphql_api_id;
+
+    try {
+      const exists = await this.getLocalContract(id);
+      console.log('Exists', exists);
+      const client: DefaultClient<unknown> = createClient(shop, token);
+      const contract = await getSubscriptionContract(
+        client,
+        body.admin_graphql_api_id
+      );
+      console.log('CONTRACT FROM SHOPIFY', JSON.stringify(contract));
+      let res: any;
+      if (exists.rowCount > 0) {
+        res = await this.updateLocalContract(shop, contract);
+      } else {
+        res = await this.createLocalContract(shop, contract);
+      }
+      // const res = await this.client.query(query);
+      console.log('UPDATED RESPONSE', res);
+      return res.rowCount > 0;
+    } catch (err) {
+      console.log('Error Updating Contract', err);
+    }
+  };
+
+  /* 
+    Updates the Next Billing Date based on the interval and interval count.
+    Checks to see if the contract exists locally (it should, but just to be safe).
+    The Update Contract Webhook will trigger after this and UPdate the local database.
+  */
+  updateNextBillingDate = async (shop: string, token: string, body: any) => {
+    body = JSON.parse(body);
+    const id = body.admin_graphql_api_subscription_contract_id;
+
+    try {
+      // create apollo client
+      const client: DefaultClient<unknown> = createClient(shop, token);
+      // check if contract exists
+      let contract = await this.getLocalContract(id);
+      // if it doesnt get it from Shopify and insert into database
+      if (contract.rowCount === 0) {
+        console.log('CONTRACT DOESNT EXIST LETS GRAB IT AND SAVE IT');
+        const res = await getSubscriptionContract(client, id);
+        contract = await this.createLocalContract(shop, res);
+      } else {
+        console.log('CONTRACT EXISTS LETS JUST UPDATE IT');
+      }
+      // interval
+      const interval = contract.rows[0].interval;
+      const intervalCount = contract.rows[0].interval_count;
+      // generate next billing date
+      const nextBillingDate = generateNextBillingDate(interval, intervalCount);
+      console.log(
+        `Interval -> ${interval} Count -> ${intervalCount} Next Billing Date -> ${nextBillingDate}`
+      );
+      // update next billing date on shopify get results use results to update local db.
+      // get draft id
+      const draftId = await updateSubscriptionContract(client, id);
+      console.log('Draft Id', draftId);
+      // create input & update draft
+      const input = {
+        nextBillingDate: nextBillingDate,
+      };
+      const updatedDraftId = await updateSubscriptionDraft(
+        client,
+        draftId,
+        input
+      );
+      console.log('Updated Draft Id', updatedDraftId);
+      // commit changes to draft
+      const contractId = await commitSubscriptionDraft(client, updatedDraftId);
+      console.log('Contract ID', contractId);
+      return contractId;
+    } catch (err) {
+      console.log('Error Updating Contract', err);
     }
   };
 }
