@@ -48,6 +48,14 @@ interface Props {
           }
         ];
       };
+      billingPolicy: {
+        interval: string;
+        intervalCount: number;
+      };
+      deliveryPolicy: {
+        interval: string;
+        intervalCount: number;
+      };
     };
   };
   adminRedirect: (url: string) => void;
@@ -69,6 +77,12 @@ function SubscriptionInformation(props: Props) {
         >
           View Original Order
         </Button>
+        <p>
+          <span className="bold">Interval: </span>
+          {`Every ${
+            data.subscriptionContract.billingPolicy.intervalCount
+          } ${data.subscriptionContract.billingPolicy.interval.toLowerCase()}(s)`}
+        </p>
         <p>
           <span className="bold">Next Order Date: </span>
           {formatDate(data.subscriptionContract.nextBillingDate)}
