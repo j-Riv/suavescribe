@@ -7,8 +7,14 @@ import { addProductVariantToSellingPlanGroups } from './mutations/add-product-va
 import { removeProductsFromSellingPlanGroup } from './mutations/remove-products-from-selling-plan-group';
 import { updateSellingPlanGroup } from './mutations/update-selling-plan-group';
 import { deleteSellingPlanGroup } from './mutations/delete-selling-plan-group';
+import { createSubscriptionBillingAttempt } from './mutations/create-billing-attempt';
+import { updateSubscriptionContract } from './mutations/update-subscription-contract';
+import { updateSubscriptionDraft } from './mutations/update-subscription-draft';
+import { commitSubscriptionDraft } from './mutations/commit-subscription-draft';
 import { getSellingPlans } from './queries/get-all-selling-plans';
 import { getSellingPlanById } from './queries/get-selling-plan';
+import { getSubscriptionContracts } from './queries/get-subscription-contracts';
+import { getSubscriptionContract } from './queries/get-subscription-contract';
 
 export {
   createClient,
@@ -20,6 +26,12 @@ export {
   removeProductsFromSellingPlanGroup,
   updateSellingPlanGroup,
   deleteSellingPlanGroup,
+  createSubscriptionBillingAttempt,
+  updateSubscriptionContract,
+  updateSubscriptionDraft,
+  commitSubscriptionDraft,
   getSellingPlans,
   getSellingPlanById,
+  getSubscriptionContracts,
+  getSubscriptionContract,
 };

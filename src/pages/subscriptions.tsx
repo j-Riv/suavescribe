@@ -68,6 +68,7 @@ function EditSubscription() {
   // Set Data
   const setInitialData = (data: any) => {
     const d = data.subscriptionContract;
+    console.log('DATA', d);
     setContractId(d.id);
     setNextBillingDate(d.nextBillingDate.split('T')[0]);
     setLineItem(d.lines.edges[0].node.productId);
@@ -155,7 +156,7 @@ function EditSubscription() {
               <Stack distribution="trailing">
                 <UpdateSubscriptionButton
                   contractId={contractId}
-                  input={{ nextBillingDate: new Date(nextBillingDate) }}
+                  input={{ nextBillingDate: nextBillingDate }}
                   lineId={null}
                   toggleActive={toggleActive}
                   setMsg={setMsg}
