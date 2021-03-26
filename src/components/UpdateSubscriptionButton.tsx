@@ -69,7 +69,6 @@ function UpdateSubscriptionButton(props: Props) {
   });
 
   const updateDraft = (draftId: string, input: any) => {
-    console.log('Updating Draft', draftId);
     try {
       updateSubscriptionDraft({
         variables: {
@@ -86,7 +85,6 @@ function UpdateSubscriptionButton(props: Props) {
   };
 
   const updateDraftLine = (draftId: string, lineId: string, input: any) => {
-    console.log('Updating Draft Line', lineId);
     try {
       updateSubscriptionDraftLine({
         variables: {
@@ -101,7 +99,6 @@ function UpdateSubscriptionButton(props: Props) {
   };
 
   const commitDraft = (draftId: string) => {
-    console.log('Committing Draft', draftId);
     try {
       commitSubscriptionDraft({
         variables: {
@@ -114,7 +111,6 @@ function UpdateSubscriptionButton(props: Props) {
   };
 
   const handleClick = (lineId?: string) => {
-    console.log('Handling Update Click', contractId);
     try {
       setLoading(true);
       updateSubscriptionContract({

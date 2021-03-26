@@ -11,6 +11,7 @@ import bodyParser from 'koa-bodyparser';
 import subscriptionRouter from './routes/subscriptions';
 import RedisStore from './redis-store';
 import PgStore from './pg-store';
+import { scheduler } from './scheduler';
 
 dotenv.config();
 const sessionStorage = new RedisStore();
@@ -29,8 +30,6 @@ Shopify.Context.initialize({
   HOST_NAME: process.env.HOST!.replace(/https:\/\//, ''),
   API_VERSION: ApiVersion.January21,
   IS_EMBEDDED_APP: true,
-  // This should be replaced with your preferred storage strategy
-  // SESSION_STORAGE: new Shopify.Session.MemorySessionStorage(),
   SESSION_STORAGE: new Shopify.Session.CustomSessionStorage(
     sessionStorage.storeCallback,
     sessionStorage.loadCallback,
@@ -38,22 +37,23 @@ Shopify.Context.initialize({
   ),
 });
 
-// Storing the currently active shops in memory will force them to re-login when your server restarts. You should
-// persist this object in your app.
-// const ACTIVE_SHOPIFY_SHOPS = {};
-
 app.prepare().then(async () => {
+  // Storing the currently active shops in memory will force them to re-login when your server restarts. You should
+  // persist this object in your app.
   const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
   console.log(
     '++++++++++++++ ACTIVE_SHOPIFY_SHOPS ++++++++++++++',
     ACTIVE_SHOPIFY_SHOPS
   );
+  // init scheduler
+  scheduler();
 
   const server = new Koa();
   // Add cors & bodyparser
   server.use(cors());
   server.use(async (ctx, next) => {
-    if (ctx.path === '/graphql') ctx.disableBodyParser = true;
+    if (ctx.path === '/graphql' || ctx.path === '/webhooks')
+      ctx.disableBodyParser = true;
     await next();
   });
   server.use(bodyParser({ enableTypes: ['json', 'text'] }));
@@ -69,25 +69,106 @@ app.prepare().then(async () => {
         ACTIVE_SHOPIFY_SHOPS[shop] = { shop, scope, accessToken };
         // save active shop
         pgStorage.storeActiveShop({ shop, scope, accessToken });
+        // Register Webhooks
+        const registerUninstallWebhook = await Shopify.Webhooks.Registry.register(
+          {
+            shop,
+            accessToken,
+            path: '/webhooks',
+            topic: 'APP_UNINSTALLED',
+            webhookHandler: async (_topic, shop, _body) => {
+              console.log('App uninstalled');
+              delete ACTIVE_SHOPIFY_SHOPS[shop];
+              pgStorage.deleteActiveShop(shop);
+            },
+          }
+        );
 
-        const response = await Shopify.Webhooks.Registry.register({
-          shop,
-          accessToken,
-          path: '/webhooks',
-          topic: 'APP_UNINSTALLED',
-          webhookHandler: async (topic, shop, body) => {
-            console.log('App uninstalled');
-            delete ACTIVE_SHOPIFY_SHOPS[shop];
-            pgStorage.deleteActiveShop(shop);
-          },
-        });
-
-        if (!response.success) {
+        if (!registerUninstallWebhook.success) {
           console.log(
-            `Failed to register APP_UNINSTALLED webhook: ${response.result}`
+            `Failed to register APP_UNINSTALLED webhook: ${registerUninstallWebhook.result}`
           );
-        } else {
-          console.log('Response', response.result);
+        }
+        // Register Create Contract Webhook
+        const registerCreateSubscription = await Shopify.Webhooks.Registry.register(
+          {
+            shop,
+            accessToken,
+            path: '/webhooks',
+            topic: 'SUBSCRIPTION_CONTRACTS_CREATE',
+            webhookHandler: async (_topic, shop, body) => {
+              console.log('SUBSCRIPTION_CONTRACTS_CREATE');
+              const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
+              pgStorage.createContract(shop, token, body);
+            },
+          }
+        );
+
+        if (!registerCreateSubscription.success) {
+          console.log(
+            `Failed to register APP_UNINSTALLED webhook: ${registerCreateSubscription.result}`
+          );
+        }
+        // Register Update Contract Webhook
+        const registerUpdateSubscription = await Shopify.Webhooks.Registry.register(
+          {
+            shop,
+            accessToken,
+            path: '/webhooks',
+            topic: 'SUBSCRIPTION_CONTRACTS_UPDATE',
+            webhookHandler: async (_topic, shop, body) => {
+              console.log('SUBSCRIPTION_CONTRACTS_UPDATE');
+              const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
+              pgStorage.updateContract(shop, token, body);
+            },
+          }
+        );
+
+        if (!registerUpdateSubscription.success) {
+          console.log(
+            `Failed to register APP_UNINSTALLED webhook: ${registerUpdateSubscription.result}`
+          );
+        }
+        // Billing Attempt Success Webhook
+        const registerBillingAttemptSuccess = await Shopify.Webhooks.Registry.register(
+          {
+            shop,
+            accessToken,
+            path: '/webhooks',
+            topic: 'SUBSCRIPTION_BILLING_ATTEMPTS_SUCCESS',
+            webhookHandler: async (_topic, shop, body) => {
+              console.log('SUBSCRIPTION_BILLING_ATTEMPTS_SUCCESS');
+              const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
+              pgStorage.updateNextBillingDate(shop, token, body);
+            },
+          }
+        );
+
+        if (!registerBillingAttemptSuccess.success) {
+          console.log(
+            `Failed to register APP_UNINSTALLED webhook: ${registerBillingAttemptSuccess.result}`
+          );
+        }
+        // Billing Attempt Success Webhook
+        const registerBillingAttemptFailure = await Shopify.Webhooks.Registry.register(
+          {
+            shop,
+            accessToken,
+            path: '/webhooks',
+            topic: 'SUBSCRIPTION_BILLING_ATTEMPTS_FAILURE',
+            webhookHandler: async (_topic, shop, body) => {
+              console.log('SUBSCRIPTION_BILLING_ATTEMPTS_FAILURE');
+              const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
+              // Will more than likely create  an errors table to display error notifications to user.
+              console.log('body', JSON.stringify(body));
+            },
+          }
+        );
+
+        if (!registerBillingAttemptFailure.success) {
+          console.log(
+            `Failed to register APP_UNINSTALLED webhook: ${registerBillingAttemptFailure.result}`
+          );
         }
 
         // Redirect to app with shop parameter upon auth
@@ -135,7 +216,8 @@ app.prepare().then(async () => {
 
   router.get('(/_next/static/.*)', handleRequest); // Static content is clear
   router.get('/_next/webpack-hmr', handleRequest); // Webpack content is clear
-  router.get('(.*)', verifyRequest(), handleRequest);
+  // router.get('(.*)', verifyRequest(), handleRequest);
+  router.get('(.*)', handleRequest);
 
   server.use(router.allowedMethods());
   server.use(router.routes());
