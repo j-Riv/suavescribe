@@ -30,8 +30,6 @@ Shopify.Context.initialize({
   HOST_NAME: process.env.HOST!.replace(/https:\/\//, ''),
   API_VERSION: ApiVersion.January21,
   IS_EMBEDDED_APP: true,
-  // This should be replaced with your preferred storage strategy
-  // SESSION_STORAGE: new Shopify.Session.MemorySessionStorage(),
   SESSION_STORAGE: new Shopify.Session.CustomSessionStorage(
     sessionStorage.storeCallback,
     sessionStorage.loadCallback,
@@ -39,18 +37,16 @@ Shopify.Context.initialize({
   ),
 });
 
-// Storing the currently active shops in memory will force them to re-login when your server restarts. You should
-// persist this object in your app.
-// const ACTIVE_SHOPIFY_SHOPS = {};
-
 app.prepare().then(async () => {
+  // Storing the currently active shops in memory will force them to re-login when your server restarts. You should
+  // persist this object in your app.
   const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
   console.log(
     '++++++++++++++ ACTIVE_SHOPIFY_SHOPS ++++++++++++++',
     ACTIVE_SHOPIFY_SHOPS
   );
-  // scheduler
-  // scheduler();
+  // init scheduler
+  scheduler();
 
   const server = new Koa();
   // Add cors & bodyparser
@@ -73,7 +69,7 @@ app.prepare().then(async () => {
         ACTIVE_SHOPIFY_SHOPS[shop] = { shop, scope, accessToken };
         // save active shop
         pgStorage.storeActiveShop({ shop, scope, accessToken });
-
+        // Register Webhooks
         const registerUninstallWebhook = await Shopify.Webhooks.Registry.register(
           {
             shop,
@@ -174,9 +170,6 @@ app.prepare().then(async () => {
             `Failed to register APP_UNINSTALLED webhook: ${registerBillingAttemptFailure.result}`
           );
         }
-
-        // Start scheduler for testing this will be triggered by node-scheduler
-        scheduler();
 
         // Redirect to app with shop parameter upon auth
         ctx.redirect(`/?shop=${shop}`);

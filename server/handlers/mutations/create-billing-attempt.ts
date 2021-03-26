@@ -32,8 +32,7 @@ export const createSubscriptionBillingAttempt = async (
   const variables = {
     subscriptionContractId: subscriptionContractId,
     subscriptionBillingAttemptInput: {
-      // idempotencyKey: uuidv4(), // needs to be generated
-      idempotencyKey: 'random-string-3',
+      idempotencyKey: uuidv4(), // needs to be generated
     },
   };
   const subscriptionBillingAttemptId = await client
