@@ -39,7 +39,7 @@ interface Props {
                 cycleDiscounts: [
                   {
                     computedPrice: {
-                      amount;
+                      amount: string;
                     };
                   }
                 ];

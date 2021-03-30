@@ -47,7 +47,7 @@ function EditSubscription() {
   const setToastError = useCallback(error => setIsError(error), []);
   // Toast
   const toastMarkup = active ? (
-    <Toast content={toastMsg} onDismiss={toggleActive} />
+    <Toast content={toastMsg} onDismiss={toggleActive} error={isError} />
   ) : null;
   // Exit if no id
   if (!router?.query.id)
@@ -67,26 +67,25 @@ function EditSubscription() {
   });
   // Set Data
   const setInitialData = (data: any) => {
-    const d = data.subscriptionContract;
-    console.log('DATA', d);
-    setContractId(d.id);
-    setNextBillingDate(d.nextBillingDate.split('T')[0]);
-    setLineItem(d.lines.edges[0].node.productId);
-    setLineId(d.lines.edges[0].node.id);
-    setLineItemQuantity(String(d.lines.edges[0].node.quantity));
-    setLineItems(d.lines.edges);
-    setPaymentMethod(d.customerPaymentMethod.id);
+    if (data.subscriptionContract) {
+      const d = data.subscriptionContract;
+      setContractId(d.id);
+      setNextBillingDate(d.nextBillingDate.split('T')[0]);
+      setLineItem(d.lines.edges[0].node.productId);
+      setLineId(d.lines.edges[0].node.id);
+      setLineItemQuantity(String(d.lines.edges[0].node.quantity));
+      setLineItems(d.lines.edges);
+      setPaymentMethod(d.customerPaymentMethod.id);
+    }
   };
 
   const handleNextBillingDateChange = (date: string) => {
     setNextBillingDate(date);
-    console.log('hasChanged', nextBillingDate);
   };
 
   const handleLineItemChange = (productId: string) => {
     lineItems.map(node => {
       if (node.productId === productId) {
-        console.log('Setting Quantity in Loop', node.quantity);
         setLineItemQuantity(node.quantity);
         setLineId(node.id);
       }
@@ -99,136 +98,144 @@ function EditSubscription() {
   };
 
   const adminRedirect = (href: string) => {
-    console.log('redirecting');
     redirect.dispatch(Redirect.Action.ADMIN_PATH, href);
   };
 
   const appRedirect = () => {
-    console.log('redirecting');
     redirect.dispatch(Redirect.Action.APP, '/');
   };
 
   if (loading) return <LoadingSubscription />;
   if (error) return <ErrorState err={error.message} />;
 
-  return (
-    <Page
-      breadcrumbs={[{ content: 'Dashboard', onAction: appRedirect }]}
-      title="Edit Subscription"
-      subtitle={`Subscription (${formatId(data.subscriptionContract.id)}) `}
-      titleMetadata={
-        <Badge
-          status={
-            data.subscriptionContract.status === 'ACTIVE'
-              ? 'success'
-              : 'attention'
-          }
-        >
-          {data.subscriptionContract.status}
-        </Badge>
-      }
-    >
-      <Frame>
-        <TitleBar title="Edit Subscription" />
-        <Layout>
-          <Layout.Section>
-            <CustomerInformation data={data} />
-          </Layout.Section>
-          <Layout.Section>
-            <SubscriptionInformation
-              data={data}
-              adminRedirect={adminRedirect}
-            />
-          </Layout.Section>
-          <Layout.AnnotatedSection
-            title="Next Billing Date"
-            description="Change / Update Next Billing Date"
+  if (data.subscriptionContract) {
+    return (
+      <Page
+        breadcrumbs={[{ content: 'Dashboard', onAction: appRedirect }]}
+        title="Edit Subscription"
+        subtitle={`Subscription (${formatId(data.subscriptionContract.id)}) `}
+        titleMetadata={
+          <Badge
+            status={
+              data.subscriptionContract.status === 'ACTIVE'
+                ? 'success'
+                : 'attention'
+            }
           >
-            <Card sectioned>
-              <TextField
-                value={nextBillingDate}
-                onChange={nextBillingDate =>
-                  handleNextBillingDateChange(nextBillingDate)
-                }
-                label="Next Billing Date"
-                type="date"
+            {data.subscriptionContract.status}
+          </Badge>
+        }
+      >
+        <Frame>
+          <TitleBar title="Edit Subscription" />
+          <Layout>
+            <Layout.Section>
+              <CustomerInformation data={data} />
+            </Layout.Section>
+            <Layout.Section>
+              <SubscriptionInformation
+                data={data}
+                adminRedirect={adminRedirect}
               />
-              <Stack distribution="trailing">
-                <UpdateSubscriptionButton
-                  contractId={contractId}
-                  input={{ nextBillingDate: nextBillingDate }}
-                  lineId={null}
-                  toggleActive={toggleActive}
-                  setMsg={setMsg}
-                  setToastError={setToastError}
-                  refetch={refetch}
+            </Layout.Section>
+            <Layout.AnnotatedSection
+              title="Next Billing Date"
+              description="Change / Update Next Billing Date"
+            >
+              <Card sectioned>
+                <TextField
+                  value={nextBillingDate}
+                  onChange={nextBillingDate =>
+                    handleNextBillingDateChange(nextBillingDate)
+                  }
+                  label="Next Billing Date"
+                  type="date"
                 />
-              </Stack>
-            </Card>
-          </Layout.AnnotatedSection>
-          <Layout.AnnotatedSection
-            title="Product"
-            description="Select Product to Update Quantity"
-          >
-            <Card sectioned>
-              <Select
-                label="Item"
-                options={data.subscriptionContract.lines.edges.map(line => {
-                  return {
-                    label: `${line.node.title} - ${line.node.variantTitle}`,
-                    value: line.node.productId,
-                  };
-                })}
-                onChange={lineItem => handleLineItemChange(lineItem)}
-                value={lineItem}
-              />
-              <TextField
-                value={lineItemQuantity}
-                onChange={lineItemQuantity =>
-                  handleLineItemQuantityChange(lineItemQuantity)
-                }
-                label="Quantity"
-                type="number"
-              />
-              <Stack distribution="trailing">
-                <UpdateSubscriptionButton
-                  contractId={contractId}
-                  input={{ quantity: Number(lineItemQuantity) }}
-                  lineId={lineId}
-                  toggleActive={toggleActive}
-                  setMsg={setMsg}
-                  setToastError={setToastError}
-                  refetch={refetch}
+                <Stack distribution="trailing">
+                  <UpdateSubscriptionButton
+                    contractId={contractId}
+                    input={{ nextBillingDate: nextBillingDate }}
+                    lineId={null}
+                    toggleActive={toggleActive}
+                    setMsg={setMsg}
+                    setToastError={setToastError}
+                    refetch={refetch}
+                  />
+                </Stack>
+              </Card>
+            </Layout.AnnotatedSection>
+            <Layout.AnnotatedSection
+              title="Product"
+              description="Select Product to Update Quantity"
+            >
+              <Card sectioned>
+                <Select
+                  label="Item"
+                  options={data.subscriptionContract.lines.edges.map(line => {
+                    return {
+                      label: `${line.node.title} - ${line.node.variantTitle}`,
+                      value: line.node.productId,
+                    };
+                  })}
+                  onChange={lineItem => handleLineItemChange(lineItem)}
+                  value={lineItem}
                 />
-              </Stack>
-            </Card>
-          </Layout.AnnotatedSection>
-          <Layout.AnnotatedSection
-            title="Payment Method"
-            description="Send Update Payment Method Email"
-          >
-            <Card sectioned>
-              <TextField
-                label="Payment Method ID"
-                disabled
-                value={paymentMethod}
-              />
-              <Stack distribution="trailing">
-                <UpdatePaymentMethodButton
-                  id={paymentMethod}
-                  toggleActive={toggleActive}
-                  setMsg={setMsg}
-                  setToastError={setToastError}
-                  refetch={refetch}
+                <TextField
+                  value={lineItemQuantity}
+                  onChange={lineItemQuantity =>
+                    handleLineItemQuantityChange(lineItemQuantity)
+                  }
+                  label="Quantity"
+                  type="number"
                 />
-              </Stack>
-            </Card>
-          </Layout.AnnotatedSection>
-        </Layout>
-        {toastMarkup}
-      </Frame>
-    </Page>
-  );
+                <Stack distribution="trailing">
+                  <UpdateSubscriptionButton
+                    contractId={contractId}
+                    input={{ quantity: Number(lineItemQuantity) }}
+                    lineId={lineId}
+                    toggleActive={toggleActive}
+                    setMsg={setMsg}
+                    setToastError={setToastError}
+                    refetch={refetch}
+                  />
+                </Stack>
+              </Card>
+            </Layout.AnnotatedSection>
+            <Layout.AnnotatedSection
+              title="Payment Method"
+              description="Send Update Payment Method Email"
+            >
+              <Card sectioned>
+                <TextField
+                  label="Payment Method ID"
+                  disabled
+                  value={paymentMethod}
+                />
+                <Stack distribution="trailing">
+                  <UpdatePaymentMethodButton
+                    id={paymentMethod}
+                    toggleActive={toggleActive}
+                    setMsg={setMsg}
+                    setToastError={setToastError}
+                    refetch={refetch}
+                  />
+                </Stack>
+              </Card>
+            </Layout.AnnotatedSection>
+          </Layout>
+          {toastMarkup}
+        </Frame>
+      </Page>
+    );
+  } else {
+    return (
+      <Page>
+        <ErrorState
+          err={`Subscription Contract (${router?.query.id}) Not Found!`}
+        />
+      </Page>
+    );
+  }
 }
 
 export default EditSubscription;

@@ -1,16 +1,5 @@
 import React from 'react';
-import {
-  Card,
-  EmptyState,
-  Frame,
-  Layout,
-  Page,
-  Select,
-  TextField,
-  TextStyle,
-  Thumbnail,
-  Toast,
-} from '@shopify/polaris';
+import { Card, EmptyState, Layout, Page, TextStyle } from '@shopify/polaris';
 
 function ErrorState(props: { err: string }) {
   const { err } = props;

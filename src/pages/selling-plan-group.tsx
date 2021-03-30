@@ -86,17 +86,19 @@ function SellingPlanGroup() {
         id: router.query.id,
       },
       onCompleted: data => {
-        const sellingPlanGroup = data.sellingPlanGroup;
-        const sellingPlan = sellingPlanGroup.sellingPlans.edges[0];
-        const interval = sellingPlan.node.billingPolicy.interval;
-        const percentage = String(
-          sellingPlan.node.pricingPolicies[0].adjustmentValue.percentage
-        );
-        setPlanTitle(sellingPlanGroup.name);
-        setMerchantCode(sellingPlanGroup.merchantCode);
-        setOptions(sellingPlanGroup.options[0]);
-        setInterval(interval);
-        setPercentOff(percentage);
+        if (data.sellingPlanGroup) {
+          const sellingPlanGroup = data.sellingPlanGroup;
+          const sellingPlan = sellingPlanGroup.sellingPlans.edges[0];
+          const interval = sellingPlan.node.billingPolicy.interval;
+          const percentage = String(
+            sellingPlan.node.pricingPolicies[0].adjustmentValue.percentage
+          );
+          setPlanTitle(sellingPlanGroup.name);
+          setMerchantCode(sellingPlanGroup.merchantCode);
+          setOptions(sellingPlanGroup.options[0]);
+          setInterval(interval);
+          setPercentOff(percentage);
+        }
       },
     }
   );
@@ -115,140 +117,151 @@ function SellingPlanGroup() {
   };
   // redirects
   const adminRedirect = (href: string) => {
-    console.log('redirecting');
     redirect.dispatch(Redirect.Action.ADMIN_PATH, href);
   };
 
   const appRedirect = () => {
-    console.log('redirecting');
     redirect.dispatch(Redirect.Action.APP, '/selling-plan-groups');
   };
 
   if (loading) return <LoadingSellingPlan />;
   if (error) return <ErrorState err={error.message} />;
 
-  return (
-    <Page
-      breadcrumbs={[
-        { content: 'All Selling Plan Groups', onAction: appRedirect },
-      ]}
-      title="Selling Plan Group"
-      subtitle={`ID: (${formatId(data.sellingPlanGroup.id)}) `}
-      primaryAction={{
-        content: 'Cancel',
-        onAction: () => appRedirect(),
-      }}
-    >
-      <Frame>
-        <TitleBar
-          title="Selling Plan Group"
-          primaryAction={{
-            content: 'Delete',
-            onAction: () => handleDelete(data.sellingPlanGroup.id),
-            destructive: true,
-          }}
-        />
-        <Layout>
-          <Layout.Section>
-            <Card title="Information" sectioned>
-              <Information>
-                <p>
-                  <span className="bold">Name: </span>
-                  {data.sellingPlanGroup.name}
-                </p>
-                <p>
-                  <span className="bold">Summary: </span>
-                  {data.sellingPlanGroup.summary}
-                </p>
-                <p>
-                  <span className="bold">Merchant Code: </span>
-                  {data.sellingPlanGroup.merchantCode}
-                </p>
-              </Information>
-            </Card>
-            <Card title="Products" sectioned>
-              <TextStyle variation="subdued">
-                <Message>
-                  To add Products to this Selling Plan Group, please go to the
-                  product page.
-                </Message>
-              </TextStyle>
-              {data.sellingPlanGroup.products.edges.map(product => {
-                return (
-                  <Product key={product.node.id}>
-                    <Thumbnail
-                      source={product.node.featuredImage.originalSrc}
-                      alt={product.node.featuredImage.altTxt}
+  if (data.sellingPlanGroup) {
+    return (
+      <Page
+        breadcrumbs={[
+          { content: 'All Selling Plan Groups', onAction: appRedirect },
+        ]}
+        title="Selling Plan Group"
+        subtitle={`ID: (${formatId(data.sellingPlanGroup.id)}) `}
+        primaryAction={{
+          content: 'Cancel',
+          onAction: () => appRedirect(),
+        }}
+      >
+        <Frame>
+          <TitleBar
+            title="Selling Plan Group"
+            primaryAction={{
+              content: 'Delete',
+              onAction: () => handleDelete(data.sellingPlanGroup.id),
+              destructive: true,
+            }}
+          />
+          <Layout>
+            <Layout.Section>
+              <Card title="Information" sectioned>
+                <Information>
+                  <p>
+                    <span className="bold">Name: </span>
+                    {data.sellingPlanGroup.name}
+                  </p>
+                  <p>
+                    <span className="bold">Summary: </span>
+                    {data.sellingPlanGroup.summary}
+                  </p>
+                  <p>
+                    <span className="bold">Merchant Code: </span>
+                    {data.sellingPlanGroup.merchantCode}
+                  </p>
+                </Information>
+              </Card>
+              <Card title="Products" sectioned>
+                <TextStyle variation="subdued">
+                  <Message>
+                    To add Products to this Selling Plan Group, please go to the
+                    product page.
+                  </Message>
+                </TextStyle>
+                {data.sellingPlanGroup.products.edges.map(product => {
+                  return (
+                    <Product key={product.node.id}>
+                      <Thumbnail
+                        source={product.node.featuredImage.originalSrc}
+                        alt={product.node.featuredImage.altTxt}
+                      />
+                      <p>{product.node.title}</p>
+                    </Product>
+                  );
+                })}
+              </Card>
+            </Layout.Section>
+            <Layout.AnnotatedSection
+              title="Edit"
+              description="Edit Selling Plan"
+            >
+              <Card sectioned>
+                <Layout>
+                  <Layout.Section>
+                    <TextField
+                      value={planTitle}
+                      onChange={planTitle => setPlanTitle(planTitle)}
+                      label="Plan Title"
+                      type="text"
                     />
-                    <p>{product.node.title}</p>
-                  </Product>
-                );
-              })}
-            </Card>
-          </Layout.Section>
-          <Layout.AnnotatedSection title="Edit" description="Edit Selling Plan">
-            <Card sectioned>
-              <Layout>
-                <Layout.Section>
-                  <TextField
-                    value={planTitle}
-                    onChange={planTitle => setPlanTitle(planTitle)}
-                    label="Plan Title"
-                    type="text"
-                  />
-                  <TextField
-                    value={merchantCode}
-                    onChange={merchantCode => setMerchantCode(merchantCode)}
-                    label="Merchant Code"
-                    type="text"
-                  />
-                  <TextField
-                    value={options}
-                    onChange={options => setOptions(options)}
-                    label="Options"
-                    type="text"
-                  />
-                </Layout.Section>
-                <Layout.Section>
-                  <Select
-                    label="Interval"
-                    options={[
-                      { label: 'Weekly', value: 'WEEK' },
-                      { label: 'Monthly', value: 'MONTH' },
-                    ]}
-                    onChange={interval => setInterval(interval)}
-                    value={interval}
-                  />
-                  <TextField
-                    value={percentOff}
-                    onChange={percentOff => setPercentOff(percentOff)}
-                    label="Percent Off (%)"
-                    type="number"
-                  />
-                </Layout.Section>
-                <Layout.Section>
-                  <UpdateSellingPlanGroupButton
-                    id={data.sellingPlanGroup.id}
-                    planTitle={planTitle}
-                    percentOff={percentOff}
-                    merchantCode={merchantCode}
-                    interval={interval}
-                    options={options}
-                    sellingPlans={data.sellingPlanGroup.sellingPlans.edges}
-                    toggleActive={toggleActive}
-                    setMsg={setMsg}
-                    setToastError={setToastError}
-                    refetch={refetch}
-                  />
-                </Layout.Section>
-              </Layout>
-            </Card>
-          </Layout.AnnotatedSection>
-        </Layout>
-        {toastMarkup}
-      </Frame>
-    </Page>
-  );
+                    <TextField
+                      value={merchantCode}
+                      onChange={merchantCode => setMerchantCode(merchantCode)}
+                      label="Merchant Code"
+                      type="text"
+                    />
+                    <TextField
+                      value={options}
+                      onChange={options => setOptions(options)}
+                      label="Options"
+                      type="text"
+                    />
+                  </Layout.Section>
+                  <Layout.Section>
+                    <Select
+                      label="Interval"
+                      options={[
+                        { label: 'Weekly', value: 'WEEK' },
+                        { label: 'Monthly', value: 'MONTH' },
+                      ]}
+                      onChange={interval => setInterval(interval)}
+                      value={interval}
+                    />
+                    <TextField
+                      value={percentOff}
+                      onChange={percentOff => setPercentOff(percentOff)}
+                      label="Percent Off (%)"
+                      type="number"
+                    />
+                  </Layout.Section>
+                  <Layout.Section>
+                    <UpdateSellingPlanGroupButton
+                      id={data.sellingPlanGroup.id}
+                      planTitle={planTitle}
+                      percentOff={percentOff}
+                      merchantCode={merchantCode}
+                      interval={interval}
+                      options={options}
+                      sellingPlans={data.sellingPlanGroup.sellingPlans.edges}
+                      toggleActive={toggleActive}
+                      setMsg={setMsg}
+                      setToastError={setToastError}
+                      refetch={refetch}
+                    />
+                  </Layout.Section>
+                </Layout>
+              </Card>
+            </Layout.AnnotatedSection>
+          </Layout>
+          {toastMarkup}
+        </Frame>
+      </Page>
+    );
+  } else {
+    return (
+      <Page>
+        <ErrorState
+          err={`Selling Plan Group (${router?.query.id}) Not Found!`}
+        />
+      </Page>
+    );
+  }
 }
 
 export default SellingPlanGroup;
