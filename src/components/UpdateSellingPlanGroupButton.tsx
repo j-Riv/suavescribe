@@ -71,7 +71,6 @@ function UpdateSellingPlanGroupButton(props: Props) {
         },
       });
     } catch (e) {
-      console.log('Update Selling Plan Group Error', e.message);
       setToastError(true);
       setMsg('Error Updating Selling Plan Group');
       toggleActive();
