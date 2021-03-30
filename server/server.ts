@@ -195,11 +195,6 @@ app.prepare().then(async () => {
     })
   );
 
-  // delete
-  const verifySession = async (ctx: Context, next: Next) => {
-    const shop = ctx.query.shop;
-  };
-
   // GraphQL proxy
   router.post('/graphql', verifyRequest(), async (ctx: Context, next: Next) => {
     await Shopify.Utils.graphqlProxy(ctx.req, ctx.res);
