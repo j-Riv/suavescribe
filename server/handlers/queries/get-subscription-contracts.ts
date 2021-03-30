@@ -1,6 +1,5 @@
 import 'isomorphic-fetch';
-import { gql } from 'apollo-boost';
-import { Context } from 'koa';
+import DefaultClient, { gql } from 'apollo-boost';
 
 export function SUBSCRIPTION_CONTRACTS_GET() {
   return gql`
@@ -16,6 +15,34 @@ export function SUBSCRIPTION_CONTRACTS_GET() {
             id
             status
             nextBillingDate
+            customer {
+              id
+              firstName
+              lastName
+              email
+            }
+            customerPaymentMethod {
+              id
+            }
+            deliveryPrice {
+              currencyCode
+              amount
+            }
+            originOrder {
+              legacyResourceId
+            }
+            lastPaymentStatus
+            customerPaymentMethod {
+              id
+            }
+            deliveryPolicy {
+              interval
+              intervalCount
+            }
+            billingPolicy {
+              interval
+              intervalCount
+            }
           }
         }
       }
@@ -23,14 +50,30 @@ export function SUBSCRIPTION_CONTRACTS_GET() {
   `;
 }
 
-export const getSubscriptionContracts = async client => {
+export const getSubscriptionContracts = async (
+  client: DefaultClient<unknown>,
+  variables: any
+) => {
   const subscriptionContracts = await client
     .query({
       query: SUBSCRIPTION_CONTRACTS_GET(),
+      variables: variables,
     })
-    .then((response: { data: any }) => {
-      return response.data.sellingPlanGroups.edges;
-    });
+    .then(
+      (response: {
+        data: {
+          subscriptionContracts: {
+            pageInfo: {
+              hasNextPage: boolean;
+              hasPreviousPage: boolean;
+            };
+            edges: any[];
+          };
+        };
+      }) => {
+        return response.data.subscriptionContracts;
+      }
+    );
 
   return subscriptionContracts;
 };
