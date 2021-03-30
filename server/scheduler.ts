@@ -8,11 +8,13 @@ const pgStorage = new PgStore();
 export const scheduler = () => {
   console.log('SCHEDULER INIT +++++++++++++');
   // const rule = '*/10 * * * *'; // every 10 seconds for testing
-  const rule = '0 0 6 * * *'; // every day at 6 am
+  const rule = '*/1 * * * *';
+  // const rule = '0 0 6 * * *'; // every day at 6 am
 
   const job = schedule.scheduleJob(rule, async function () {
     console.log('Rule', rule);
-    run();
+    // run();
+    sync();
   });
 };
 
@@ -43,5 +45,15 @@ const run = async () => {
         }
       });
     }
+  });
+};
+
+const sync = async () => {
+  // get active shopify stores
+  const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
+  const shops = Object.keys(ACTIVE_SHOPIFY_SHOPS);
+  shops.forEach(async (shop: string) => {
+    const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
+    await pgStorage.saveAllContracts(shop, token);
   });
 };
