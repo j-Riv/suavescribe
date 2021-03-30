@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import {
   createClient,
   getSubscriptionContract,
+  getSubscriptionContracts,
   updateSubscriptionContract,
   updateSubscriptionDraft,
   commitSubscriptionDraft,
@@ -404,6 +405,48 @@ class PgStore {
       return contractId;
     } catch (err) {
       console.log('Error Updating Contract', err);
+    }
+  };
+
+  /*
+    Get and save all contracts.
+  */
+  saveAllContracts = async (shop: string, token: string) => {
+    try {
+      console.log('SAVING ALL CONTRACTS');
+      // create apollo client
+      const client: DefaultClient<unknown> = createClient(shop, token);
+      const moveAlong = async (after?: string) => {
+        const variables: {
+          first: number;
+          after?: string;
+        } = {
+          first: 3,
+        };
+        if (after) {
+          variables.after = after;
+        }
+        // get
+        const res = await getSubscriptionContracts(client, variables);
+        // save
+        let cursor: string = '';
+        for (let i = 0; i < res.edges.length; i++) {
+          const contract = res.edges[i];
+          const exists = await this.getLocalContract(contract.node.id);
+          if (exists.rowCount > 0) {
+            await this.updateLocalContract(shop, contract.node);
+          } else {
+            await this.createLocalContract(shop, contract.node);
+          }
+          cursor = contract.cursor;
+        }
+        if (res.pageInfo.hasNextPage) {
+          moveAlong(cursor);
+        }
+      };
+      moveAlong();
+    } catch (err) {
+      console.log('Error Getting Contracts');
     }
   };
 }

@@ -45,7 +45,6 @@ function SellingPlanGroups() {
   const app = useAppBridge();
   const redirect = Redirect.create(app);
   const appRedirect = (href: string) => {
-    console.log('redirecting');
     redirect.dispatch(Redirect.Action.APP, href);
   };
 
@@ -59,9 +58,6 @@ function SellingPlanGroups() {
 
   if (loading) return <LoadingSellingPlans tableRows={5} />;
   if (error) return <ErrorState err={error.message} />;
-
-  console.log('QUERY DATA');
-  console.log(data);
 
   return (
     <Page
