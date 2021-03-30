@@ -33,7 +33,6 @@ function UpdatePaymentMethodButton(props: Props) {
         },
       });
     } catch (e) {
-      console.log('Error Sending Payment Method', e.message);
       setToastError(true);
       setMsg('Error Sending Payment Method Email');
       toggleActive();

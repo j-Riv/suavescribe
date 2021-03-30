@@ -4,6 +4,7 @@ import 'isomorphic-fetch';
 import createShopifyAuth, { verifyRequest } from '@shopify/koa-shopify-auth';
 import Shopify, { ApiVersion } from '@shopify/shopify-api';
 import Koa, { Context, Next } from 'koa';
+import session from 'koa-session';
 import next from 'next';
 import Router from 'koa-router';
 import cors from '@koa/cors';
@@ -58,11 +59,16 @@ app.prepare().then(async () => {
   });
   server.use(bodyParser({ enableTypes: ['json', 'text'] }));
 
+  // sets up secure session data on each request
+  server.use(session(server));
+
   const router = new Router();
   server.keys = [Shopify.Context.API_SECRET_KEY];
+  // Offline
   server.use(
     createShopifyAuth({
-      // accessMode: 'offline',
+      accessMode: 'offline',
+      prefix: '/install',
       async afterAuth(ctx) {
         // Access token and shop available in ctx.state.shopify
         const { shop, accessToken, scope } = ctx.state.shopify;
@@ -172,6 +178,18 @@ app.prepare().then(async () => {
         }
 
         // Redirect to app with shop parameter upon auth
+        console.log('ACCESS MODE = OFFLINE');
+        ctx.redirect(`/auth?shop=${shop}`);
+      },
+    })
+  );
+
+  // Online
+  server.use(
+    createShopifyAuth({
+      async afterAuth(ctx) {
+        const { shop } = ctx.state.shopify;
+        console.log('ACCESS MODE = ONLINE');
         ctx.redirect(`/?shop=${shop}`);
       },
     })
@@ -194,7 +212,8 @@ app.prepare().then(async () => {
     // This shop hasn't been seen yet, go through OAuth to create a session
     if (ACTIVE_SHOPIFY_SHOPS[shop as string] === undefined) {
       console.log('STORE DOESNT EXIST LETS AUTHENTICATE');
-      ctx.redirect(`/auth?shop=${shop}`);
+      // ctx.redirect(`/auth?shop=${shop}`);
+      ctx.redirect(`/install/auth?shop=${shop}`);
     } else {
       console.log('STORE EXISTS ===== MOVE ON');
       await handleRequest(ctx);
