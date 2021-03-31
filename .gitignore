@@ -20,3 +20,7 @@ config/tunnel.pid
 # next build output
 .next/
 dist/
+
+# Docker Persistent Data
+database.env
+data/
