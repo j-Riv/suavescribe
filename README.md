@@ -78,6 +78,9 @@ Connect to Postgres Container & Create Tables
 ```bash
 # using psql
 psql -h localhost -U <username> -d postgres
+# Or Create a new Bash Session inside the container
+docker container exec -it postgres /bin/bash
+psql postgres -U <username>
 # Now connected to DB
 # Create Active Shops Table
 CREATE TABLE active_shops (id varchar NOT NULL PRIMARY KEY, scope varchar NOT NULL, access_token varchar NOT NULL);

@@ -300,7 +300,7 @@ class PgStore {
     // const today = '2021-03-25T00:00:00Z';
     try {
       const query = `
-        SELECT * FROM subscription_contracts WHERE next_billing_date = '${today}' AND shop = '${shop}'; 
+        SELECT * FROM subscription_contracts WHERE next_billing_date = '${today}' AND shop = '${shop}' AND status = 'ACTIVE'; 
       `;
       const res = await this.client.query(query);
       console.log('RESPONSE', res.rows);

@@ -42,7 +42,7 @@ function Index() {
   return (
     <Page
       title="Dashboard"
-      titleMetadata={<Badge status="info">Something</Badge>}
+      titleMetadata={<Badge status="success">Active</Badge>}
       subtitle="Subscription Contracts"
     >
       <TitleBar title="Subscriptions" />
