@@ -18,9 +18,7 @@ function LoadingSubscription() {
       <Frame>
         <Loading />
         <TitleBar title="Edit Subscription" />
-        <Heading>
-          <TextStyle variation="positive">Subscription</TextStyle>
-        </Heading>
+        <Heading>Edit Subscription</Heading>
         <Layout>
           <Layout.Section>
             <Card title="Customer" sectioned>
