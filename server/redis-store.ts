@@ -63,7 +63,8 @@ class RedisStore {
         keys.forEach(key => {
           newSession[key] = json[key];
         });
-        newSession.expires = json.expires ? new Date(json.expires) : new Date();
+        newSession.expires = new Date(json.expires);
+        // newSession.expires = json.expires ? new Date(json.expires) : new Date();
         return newSession;
       } else {
         return undefined;

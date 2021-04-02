@@ -50,7 +50,40 @@ CREATE DATABASE databasename;
 \c databasename;
 # Now connected to DB
 # Create Active Shops Table
-CREATE TABLE active_shops (id varchar NOT NULL PRIMARYKEY, scope varchar NOT NULL, access_token varchar NOT NULL);
+CREATE TABLE active_shops (id varchar NOT NULL PRIMARY KEY, scope varchar NOT NULL, access_token varchar NOT NULL);
+# Create Sessions Table
+CREATE TABLE sessions (id varchar NOT NULL PRIMARY KEY, session json NOT NULL);
+# Create Contracts Table
+CREATE TABLE subscription_contracts (id varchar NOT NULL PRIMARY KEY, shop varchar NOT NULL, status varchar NOT NULL, next_billing_date date NOT NULL, interval varchar NOT NULL, interval_count integer NOT NULL, contract json NOT NULL);
+```
+
+## Docker Setup
+
+Install Docker.
+
+Create database.env
+
+```bash
+POSTGRES_USER=THE_USERNAME
+POSTGRES_PASSWORD=THE_PASSWORD
+POSTGRES_DB=THE_DATABASE_NAME
+```
+
+```bash
+docker-compose up -d
+```
+
+Connect to Postgres Container & Create Tables
+
+```bash
+# using psql
+psql -h localhost -U <username> -d postgres
+# Or Create a new Bash Session inside the container
+docker container exec -it postgres /bin/bash
+psql postgres -U <username>
+# Now connected to DB
+# Create Active Shops Table
+CREATE TABLE active_shops (id varchar NOT NULL PRIMARY KEY, scope varchar NOT NULL, access_token varchar NOT NULL);
 # Create Sessions Table
 CREATE TABLE sessions (id varchar NOT NULL PRIMARY KEY, session json NOT NULL);
 # Create Contracts Table
