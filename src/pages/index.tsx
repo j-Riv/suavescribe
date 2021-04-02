@@ -51,19 +51,25 @@ function Index() {
           <Table
             contentTypes={['text', 'text', 'text', 'text', 'text', 'text']}
             headings={[
+              'Status',
               'ID',
               'Email',
               'Customer ID',
-              'Created At',
               'Next Order Date',
               'Actions',
             ]}
             rows={subscriptionContracts.map(contract => {
               return [
+                <Badge
+                  status={
+                    contract.node.status === 'ACTIVE' ? 'success' : 'warning'
+                  }
+                >
+                  {contract.node.status}
+                </Badge>,
                 formatId(contract.node.id),
                 contract.node.customer.email,
                 formatId(contract.node.customer.id),
-                formatDate(contract.node.createdAt),
                 formatDate(contract.node.nextBillingDate),
                 <Button
                   plain

@@ -31,6 +31,7 @@ function EditSubscription() {
   const app = useAppBridge();
   const redirect = Redirect.create(app);
   // State
+  const [status, setStatus] = useState<string>();
   const [contractId, setContractId] = useState<string>();
   const [nextBillingDate, setNextBillingDate] = useState<string>();
   const [lineItems, setLineItems] = useState<any[]>();
@@ -69,6 +70,7 @@ function EditSubscription() {
   const setInitialData = (data: any) => {
     if (data.subscriptionContract) {
       const d = data.subscriptionContract;
+      setStatus(d.status);
       setContractId(d.id);
       setNextBillingDate(d.nextBillingDate.split('T')[0]);
       setLineItem(d.lines.edges[0].node.productId);
@@ -97,6 +99,11 @@ function EditSubscription() {
     setLineItemQuantity(quantity);
   };
 
+  const handleStatusChange = (status: string) => {
+    setStatus(status);
+  };
+
+  // Redirects
   const adminRedirect = (href: string) => {
     redirect.dispatch(Redirect.Action.ADMIN_PATH, href);
   };
@@ -119,7 +126,7 @@ function EditSubscription() {
             status={
               data.subscriptionContract.status === 'ACTIVE'
                 ? 'success'
-                : 'attention'
+                : 'warning'
             }
           >
             {data.subscriptionContract.status}
@@ -138,6 +145,31 @@ function EditSubscription() {
                 adminRedirect={adminRedirect}
               />
             </Layout.Section>
+            <Layout.AnnotatedSection title="Status" description="Update Status">
+              <Card sectioned>
+                <Select
+                  label="Status"
+                  options={[
+                    { label: 'Active', value: 'ACTIVE' },
+                    { label: 'Cancel', value: 'CANCELLED' },
+                    { label: 'Pause', value: 'PAUSED' },
+                  ]}
+                  onChange={status => handleStatusChange(status)}
+                  value={status}
+                />
+                <Stack distribution="trailing">
+                  <UpdateSubscriptionButton
+                    contractId={contractId}
+                    input={{ status: status }}
+                    lineId={null}
+                    toggleActive={toggleActive}
+                    setMsg={setMsg}
+                    setToastError={setToastError}
+                    refetch={refetch}
+                  />
+                </Stack>
+              </Card>
+            </Layout.AnnotatedSection>
             <Layout.AnnotatedSection
               title="Next Billing Date"
               description="Change / Update Next Billing Date"
