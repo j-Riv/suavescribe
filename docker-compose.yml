@@ -1,0 +1,31 @@
+version: '3.7'
+
+services:
+  # redis
+  redis:
+    image: 'redis'
+    container_name: 'redis'
+    restart: always
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '6379:6379'
+    volumes:
+      - './data/redis:/data'
+  # postgres
+  postgres:
+    image: 'postgres'
+    env_file:
+      - database.env
+    container_name: 'postgres'
+    restart: always
+    ports:
+      - '5432:5432'
+    volumes:
+      - './data/postgres:/var/lib/postgresql/data'
+# networks:
+#   traefik_proxy:
+#     external:
+#       name: traefik_proxy
+#   default:
+#     driver: bridge
+# volumes:

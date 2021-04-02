@@ -4,7 +4,6 @@ import 'isomorphic-fetch';
 import createShopifyAuth, { verifyRequest } from '@shopify/koa-shopify-auth';
 import Shopify, { ApiVersion } from '@shopify/shopify-api';
 import Koa, { Context, Next } from 'koa';
-import session from 'koa-session';
 import next from 'next';
 import Router from 'koa-router';
 import cors from '@koa/cors';
@@ -47,7 +46,7 @@ app.prepare().then(async () => {
     ACTIVE_SHOPIFY_SHOPS
   );
   // init scheduler
-  scheduler();
+  // scheduler();
 
   const server = new Koa();
   // Add cors & bodyparser
@@ -59,10 +58,8 @@ app.prepare().then(async () => {
   });
   server.use(bodyParser({ enableTypes: ['json', 'text'] }));
 
-  // sets up secure session data on each request
-  server.use(session(server));
-
   const router = new Router();
+  server.keys = [Shopify.Context.API_SECRET_KEY];
   server.keys = [Shopify.Context.API_SECRET_KEY];
   // Offline
   server.use(
@@ -196,9 +193,17 @@ app.prepare().then(async () => {
   );
 
   // GraphQL proxy
-  router.post('/graphql', verifyRequest(), async (ctx: Context, next: Next) => {
-    await Shopify.Utils.graphqlProxy(ctx.req, ctx.res);
-  });
+  router.post(
+    '/graphql',
+    verifyRequest({
+      returnHeader: true,
+      authRoute: `/auth`,
+      fallbackRoute: `/install/auth`,
+    }),
+    async (ctx: Context, next: Next) => {
+      await Shopify.Utils.graphqlProxy(ctx.req, ctx.res);
+    }
+  );
 
   const handleRequest = async (ctx: Context) => {
     await handle(ctx.req, ctx.res);
@@ -209,10 +214,9 @@ app.prepare().then(async () => {
   router.get('/', async (ctx: Context) => {
     const shop = ctx.query.shop;
     console.log('SHOP ====>', shop);
+    console.log();
     // This shop hasn't been seen yet, go through OAuth to create a session
     if (ACTIVE_SHOPIFY_SHOPS[shop as string] === undefined) {
-      console.log('STORE DOESNT EXIST LETS AUTHENTICATE');
-      // ctx.redirect(`/auth?shop=${shop}`);
       ctx.redirect(`/install/auth?shop=${shop}`);
     } else {
       console.log('STORE EXISTS ===== MOVE ON');
@@ -235,8 +239,8 @@ app.prepare().then(async () => {
 
   router.get('(/_next/static/.*)', handleRequest); // Static content is clear
   router.get('/_next/webpack-hmr', handleRequest); // Webpack content is clear
-  // router.get('(.*)', verifyRequest(), handleRequest);
-  router.get('(.*)', handleRequest);
+  router.get('/subscriptions', handleRequest);
+  router.get('(.*)', verifyRequest(), handleRequest);
 
   server.use(router.allowedMethods());
   server.use(router.routes());
