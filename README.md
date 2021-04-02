@@ -61,6 +61,8 @@ CREATE TABLE subscription_contracts (id varchar NOT NULL PRIMARY KEY, shop varch
 
 Install Docker.
 
+Create Data directory for persistent data.
+
 Create database.env
 
 ```bash
