@@ -5,6 +5,7 @@ Embedded Shopify Subscription app made with Node, [Next.js](https://nextjs.org/)
 Under Development
 
 ## Environmental Variables
+/app/.env
 
 ```javascript
 SHOPIFY_API_KEY = 'YOUR_SHOPIFY_API_KEY';
