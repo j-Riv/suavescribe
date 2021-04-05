@@ -5,27 +5,48 @@ services:
   redis:
     image: 'redis'
     container_name: 'redis'
+    hostname: redis
     restart: always
-    command: ['redis-server', '--appendonly', 'yes']
+    command: ['redis-server', '/usr/local/etc/redis/redis.conf', '--appendonly', 'yes', '--bind', 'redis', '--port', '6379']
     ports:
-      - '6379:6379'
+      - 6379:6379
     volumes:
+      - './data/redis/redis.conf:/usr/local/etc/redis/redis.conf'
       - './data/redis:/data'
+    networks:
+      - default
   # postgres
   postgres:
     image: 'postgres'
     env_file:
       - database.env
     container_name: 'postgres'
+    hostname: postgres
     restart: always
     ports:
-      - '5432:5432'
+      - 5432:5432
     volumes:
       - './data/postgres:/var/lib/postgresql/data'
-# networks:
-#   traefik_proxy:
-#     external:
-#       name: traefik_proxy
-#   default:
-#     driver: bridge
-# volumes:
+    networks:
+      - default
+  # app
+  suavescribe:
+    image: 'jriv/suavescribe:latest'
+    container_name: 'suavescribe'
+    restart: always
+    ports:
+      - 8081:8081
+    volumes:
+      - './app:/usr/app'
+    depends_on:
+      - redis
+      - postgres
+    links:
+      - redis
+      - postgres
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
