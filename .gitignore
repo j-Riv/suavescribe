@@ -23,8 +23,6 @@ dist/
 
 # Docker Persistent Data
 database.env
+data/postgres
 data/redis/*
-!data/redis/.gitkeep
 !data/redis/redis.conf
-data/postgres/*
-!data/postgres/.gitkeep
