@@ -19,7 +19,8 @@ class RedisStore {
 
   constructor() {
     // Create a new redis client
-    this.client = redis.createClient({ host: 'redis' });
+    this.client = redis.createClient();
+    // this.client = redis.createClient({ host: 'redis' });
     // Use Node's `promisify` to have redis return a promise from the client methods
     this.getAsync = promisify(this.client.get).bind(this.client);
     this.setAsync = promisify(this.client.set).bind(this.client);
@@ -33,7 +34,7 @@ class RedisStore {
     Otherwise, return false
   */
   storeCallback = async (session: Session) => {
-    console.log('STORING SESSION', JSON.stringify(session.id));
+    // console.log('STORING SESSION', JSON.stringify(session.id));
     try {
       // Inside our try, we use the `setAsync` method to save our session.
       // This method returns a boolean (true is successful, false if not)
@@ -50,7 +51,7 @@ class RedisStore {
      Otherwise, return undefined
   */
   loadCallback = async (id: string) => {
-    console.log('LOADING SESSION', JSON.stringify(id));
+    // console.log('LOADING SESSION', JSON.stringify(id));
     try {
       // Inside our try, we use `getAsync` to access the method by id
       // If we receive data back, we parse and return it
@@ -80,7 +81,7 @@ class RedisStore {
     Otherwise, return false
   */
   deleteCallback = async (id: string) => {
-    console.log('DELETING', id);
+    // console.log('DELETING', id);
     try {
       // Inside our try, we use the `delAsync` method to delete our session.
       // This method returns a boolean (true is successful, false if not)
