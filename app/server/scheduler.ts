@@ -7,13 +7,17 @@ const pgStorage = new PgStore();
 
 export const scheduler = () => {
   console.log('SCHEDULER INIT +++++++++++++');
-  // const rule = '*/10 * * * *'; // every 10 seconds for testing
-  const rule = '*/1 * * * *';
-  // const rule = '0 0 6 * * *'; // every day at 6 am
+  const every10sec = '*/10 * * * *'; // every 10 seconds for testing
+  const everymin = '*/1 * * * *'; // every min
+  const everyday6am = '0 0 6 * * *'; // every day at 6 am
+  const everyday12am = '0 0 0 * * *'; // every day at 12 am
 
-  const job = schedule.scheduleJob(rule, async function () {
-    console.log('Rule', rule);
-    // run();
+  const scheduleJob = schedule.scheduleJob(everyday6am, async function () {
+    console.log('Rule', everyday6am);
+    run();
+  });
+  const syncJob = schedule.scheduleJob(everyday12am, async function () {
+    console.log('Rule', everyday12am);
     sync();
   });
 };
