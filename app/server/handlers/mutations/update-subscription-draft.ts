@@ -1,5 +1,5 @@
 import 'isomorphic-fetch';
-import DefaultClient, { gql } from 'apollo-boost';
+import { gql, ApolloClient } from '@apollo/client';
 
 export function SUBSCRIPTION_DRAFT_UPDATE() {
   return gql`
@@ -22,7 +22,7 @@ export function SUBSCRIPTION_DRAFT_UPDATE() {
 }
 
 export const updateSubscriptionDraft = async (
-  client: DefaultClient<unknown>,
+  client: ApolloClient<unknown>,
   draftId: string,
   input: any
 ) => {

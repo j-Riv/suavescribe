@@ -1,5 +1,5 @@
 import 'isomorphic-fetch';
-import { gql } from 'apollo-boost';
+import { gql } from '@apollo/client';
 import { Context } from 'koa';
 
 export function ONETIME_CREATE(url: string) {

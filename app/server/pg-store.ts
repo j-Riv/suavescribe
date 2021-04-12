@@ -10,7 +10,7 @@ import {
   updateSubscriptionDraft,
   commitSubscriptionDraft,
 } from './handlers';
-import DefaultClient from 'apollo-boost';
+import { ApolloClient } from '@apollo/client';
 import { generateNextBillingDate } from './utils';
 dotenv.config();
 
@@ -306,7 +306,7 @@ class PgStore {
     body = JSON.parse(body);
 
     try {
-      const client: DefaultClient<unknown> = createClient(shop, token);
+      const client: ApolloClient<unknown> = createClient(shop, token);
       const contract = await getSubscriptionContract(
         client,
         body.admin_graphql_api_id
@@ -324,7 +324,7 @@ class PgStore {
 
     try {
       const exists = await this.getLocalContract(id);
-      const client: DefaultClient<unknown> = createClient(shop, token);
+      const client: ApolloClient<unknown> = createClient(shop, token);
       const contract = await getSubscriptionContract(
         client,
         body.admin_graphql_api_id
@@ -352,7 +352,7 @@ class PgStore {
 
     try {
       // create apollo client
-      const client: DefaultClient<unknown> = createClient(shop, token);
+      const client: ApolloClient<unknown> = createClient(shop, token);
       // check if contract exists
       let contract = await this.getLocalContract(id);
       // if it doesnt get it from Shopify and insert into database
@@ -401,7 +401,7 @@ class PgStore {
     try {
       console.log('SAVING ALL CONTRACTS');
       // create apollo client
-      const client: DefaultClient<unknown> = createClient(shop, token);
+      const client: ApolloClient<unknown> = createClient(shop, token);
       const moveAlong = async (after?: string) => {
         const variables: {
           first: number;
