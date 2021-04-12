@@ -71,7 +71,7 @@ function MyApp({ Component, pageProps, shopOrigin }) {
 
       <Provider
         config={{
-          /* eslint:disable-next-line */
+          // @ts-ignore
           apiKey: API_KEY,
           shopOrigin: shopOrigin,
           forceRedirect: true,
