@@ -1,5 +1,5 @@
 import 'isomorphic-fetch';
-import DefaultClient, { gql } from 'apollo-boost';
+import { gql, ApolloClient } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
 
 export function CREATE_SUBSCRIPTION_BILLING_ATTEMPT() {
@@ -26,7 +26,7 @@ export function CREATE_SUBSCRIPTION_BILLING_ATTEMPT() {
 }
 
 export const createSubscriptionBillingAttempt = async (
-  client: DefaultClient<unknown>,
+  client: ApolloClient<unknown>,
   subscriptionContractId: string
 ) => {
   const variables = {
