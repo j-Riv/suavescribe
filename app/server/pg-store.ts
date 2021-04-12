@@ -19,16 +19,16 @@ class PgStore {
 
   constructor() {
     // Create a new pg client
-    // this.client = new Client({
-    //   user: process.env.PG_USER,
-    //   host: process.env.PG_HOST,
-    //   database: process.env.PG_DB,
-    //   password: process.env.PG_PASSWORD,
-    //   port: Number(process.env.PG_PORT) || 5432,
-    // });
-    this.client = new Client(
-      `postgres://${process.env.PG_USER}:${process.env.PG_PASSWORD}@postgres:5432/${process.env.PG_DB}`
-    );
+    this.client = new Client({
+      user: process.env.PG_USER,
+      host: process.env.PG_HOST,
+      database: process.env.PG_DB,
+      password: process.env.PG_PASSWORD,
+      port: Number(process.env.PG_PORT) || 5432,
+    });
+    // this.client = new Client(
+    //   `postgres://${process.env.PG_USER}:${process.env.PG_PASSWORD}@postgres:5432/${process.env.PG_DB}`
+    // );
     this.client.connect();
   }
 
@@ -36,7 +36,6 @@ class PgStore {
     This loads all Active Shops
   */
   loadActiveShops = async () => {
-    console.log('LOADING ACTIVE SHOPS');
     const query = `
       SELECT * FROM active_shops;  
     `;
@@ -69,7 +68,6 @@ class PgStore {
     This takes in the Store Name and loads the stored Token and Scopes from the database.
   */
   loadCurrentShop = async (name: string) => {
-    console.log('LOADING ACTIVE SHOP', name);
     const query = `
       SELECT * FROM active_shops WHERE id = '${name}';  
     `;
@@ -118,7 +116,6 @@ class PgStore {
     accessToken: string;
   }) => {
     const { shop, scope, accessToken } = data;
-    console.log('STORING ACTIVE SHOP', shop);
     const query = `
       INSERT INTO active_shops (id, scope, access_token) VALUES ('${shop}', '${scope}', '${accessToken}') RETURNING *;
     `;
@@ -157,7 +154,6 @@ class PgStore {
     Otherwise, return false
   */
   storeCallback = async (session: Session) => {
-    console.log('STORING SESSION', session.id);
     const query = `
       INSERT INTO sessions (id, session) VALUES ('${
         session.id
@@ -173,10 +169,7 @@ class PgStore {
         `SELECT * FROM sessions WHERE id = '${session.id}';`
       );
 
-      console.log('EXISTS', exists);
-
       if (exists.rowCount > 0) {
-        console.log('UPDATING ===>', session.id);
         const res = await this.client.query(updateQuery);
         if (res.rows[0]) {
           return res.rows[0];
@@ -184,7 +177,6 @@ class PgStore {
           return false;
         }
       } else {
-        console.log('CREATING ===>', session.id);
         const res = await this.client.query(query);
         if (res.rows[0]) {
           return res.rows[0];
@@ -204,15 +196,12 @@ class PgStore {
      Otherwise, return undefined
   */
   loadCallback = async (id: string) => {
-    console.log('LOADING SESSION', id);
     const query = `
       SELECT * FROM sessions WHERE id = '${id}';
     `;
     try {
       const res = await this.client.query(query);
-      console.log('RESULT', res.rowCount);
       if (res.rowCount > 0) {
-        console.log('SESSION FOUND');
         const json = res.rows[0].session;
         const newSession = new Session(json.id);
         const keys = Object.keys(json);
@@ -236,7 +225,6 @@ class PgStore {
     Otherwise, return false
   */
   deleteCallback = async (id: string) => {
-    console.log('DELETING', id);
     const query = `
       DELETE FROM sessions WHERE id = '${id}';
     `;
@@ -297,7 +285,6 @@ class PgStore {
     Gets all contracts with Next Billing Date of Today for a given store.
   */
   getLocalContractsByShop = async (shop: string) => {
-    console.log('GETTING ALL CONTRACTS FOR SHOP:', shop);
     const today = new Date().toISOString().substring(0, 10) + 'T00:00:00Z';
     // testing
     // const today = '2021-03-25T00:00:00Z';
@@ -306,7 +293,6 @@ class PgStore {
         SELECT * FROM subscription_contracts WHERE next_billing_date = '${today}' AND shop = '${shop}' AND status = 'ACTIVE'; 
       `;
       const res = await this.client.query(query);
-      console.log('RESPONSE', res.rows);
       return res.rows;
     } catch (err) {
       console.log('ERROR GETTING CONTRACTS', err);
@@ -315,7 +301,6 @@ class PgStore {
 
   // Webhooks
   createContract = async (shop: string, token: string, body: any) => {
-    console.log('CREATING CONTRACT');
     body = JSON.parse(body);
 
     try {
@@ -337,21 +322,17 @@ class PgStore {
 
     try {
       const exists = await this.getLocalContract(id);
-      console.log('Exists', exists);
       const client: DefaultClient<unknown> = createClient(shop, token);
       const contract = await getSubscriptionContract(
         client,
         body.admin_graphql_api_id
       );
-      console.log('CONTRACT FROM SHOPIFY', JSON.stringify(contract));
       let res: any;
       if (exists.rowCount > 0) {
         res = await this.updateLocalContract(shop, contract);
       } else {
         res = await this.createLocalContract(shop, contract);
       }
-      // const res = await this.client.query(query);
-      console.log('UPDATED RESPONSE', res);
       return res.rowCount > 0;
     } catch (err) {
       console.log('Error Updating Contract', err);

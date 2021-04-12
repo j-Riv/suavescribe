@@ -46,7 +46,7 @@ app.prepare().then(async () => {
     ACTIVE_SHOPIFY_SHOPS
   );
   // init scheduler
-  // scheduler();
+  scheduler();
 
   const server = new Koa();
   // Add cors & bodyparser

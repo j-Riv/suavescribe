@@ -23,10 +23,13 @@ const verifyJwt = async (ctx: Context, next: Next) => {
     // decode
     const decoded: any = jwt.verify(
       token as string,
-      process.env.SHOPIFY_API_SECRET!
+      process.env.SHOPIFY_API_SECRET!,
+      {
+        complete: true,
+      }
     );
     // set shop
-    ctx.state.shop = decoded.dest.replace(/https:\/\//, '');
+    ctx.state.shop = decoded.payload.dest.replace(/https:\/\//, '');
     await next();
   } catch (err) {
     console.log('Error', err.message);
