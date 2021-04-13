@@ -12,6 +12,7 @@ import {
   getSellingPlanById,
 } from '../handlers';
 import PgStore from '../pg-store';
+import logger from '../logger';
 dotenv.config();
 
 const pgStorage = new PgStore();
@@ -29,7 +30,7 @@ export const getAllSubscriptionGroups = async (ctx: Context) => {
       return (ctx.status = 401);
     }
   } catch (err) {
-    console.log('Error', err);
+    logger.log('error', err.message);
     return (ctx.status = 500);
   }
 };
@@ -47,7 +48,7 @@ export const getSubscriptionGroup = async (ctx: Context) => {
       return (ctx.status = 401);
     }
   } catch (err) {
-    console.log('Error', err);
+    logger.log('error', err.message);
     return (ctx.status = 500);
   }
 };
@@ -65,7 +66,7 @@ export const addProductToSubscriptionPlanGroup = async (ctx: Context) => {
       return (ctx.status = 401);
     }
   } catch (err) {
-    console.log('Error', err);
+    logger.log('error', err.message);
     return (ctx.status = 500);
   }
 };
@@ -83,7 +84,7 @@ export const createSubscriptionPlanGroup = async (ctx: Context) => {
       return (ctx.status = 401);
     }
   } catch (err) {
-    console.log('Error', err);
+    logger.log('error', err.message);
     return (ctx.status = 500);
   }
 };
@@ -101,7 +102,7 @@ export const editSubscriptionPlanGroup = async (ctx: Context) => {
       return (ctx.status = 401);
     }
   } catch (err) {
-    console.log('Error', err);
+    logger.log('error', err.message);
     return (ctx.status = 500);
   }
 };
@@ -119,7 +120,7 @@ export const removeProductFromSubscriptionPlanGroup = async (ctx: Context) => {
       return (ctx.status = 401);
     }
   } catch (err) {
-    console.log('Error', err);
+    logger.log('error', err.message);
     return (ctx.status = 500);
   }
 };
@@ -137,7 +138,7 @@ export const deleteSubscriptionPlanGroup = async (ctx: Context) => {
       return (ctx.status = 401);
     }
   } catch (err) {
-    console.log('Error', err);
+    logger.log('error', err.message);
     return (ctx.status = 500);
   }
 };
