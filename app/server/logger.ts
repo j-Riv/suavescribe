@@ -1,7 +1,29 @@
-import { createLogger, format, transports } from 'winston';
+import {
+  createLogger,
+  format,
+  transports,
+  config,
+  Logger,
+  LeveledLogMethod,
+} from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
-const logger = createLogger({
+const customLevels: config.AbstractConfigSetLevels = {
+  error: 0,
+  warn: 1,
+  info: 2,
+  http: 3,
+  verbose: 4,
+  debug: 5,
+  access: 6,
+};
+
+interface CustomLevels extends Logger {
+  access: LeveledLogMethod;
+}
+
+const logger: CustomLevels = <CustomLevels>createLogger({
+  levels: customLevels,
   level: 'info',
   format: format.combine(
     format.timestamp({
@@ -28,6 +50,14 @@ const logger = createLogger({
       maxSize: '20m',
       maxFiles: '14d',
     }),
+    new DailyRotateFile({
+      level: 'access',
+      filename: './logs/suavescribe-access-%DATE%.log',
+      datePattern: 'YYYY-MM-DD-HH',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '14d',
+    }),
   ],
 });
 
@@ -42,5 +72,11 @@ if (process.env.NODE_ENV !== 'production') {
     })
   );
 }
+
+export const stream = {
+  write: (message: any) => {
+    logger.access(message);
+  },
+};
 
 export default logger;
