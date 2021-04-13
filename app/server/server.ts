@@ -7,6 +7,8 @@ import Koa, { Context, Next } from 'koa';
 import next from 'next';
 import Router from 'koa-router';
 import cors from '@koa/cors';
+import morgan from 'koa-morgan';
+import rfs from 'rotating-file-stream';
 import bodyParser from 'koa-bodyparser';
 import subscriptionRouter from './routes/subscriptions';
 import RedisStore from './redis-store';
@@ -39,6 +41,12 @@ Shopify.Context.initialize({
 });
 
 app.prepare().then(async () => {
+  // create a write stream (in append mode)
+  const accessLogStream = rfs.createStream('./logs/access.log', {
+    size: '10M', // rotate every 10 MegaBytes written
+    interval: '1d', // rotate daily
+    compress: 'gzip', // compress rotated files
+  });
   // Storing the currently active shops in memory will force them to re-login when your server restarts. You should
   // persist this object in your app.
   const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
@@ -48,6 +56,8 @@ app.prepare().then(async () => {
   scheduler();
 
   const server = new Koa();
+  // setup access logger
+  server.use(morgan('combined', { stream: accessLogStream }));
   // Add cors & bodyparser
   server.use(cors());
   server.use(async (ctx, next) => {
