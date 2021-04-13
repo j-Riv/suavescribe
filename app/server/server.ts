@@ -49,6 +49,7 @@ app.prepare().then(async () => {
   scheduler();
 
   const server = new Koa();
+  server.proxy = true;
   // setup access logger
   server.use(morgan('combined', { stream: stream }));
   // Add cors & bodyparser
