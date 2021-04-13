@@ -8,13 +8,12 @@ import next from 'next';
 import Router from 'koa-router';
 import cors from '@koa/cors';
 import morgan from 'koa-morgan';
-import rfs from 'rotating-file-stream';
 import bodyParser from 'koa-bodyparser';
 import subscriptionRouter from './routes/subscriptions';
 import RedisStore from './redis-store';
 import PgStore from './pg-store';
 import { scheduler } from './scheduler';
-import logger from './logger';
+import logger, { stream } from './logger';
 
 dotenv.config();
 const sessionStorage = new RedisStore();
@@ -41,12 +40,6 @@ Shopify.Context.initialize({
 });
 
 app.prepare().then(async () => {
-  // create a write stream (in append mode)
-  const accessLogStream = rfs.createStream('./logs/access.log', {
-    size: '10M', // rotate every 10 MegaBytes written
-    interval: '1d', // rotate daily
-    compress: 'gzip', // compress rotated files
-  });
   // Storing the currently active shops in memory will force them to re-login when your server restarts. You should
   // persist this object in your app.
   const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
@@ -57,7 +50,7 @@ app.prepare().then(async () => {
 
   const server = new Koa();
   // setup access logger
-  server.use(morgan('combined', { stream: accessLogStream }));
+  server.use(morgan('combined', { stream: stream }));
   // Add cors & bodyparser
   server.use(cors());
   server.use(async (ctx, next) => {
