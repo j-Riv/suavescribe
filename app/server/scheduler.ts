@@ -2,28 +2,28 @@ import schedule from 'node-schedule';
 import PgStore from './pg-store';
 import 'isomorphic-fetch';
 import { createClient, createSubscriptionBillingAttempt } from './handlers';
+import logger from './logger';
 
 const pgStorage = new PgStore();
 
 export const scheduler = () => {
-  console.log('SCHEDULER INIT +++++++++++++');
+  logger.log('info', `Scheduler initialized ...`);
   const every10sec = '*/10 * * * *'; // every 10 seconds for testing
   const everymin = '*/1 * * * *'; // every min
   const everyday6am = '0 0 6 * * *'; // every day at 6 am
   const everyday12am = '0 0 0 * * *'; // every day at 12 am
 
   const scheduleJob = schedule.scheduleJob(everyday6am, async function () {
-    console.log('Rule', everyday6am);
+    logger.log('info', `Running Billing Attempt Rule: ${everyday6am}`);
     run();
   });
   const syncJob = schedule.scheduleJob(everyday12am, async function () {
-    console.log('Rule', everyday12am);
+    logger.log('info', `Running Contract Sync Rule: ${everyday12am}`);
     sync();
   });
 };
 
 const run = async () => {
-  console.log('SCHEDULER HAS STARTED +++++++++++++');
   // get active shopify stores
   const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
   const shops = Object.keys(ACTIVE_SHOPIFY_SHOPS);
@@ -43,9 +43,9 @@ const run = async () => {
             client,
             contract.id
           );
-          console.log('Billing Attempt', billingAttempt);
+          logger.log('info', `Created Billing Attempt: ${billingAttempt}`);
         } catch (err) {
-          console.log('ERROR', err);
+          logger.log('error', err.message);
         }
       });
     }
@@ -57,7 +57,12 @@ const sync = async () => {
   const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
   const shops = Object.keys(ACTIVE_SHOPIFY_SHOPS);
   shops.forEach(async (shop: string) => {
-    const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
-    await pgStorage.saveAllContracts(shop, token);
+    try {
+      logger.log('info', `Syncing contracts for shop: ${shop}`);
+      const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
+      await pgStorage.saveAllContracts(shop, token);
+    } catch (err) {
+      logger.log('error', err.message);
+    }
   });
 };

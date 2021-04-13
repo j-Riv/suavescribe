@@ -53,7 +53,9 @@
     "store-js": "^2.0.4",
     "styled-components": "^5.2.1",
     "uuid": "^8.3.2",
-    "webpack": "^4.44.1"
+    "webpack": "^4.44.1",
+    "winston": "^3.3.3",
+    "winston-daily-rotate-file": "^4.5.2"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.12.10",
