@@ -1,6 +1,5 @@
 import 'isomorphic-fetch';
-import DefaultClient, { gql } from 'apollo-boost';
-import { stringify } from 'node:querystring';
+import { gql, ApolloClient } from '@apollo/client';
 
 export function SUBSCRIPTION_CONTRACT_GET() {
   return gql`
@@ -75,7 +74,7 @@ export function SUBSCRIPTION_CONTRACT_GET() {
 }
 
 export const getSubscriptionContract = async (
-  client: DefaultClient<unknown>,
+  client: ApolloClient<unknown>,
   id: string
 ) => {
   const subscriptionContract = await client

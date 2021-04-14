@@ -4,6 +4,7 @@
 import { Session } from '@shopify/shopify-api/dist/auth/session';
 import redis from 'redis';
 import { promisify } from 'util';
+import logger from './logger';
 
 class RedisStore {
   private client: redis.RedisClient;
@@ -36,13 +37,14 @@ class RedisStore {
     Otherwise, return false
   */
   storeCallback = async (session: Session) => {
-    // console.log('STORING SESSION', JSON.stringify(session.id));
+    logger.log('info', `Storing session: ${session.id}`);
     try {
       // Inside our try, we use the `setAsync` method to save our session.
       // This method returns a boolean (true is successful, false if not)
       return await this.setAsync(session.id, JSON.stringify(session));
     } catch (err) {
       // throw errors, and handle them gracefully in your application
+      logger.log('error', err.message);
       throw new Error(err);
     }
   };
@@ -53,7 +55,7 @@ class RedisStore {
      Otherwise, return undefined
   */
   loadCallback = async (id: string) => {
-    // console.log('LOADING SESSION', JSON.stringify(id));
+    logger.log('info', `Loading session: ${id}`);
     try {
       // Inside our try, we use `getAsync` to access the method by id
       // If we receive data back, we parse and return it
@@ -73,6 +75,7 @@ class RedisStore {
         return undefined;
       }
     } catch (err) {
+      logger.log('error', err.message);
       throw new Error(err);
     }
   };
@@ -83,12 +86,14 @@ class RedisStore {
     Otherwise, return false
   */
   deleteCallback = async (id: string) => {
+    logger.log('info', `Deleting session: ${id}`);
     // console.log('DELETING', id);
     try {
       // Inside our try, we use the `delAsync` method to delete our session.
       // This method returns a boolean (true is successful, false if not)
       return await this.delAsync(id);
     } catch (err) {
+      logger.log('error', err.message);
       throw new Error(err);
     }
   };

@@ -7,11 +7,13 @@ import Koa, { Context, Next } from 'koa';
 import next from 'next';
 import Router from 'koa-router';
 import cors from '@koa/cors';
+import morgan from 'koa-morgan';
 import bodyParser from 'koa-bodyparser';
 import subscriptionRouter from './routes/subscriptions';
 import RedisStore from './redis-store';
 import PgStore from './pg-store';
 import { scheduler } from './scheduler';
+import logger, { stream } from './logger';
 
 dotenv.config();
 const sessionStorage = new RedisStore();
@@ -41,14 +43,15 @@ app.prepare().then(async () => {
   // Storing the currently active shops in memory will force them to re-login when your server restarts. You should
   // persist this object in your app.
   const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
-  console.log(
-    '++++++++++++++ ACTIVE_SHOPIFY_SHOPS ++++++++++++++',
-    ACTIVE_SHOPIFY_SHOPS
-  );
+  const shops = Object.keys(ACTIVE_SHOPIFY_SHOPS);
+  logger.log('info', `Loaded Active Shops: ${shops}`);
   // init scheduler
   scheduler();
 
   const server = new Koa();
+  server.proxy = true;
+  // setup access logger
+  server.use(morgan('combined', { stream: stream }));
   // Add cors & bodyparser
   server.use(cors());
   server.use(async (ctx, next) => {
@@ -80,7 +83,7 @@ app.prepare().then(async () => {
             path: '/webhooks',
             topic: 'APP_UNINSTALLED',
             webhookHandler: async (_topic, shop, _body) => {
-              console.log('App uninstalled');
+              logger.log('info', `App uninstalled: ${shop}`);
               delete ACTIVE_SHOPIFY_SHOPS[shop];
               pgStorage.deleteActiveShop(shop);
             },
@@ -88,7 +91,8 @@ app.prepare().then(async () => {
         );
 
         if (!registerUninstallWebhook.success) {
-          console.log(
+          logger.log(
+            'error',
             `Failed to register APP_UNINSTALLED webhook: ${registerUninstallWebhook.result}`
           );
         }
@@ -100,7 +104,7 @@ app.prepare().then(async () => {
             path: '/webhooks',
             topic: 'SUBSCRIPTION_CONTRACTS_CREATE',
             webhookHandler: async (_topic, shop, body) => {
-              console.log('SUBSCRIPTION_CONTRACTS_CREATE');
+              logger.log('info', `Subscription Contract Create Webhook`);
               const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
               pgStorage.createContract(shop, token, body);
             },
@@ -108,7 +112,8 @@ app.prepare().then(async () => {
         );
 
         if (!registerCreateSubscription.success) {
-          console.log(
+          logger.log(
+            'error',
             `Failed to register APP_UNINSTALLED webhook: ${registerCreateSubscription.result}`
           );
         }
@@ -120,7 +125,7 @@ app.prepare().then(async () => {
             path: '/webhooks',
             topic: 'SUBSCRIPTION_CONTRACTS_UPDATE',
             webhookHandler: async (_topic, shop, body) => {
-              console.log('SUBSCRIPTION_CONTRACTS_UPDATE');
+              logger.log('info', `Subscription Contract Update Webhook`);
               const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
               pgStorage.updateContract(shop, token, body);
             },
@@ -128,7 +133,8 @@ app.prepare().then(async () => {
         );
 
         if (!registerUpdateSubscription.success) {
-          console.log(
+          logger.log(
+            'error',
             `Failed to register APP_UNINSTALLED webhook: ${registerUpdateSubscription.result}`
           );
         }
@@ -140,7 +146,10 @@ app.prepare().then(async () => {
             path: '/webhooks',
             topic: 'SUBSCRIPTION_BILLING_ATTEMPTS_SUCCESS',
             webhookHandler: async (_topic, shop, body) => {
-              console.log('SUBSCRIPTION_BILLING_ATTEMPTS_SUCCESS');
+              logger.log(
+                'info',
+                `Subscription Billing Attempt Success Webhook`
+              );
               const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
               pgStorage.updateNextBillingDate(shop, token, body);
             },
@@ -148,7 +157,8 @@ app.prepare().then(async () => {
         );
 
         if (!registerBillingAttemptSuccess.success) {
-          console.log(
+          logger.log(
+            'error',
             `Failed to register APP_UNINSTALLED webhook: ${registerBillingAttemptSuccess.result}`
           );
         }
@@ -161,21 +171,26 @@ app.prepare().then(async () => {
             topic: 'SUBSCRIPTION_BILLING_ATTEMPTS_FAILURE',
             webhookHandler: async (_topic, shop, body) => {
               console.log('SUBSCRIPTION_BILLING_ATTEMPTS_FAILURE');
+              logger.log(
+                'info',
+                `Subscription Billing Attempt Failure Webhook`
+              );
               const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
               // Will more than likely create  an errors table to display error notifications to user.
-              console.log('body', JSON.stringify(body));
+              logger.log('error', JSON.stringify(body));
             },
           }
         );
 
         if (!registerBillingAttemptFailure.success) {
-          console.log(
+          logger.log(
+            'error',
             `Failed to register APP_UNINSTALLED webhook: ${registerBillingAttemptFailure.result}`
           );
         }
 
         // Redirect to app with shop parameter upon auth
-        console.log('ACCESS MODE = OFFLINE');
+        logger.log('info', `Access Mode: Offline`);
         ctx.redirect(`/auth?shop=${shop}`);
       },
     })
@@ -186,7 +201,7 @@ app.prepare().then(async () => {
     createShopifyAuth({
       async afterAuth(ctx) {
         const { shop } = ctx.state.shopify;
-        console.log('ACCESS MODE = ONLINE');
+        logger.log('info', `Access Mode: Online`);
         ctx.redirect(`/?shop=${shop}`);
       },
     })
@@ -213,13 +228,13 @@ app.prepare().then(async () => {
 
   router.get('/', async (ctx: Context) => {
     const shop = ctx.query.shop;
-    console.log('SHOP ====>', shop);
-    console.log();
+    logger.log('info', `Shop: ${shop}`);
     // This shop hasn't been seen yet, go through OAuth to create a session
     if (ACTIVE_SHOPIFY_SHOPS[shop as string] === undefined) {
+      logger.log('info', `Shop does not exist, redirect to /install/auth`);
       ctx.redirect(`/install/auth?shop=${shop}`);
     } else {
-      console.log('STORE EXISTS ===== MOVE ON');
+      logger.log('info', `Shop exists, handle request`);
       await handleRequest(ctx);
     }
   });
@@ -227,9 +242,9 @@ app.prepare().then(async () => {
   router.post('/webhooks', async (ctx: Context) => {
     try {
       await Shopify.Webhooks.Registry.process(ctx.req, ctx.res);
-      console.log(`Webhook processed, returned status code 200`);
+      logger.log('info', `Webhook processed, returned status code 200`);
     } catch (error) {
-      console.log(`Failed to process webhook: ${error}`);
+      logger.log('error', `Failed to process webhook: ${error}`);
     }
   });
 
@@ -247,5 +262,6 @@ app.prepare().then(async () => {
 
   server.listen(port, () => {
     console.log(`> Ready on http://localhost:${port}`);
+    logger.log('info', `> Ready on http://localhost:${port}`);
   });
 });
