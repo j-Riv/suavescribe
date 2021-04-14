@@ -38,14 +38,14 @@ const logger: CustomLevels = <CustomLevels>createLogger({
     new DailyRotateFile({
       level: 'error',
       filename: './logs/suavescribe-error-%DATE%.log',
-      datePattern: 'YYYY-MM-DD-HH',
+      datePattern: 'YYYY-MM-DD',
       zippedArchive: true,
       maxSize: '20m',
       maxFiles: '14d',
     }),
     new DailyRotateFile({
       filename: './logs/suavescribe-combined-%DATE%.log',
-      datePattern: 'YYYY-MM-DD-HH',
+      datePattern: 'YYYY-MM-DD',
       zippedArchive: true,
       maxSize: '20m',
       maxFiles: '14d',
@@ -53,7 +53,7 @@ const logger: CustomLevels = <CustomLevels>createLogger({
     new DailyRotateFile({
       level: 'access',
       filename: './logs/suavescribe-access-%DATE%.log',
-      datePattern: 'YYYY-MM-DD-HH',
+      datePattern: 'YYYY-MM-DD',
       zippedArchive: true,
       maxSize: '20m',
       maxFiles: '14d',
