@@ -26,3 +26,4 @@ database.env
 data/postgres
 data/redis/*
 !data/redis/redis.conf
+data/traefik
