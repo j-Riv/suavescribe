@@ -293,7 +293,7 @@ class PgStore {
         contract.nextBillingDate
       }', interval = '${interval}', interval_count = '${intervalCount}', contract = '${JSON.stringify(
         contract
-      )}' id = '${contract.id}' RETURNING *;
+      )}' WHERE id = '${contract.id}' RETURNING *;
         `;
       return await this.client.query(query);
     } catch (err) {
