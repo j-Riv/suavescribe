@@ -92,3 +92,10 @@ CREATE TABLE sessions (id varchar NOT NULL PRIMARY KEY, session json NOT NULL);
 # Create Contracts Table
 CREATE TABLE subscription_contracts (id varchar NOT NULL PRIMARY KEY, shop varchar NOT NULL, status varchar NOT NULL, next_billing_date date NOT NULL, interval varchar NOT NULL, interval_count integer NOT NULL, contract json NOT NULL);
 ```
+
+## Logs
+Logs can be found at /app/logs
+```bash
+# nginx access logs
+sudo tail -f /var/log/nginx/access.log
+```
