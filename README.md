@@ -20,45 +20,7 @@ PG_PASSWORD = 'DATABASE_PASSWORD';
 PG_PORT = 'DATABASE_PORT';
 ```
 
-## Database Setup
-
-Install [Redis](https://redis.io/topics/quickstart): Session Management.
-
-Install [PostgreSQL](https://www.postgresql.org/download/): Data Storage.
-
-Create a new user with limited permissions.
-
-```bash
-psql postgres
-# Create Role with psql
-CREATE ROLE username with LOGIN PASSWORD 'my password';
-# Add permissons to new user
-ALTER ROLE username CREATEDB;
-# Check permissions
-\du
-# Change Default postgres account password
-\password postgres
-```
-
-Create a new database.
-
-```bash
-psql postgres -U username
-# Create DB
-CREATE DATABASE databasename;
-# List Databases and Select
-\l
-\c databasename;
-# Now connected to DB
-# Create Active Shops Table
-CREATE TABLE active_shops (id varchar NOT NULL PRIMARY KEY, scope varchar NOT NULL, access_token varchar NOT NULL);
-# Create Sessions Table
-CREATE TABLE sessions (id varchar NOT NULL PRIMARY KEY, session json NOT NULL);
-# Create Contracts Table
-CREATE TABLE subscription_contracts (id varchar NOT NULL PRIMARY KEY, shop varchar NOT NULL, status varchar NOT NULL, next_billing_date date NOT NULL, interval varchar NOT NULL, interval_count integer NOT NULL, contract json NOT NULL);
-```
-
-## Docker Setup
+## Setup
 
 Install Docker.
 
@@ -91,6 +53,16 @@ CREATE TABLE active_shops (id varchar NOT NULL PRIMARY KEY, scope varchar NOT NU
 CREATE TABLE sessions (id varchar NOT NULL PRIMARY KEY, session json NOT NULL);
 # Create Contracts Table
 CREATE TABLE subscription_contracts (id varchar NOT NULL PRIMARY KEY, shop varchar NOT NULL, status varchar NOT NULL, next_billing_date date NOT NULL, interval varchar NOT NULL, interval_count integer NOT NULL, contract json NOT NULL);
+```
+
+Build App Image
+```bash
+docker build --tag jriv/suavescribe:latest .
+```
+
+Run
+```bash
+docker-compose up -d
 ```
 
 ## Logs
