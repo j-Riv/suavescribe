@@ -1,0 +1,118 @@
+version: '3.7'
+
+services:
+  # traefik
+  traefik:
+    image: 'traefik:v2.2'
+    container_name: 'traefik'
+    restart: always
+    command:
+      - '--providers.docker=true'
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - './data/traefik/traefik.yml:/etc/traefik/traefik.yml:ro'
+      - './data/traefik/acme.json:/acme.json'
+    networks:
+      - traefik_proxy
+    labels:
+      # Dashboard
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.traefik.service=api@internal'
+      - 'traefik.http.routers.traefik.tls.certresolver=le'
+      - 'traefik.http.routers.traefik.entrypoints=secure'
+      # global redirect to https
+      - 'traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)'
+      - 'traefik.http.routers.http-catchall.entrypoints=insecure'
+      - 'traefik.http.routers.http-catchall.middlewares=redirect-to-https'
+      # middleware redirect
+      - 'traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https'
+      - 'traefik.http.routers.traefik.middlewares=traefik-forward-auth'
+  # Google Oauth
+  traefik-forward-auth:
+    image: thomseddon/traefik-forward-auth:2
+    container_name: oauth
+    restart: always
+    environment:
+      - PROVIDERS_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - PROVIDERS_GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - SECRET=${OAUTH_SECRET}
+      - INSECURE_COOKIE=false # Example assumes no https, do not use in production
+      - COOKIE_DOMAIN=${DOMAIN_NAME}
+      - WHITELIST=${EMAIL_WHITELIST}
+      - LOG_LEVEL=debug
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.traefik-forward-auth.rule=Host(`oauth.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.traefik-forward-auth.entrypoints=secure'
+      - 'traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181'
+      - 'traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User'
+      - 'traefik.http.services.traefik-forward-auth.loadbalancer.server.port=4181'
+    networks:
+      - traefik_proxy
+# redis
+  redis:
+    image: 'redis'
+    container_name: 'redis'
+    hostname: redis
+    restart: always
+    command: ['redis-server', '/usr/local/etc/redis/redis.conf', '--appendonly', 'yes', '--bind', 'redis', '--port', '6379']
+    ports:
+      - 6379:6379
+    volumes:
+      - './data/redis/redis.conf:/usr/local/etc/redis/redis.conf'
+      - './data/redis:/data'
+    networks:
+      - default
+    labels:
+      - 'traefik.enable=false'
+  # postgres
+  postgres:
+    image: 'postgres'
+    env_file:
+      - database.env
+    container_name: 'postgres'
+    hostname: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - './data/postgres:/var/lib/postgresql/data'
+    networks:
+      - default
+    labels:
+      - 'traefik.enable=false'
+  # app
+  suavescribe:
+    image: 'jriv/suavescribe:latest'
+    container_name: 'suavescribe'
+    restart: always
+    ports:
+      - 8081:8081
+    volumes:
+      - './app:/usr/app'
+    depends_on:
+      - redis
+      - postgres
+    links:
+      - redis
+      - postgres
+    networks:
+      - traefik_proxy
+      - default
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.app.rule=Host(`${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.app.entrypoints=secure'
+      - 'traefik.http.routers.app.tls=true'
+      - 'traefik.http.routers.app.tls.certresolver=le'
+
+networks:
+  traefik_proxy:
+    external:
+      name: traefik_proxy
+  default:
+    driver: bridge
