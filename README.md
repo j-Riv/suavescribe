@@ -24,7 +24,7 @@ PG_PORT = 'DATABASE_PORT';
 
 Install Docker.
 
-Create Data directory for persistent data.
+Create Data `/data` directory for persistent data.
 
 Create database.env
 
@@ -67,7 +67,3 @@ docker-compose up -d
 
 ## Logs
 Logs can be found at /app/logs
-```bash
-# nginx access logs
-sudo tail -f /var/log/nginx/access.log
-```
