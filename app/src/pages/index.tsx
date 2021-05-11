@@ -11,6 +11,7 @@ import { formatDate, formatId } from '../utils/formatters';
 import Table from '../components/Table';
 import LoadingIndex from '../components/LoadingIndex';
 import ErrorState from '../components/ErrorState';
+import SearchBar from '../components/SearchBar';
 
 function Index() {
   // search state
@@ -46,6 +47,9 @@ function Index() {
       subtitle="Subscription Contracts"
     >
       <TitleBar title="Subscriptions" />
+      <Card sectioned>
+        <SearchBar />
+      </Card>
       <Card title="Subscriptions" sectioned>
         {data && (
           <Table
