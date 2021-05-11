@@ -24,7 +24,7 @@ PG_PORT = 'DATABASE_PORT';
 
 Install Docker.
 
-Create Data directory for persistent data.
+Create Data `/data` directory for persistent data.
 
 Create database.env
 
@@ -40,7 +40,7 @@ docker-compose up -d
 
 Connect to Postgres Container & Create Tables
 
-```bash
+```sql
 # using psql
 psql -h localhost -U <username> -d postgres
 # Or Create a new Bash Session inside the container
@@ -60,6 +60,64 @@ Build App Image
 docker build --tag jriv/suavescribe:latest .
 ```
 
+Traefik Setup
+```yaml
+#Traefik.yml
+api:
+  dashboard: true
+  
+accessLog:
+  filePath: "/var/log/traefik/access.log"
+  format: json
+  fields:
+    defaultMode: keep
+    names:
+      ClientUsername: drop
+    headers:
+      defaultMode: keep
+      names:
+          User-Agent: keep
+          Authorization: drop
+          Content-Type: keep
+  bufferingSize: 100
+
+#Define HTTP and HTTPS entrypoints
+entryPoints:
+  insecure:
+    address: ":80"
+  secure:
+    address: ":443"
+
+#Dynamic configuration will come from docker labels
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    network: "traefik_proxy"
+    exposedByDefault: false
+
+http:
+  middlewares:
+    traefik-forward-auth:
+      forwardauth:
+        - address = "http://traefik-forward-auth:4181"
+        - authResponseHeaders = ["X-Forwarded-User"]
+    customHeader:
+      headers:
+        customResponseHeaders:
+          - X-Custom-Response-Header= ["X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex"}
+
+#Enable acme with http file challenge
+certificatesResolvers:
+  le:
+    acme:
+      email: email@example.com
+      storage: /acme.json
+      httpChallenge:
+        # used during the challenge
+        entryPoint: insecure
+
+```
+
 Run
 ```bash
 docker-compose up -d
@@ -67,7 +125,3 @@ docker-compose up -d
 
 ## Logs
 Logs can be found at /app/logs
-```bash
-# nginx access logs
-sudo tail -f /var/log/nginx/access.log
-```

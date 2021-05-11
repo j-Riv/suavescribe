@@ -1,4 +1,5 @@
 import { GET_SUBSCRIPTION_CONTRACTS } from './queries/get-subscription-contracts';
+import { GET_CUSTOMER_SUBSCRIPTION_CONTRACTS_BY_EMAIL } from './queries/get-customer-subscription-contracts-by-email';
 import { GET_PREV_SUBSCRIPTION_CONTRACTS } from './queries/get-prev-subscription-contracts';
 import { GET_ALL_SELLING_PLAN_GROUPS } from './queries/get-all-selling-plan-groups';
 import { GET_SUBSCRIPTION_BY_ID } from './queries/get-subscription-contract-by-id';
@@ -13,6 +14,7 @@ import { UPDATE_SUBSCRIPTION_DRAFT_LINE } from './mutations/update-subscription-
 
 export {
   GET_SUBSCRIPTION_CONTRACTS,
+  GET_CUSTOMER_SUBSCRIPTION_CONTRACTS_BY_EMAIL,
   GET_PREV_SUBSCRIPTION_CONTRACTS,
   GET_ALL_SELLING_PLAN_GROUPS,
   GET_SUBSCRIPTION_BY_ID,

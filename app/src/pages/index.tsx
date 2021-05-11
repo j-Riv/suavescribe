@@ -11,8 +11,11 @@ import { formatDate, formatId } from '../utils/formatters';
 import Table from '../components/Table';
 import LoadingIndex from '../components/LoadingIndex';
 import ErrorState from '../components/ErrorState';
+import SearchBar from '../components/SearchBar';
 
 function Index() {
+  // set subscriptions per page
+  const subsPerPage = 10;
   // search state
   const app = useAppBridge();
   const redirect = Redirect.create(app);
@@ -20,7 +23,7 @@ function Index() {
     GET_SUBSCRIPTION_CONTRACTS,
     {
       variables: {
-        first: 3,
+        first: subsPerPage,
       },
     }
   );
@@ -46,6 +49,9 @@ function Index() {
       subtitle="Subscription Contracts"
     >
       <TitleBar title="Subscriptions" />
+      <Card sectioned>
+        <SearchBar />
+      </Card>
       <Card title="Subscriptions" sectioned>
         {data && (
           <Table
@@ -95,7 +101,7 @@ function Index() {
               fetchMore({
                 query: GET_PREV_SUBSCRIPTION_CONTRACTS,
                 variables: {
-                  last: 3,
+                  last: subsPerPage,
                   before: firstCursor,
                 },
               });
@@ -105,7 +111,7 @@ function Index() {
               console.log('Next');
               fetchMore({
                 variables: {
-                  first: 3,
+                  first: subsPerPage,
                   after: lastCursor,
                 },
               });

@@ -6,7 +6,10 @@ services:
     image: 'traefik:v2.2'
     container_name: 'traefik'
     restart: always
+    environment:
+      - TZ=America/Los_Angeles
     command:
+      - '--accesslog.fields.names.StartUTC=drop'
       - '--providers.docker=true'
     ports:
       - 80:80
@@ -15,6 +18,7 @@ services:
       - '/var/run/docker.sock:/var/run/docker.sock'
       - './data/traefik/traefik.yml:/etc/traefik/traefik.yml:ro'
       - './data/traefik/acme.json:/acme.json'
+      - './data/traefik/logs:/var/log/traefik'
     networks:
       - traefik_proxy
     labels:
