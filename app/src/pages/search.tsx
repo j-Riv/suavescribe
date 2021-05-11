@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import { useQuery } from '@apollo/client';
-import { Badge, Button, Card, Page, Pagination } from '@shopify/polaris';
+import { Badge, Button, Card, Page } from '@shopify/polaris';
 import { TitleBar, useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { GET_CUSTOMER_SUBSCRIPTION_CONTRACTS_BY_EMAIL } from '../handlers';
