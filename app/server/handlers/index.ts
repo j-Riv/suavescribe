@@ -15,6 +15,8 @@ import { getSellingPlans } from './queries/get-all-selling-plans';
 import { getSellingPlanById } from './queries/get-selling-plan';
 import { getSubscriptionContracts } from './queries/get-subscription-contracts';
 import { getSubscriptionContract } from './queries/get-subscription-contract';
+import { getCustomerSubscriptionContractsById } from './queries/get-customer-subscription-contracts-by-id';
+import { getProductsById } from './queries/get-products-by-id';
 
 export {
   createClient,
@@ -34,4 +36,6 @@ export {
   getSellingPlanById,
   getSubscriptionContracts,
   getSubscriptionContract,
+  getCustomerSubscriptionContractsById,
+  getProductsById,
 };
