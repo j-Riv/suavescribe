@@ -67,6 +67,22 @@ export const GET_SUBSCRIPTION_BY_ID = gql`
         interval
         intervalCount
       }
+      deliveryMethod {
+        ... on SubscriptionDeliveryMethodShipping {
+          address {
+            address1
+            address2
+            city
+            country
+            province
+            zip
+            name
+            company
+            firstName
+            lastName
+          }
+        }
+      }
     }
   }
 `;

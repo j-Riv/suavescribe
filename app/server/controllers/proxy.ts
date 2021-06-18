@@ -19,31 +19,37 @@ const pgStorage = new PgStore();
 export const getCustomerSubscriptionByIdTemplate = async (ctx: Context) => {
   const params = ctx.request.query;
   const customerId = params.customerId as string;
-  try {
-    const shop = params.shop as string;
-    if (shop) {
-      const res = await pgStorage.loadCurrentShop(shop);
-      if (res) {
-        ctx.client = createClient(shop, res.accessToken);
-        const subscriptions = await getCustomerSubscriptionContractsById(
-          ctx,
-          customerId
-        );
-        ctx.set('Content-Type', 'application/liquid');
-        if (subscriptions.length > 0) {
-          ctx.body = generateLiquid(customerId, subscriptions);
+  ctx.set('Content-Type', 'application/liquid');
+  if (customerId) {
+    try {
+      const shop = params.shop as string;
+      if (shop) {
+        const res = await pgStorage.loadCurrentShop(shop);
+        if (res) {
+          ctx.client = createClient(shop, res.accessToken);
+          const subscriptions = await getCustomerSubscriptionContractsById(
+            ctx,
+            customerId
+          );
+          if (subscriptions.length > 0) {
+            ctx.body = generateLiquid(customerId, subscriptions);
+          } else {
+            ctx.body = `
+              <p>No Subscriptions Found</p>
+            `;
+          }
         } else {
-          ctx.body = `
-            <p>No Subscriptions Found</p>
-          `;
+          return (ctx.status = 401);
         }
-      } else {
-        return (ctx.status = 401);
       }
+    } catch (e) {
+      console.log('ERROR', e.message);
+      return (ctx.status = 403);
     }
-  } catch (e) {
-    console.log('ERROR', e.message);
-    return (ctx.status = 403);
+  } else {
+    ctx.body = `
+      <a href="/apps/app_proxy?customerId={{ customer.id}}">View Subscriptions</a>
+    `;
   }
 };
 
@@ -59,21 +65,22 @@ const generateLiquid = (customerId: string, subscriptions: any) => {
       `;
     });
     subscriptionsHtml += `
-      <li>
-        <p>id: ${s.id} | status: ${s.status}</p>
-        <p>Billing Policy: Every ${s.billingPolicy.intervalCount} ${s.billingPolicy.interval}</p>
-        <p>products: ${products}</p>
-        <p>Next Billing Date: ${s.nextBillingDate}</p>
-        <p>
+      <tr>
+        <td>${s.id}</td>
+        <td>${s.status}</td>
+        <td>Every ${s.billingPolicy.intervalCount} ${s.billingPolicy.interval}(s)</td>
+        <td>${s.nextBillingDate}</td>
+        <td>${products}</td>
+        <td>
           {% if '${s.status}' == 'ACTIVE' %}
-            <button type="button" onClick="updateStatus('{{ customer.id }}', '${s.id}', 'PAUSED')">Pause</button>
+            <button class="btn btn--small" type="button" onClick="updateStatus('{{ customer.id }}', '${s.id}', 'PAUSED')">Pause</button>
           {% else %}
-            <button type="button" onClick="updateStatus('{{ customer.id }}', '${s.id}', 'ACTIVE')">Activate</button>
+            <button class="btn btn--small" type="button" onClick="updateStatus('{{ customer.id }}', '${s.id}', 'ACTIVE')">Activate</button>
           {% endif %}
-          <button type="button" onClick="updateStatus('{{ customer.id }}', '${s.id}', 'CANCELLED')">Cancel</button>
-          <button type="button" onClick="updatePaymentMethod('{{ customer.id }}', '${s.customerPaymentMethod.id}')">Update Payment Method</button>
-        </p>
-      </li>
+          <button class="btn btn--small" type="button" onClick="updateStatus('{{ customer.id }}', '${s.id}', 'CANCELLED')">Cancel</button>
+          <button class="btn btn--small" type="button" onClick="updatePaymentMethod('{{ customer.id }}', '${s.customerPaymentMethod.id}')">Update Payment Method</button>
+        </td>
+      </tr>
     `;
   });
   const script = `
@@ -124,11 +131,23 @@ const generateLiquid = (customerId: string, subscriptions: any) => {
   let liquid = `
     {% if customer %}
       {% if customer.id == ${customerId} %}
-        <p>Orders</p>
         <div class="subscription-contracts">
-          <ul>
-            ${subscriptionsHtml}
-          </ul>
+        <h2>Subscriptions</h2>
+          <table class="responsive-table">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Status</th>
+                <th scope="col">Billing Policy</th>
+                <th scope="col">Next Billing Date</th>
+                <th scope="col">Products</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${subscriptionsHtml}
+            </tbody>
+          </table>
         </div>
         ${script}
       {% else %}

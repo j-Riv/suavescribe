@@ -45,28 +45,10 @@ const readFileThunk = src => {
 
 // App Proxy routes
 
-router.get('/app_proxy', validateSignature, async function (ctx) {
-  console.log('THIS IS THE PROXY');
-  console.log(ctx.request);
-  console.log('THIS IS THE QUERY', ctx.request.query);
-  ctx.set('Content-Type', 'application/liquid');
-  ctx.body = await readFileThunk(__dirname + '/example.liquid');
-  ctx.res.statusCode = 200;
-});
-
 router.get(
-  '/app_proxy/test',
+  '/app_proxy/',
   validateSignature,
   getCustomerSubscriptionByIdTemplate
-);
-
-router.post(
-  '/app_proxy/subscription/edits',
-  validateSignature,
-  (ctx: Context) => {
-    const body = ctx.request.body;
-    ctx.body = body;
-  }
 );
 
 router.post(

@@ -39,6 +39,15 @@ function EditSubscription() {
   const [lineId, setLineId] = useState<string>();
   const [lineItemQuantity, setLineItemQuantity] = useState<string>();
   const [paymentMethod, setPaymentMethod] = useState<string>();
+  const [company, setCompany] = useState<string>();
+  const [firstName, setFirstName] = useState<string>();
+  const [lastName, setLastName] = useState<string>();
+  const [address1, setAddress1] = useState<string>();
+  const [address2, setAddress2] = useState<string>();
+  const [city, setCity] = useState<string>();
+  const [country, setCountry] = useState<string>();
+  const [province, setProvince] = useState<string>();
+  const [zip, setZip] = useState<string>();
 
   const [active, setActive] = useState<boolean>(false);
   const [toastMsg, setToastMsg] = useState<string>('');
@@ -78,6 +87,15 @@ function EditSubscription() {
       setLineItemQuantity(String(d.lines.edges[0].node.quantity));
       setLineItems(d.lines.edges);
       setPaymentMethod(d.customerPaymentMethod.id);
+      setCompany(d.deliveryMethod.address.company);
+      setAddress1(d.deliveryMethod.address.address1);
+      setAddress2(d.deliveryMethod.address.address2);
+      setCity(d.deliveryMethod.address.city);
+      setCountry(d.deliveryMethod.address.country);
+      setProvince(d.deliveryMethod.address.province);
+      setZip(d.deliveryMethod.address.zip);
+      setFirstName(d.deliveryMethod.address.firstName);
+      setLastName(d.deliveryMethod.address.lastName);
     }
   };
 
@@ -246,6 +264,86 @@ function EditSubscription() {
                 <Stack distribution="trailing">
                   <UpdatePaymentMethodButton
                     id={paymentMethod}
+                    toggleActive={toggleActive}
+                    setMsg={setMsg}
+                    setToastError={setToastError}
+                    refetch={refetch}
+                  />
+                </Stack>
+              </Card>
+            </Layout.AnnotatedSection>
+            <Layout.AnnotatedSection
+              title="Address"
+              description="Update Shipping Address"
+            >
+              <Card sectioned>
+                <TextField
+                  label="Company"
+                  type="text"
+                  placeholder="Company"
+                  onChange={company => setCompany(company)}
+                  value={company}
+                />
+                <TextField
+                  label="Address 1"
+                  type="text"
+                  placeholder="Address1"
+                  onChange={address1 => setAddress1(address1)}
+                  value={address1}
+                />
+                <TextField
+                  label="Address 2"
+                  type="text"
+                  placeholder="Address2"
+                  onChange={address2 => setAddress2(address2)}
+                  value={address2}
+                />
+                <TextField
+                  label="City"
+                  type="text"
+                  placeholder="City"
+                  onChange={city => setCity(city)}
+                  value={city}
+                />
+                <TextField
+                  label="Province"
+                  type="text"
+                  placeholder="Province"
+                  onChange={province => setProvince(province)}
+                  value={province}
+                />
+                <TextField
+                  label="Country"
+                  type="text"
+                  placeholder="Country"
+                  onChange={country => setCountry(country)}
+                  value={country}
+                />
+                <TextField
+                  label="Zip"
+                  type="text"
+                  placeholder="Zip"
+                  onChange={zip => setZip(zip)}
+                  value={zip}
+                />
+                <Stack distribution="trailing">
+                  <UpdateSubscriptionButton
+                    contractId={contractId}
+                    input={{
+                      deliveryMethod: {
+                        shipping: {
+                          address: {
+                            address1,
+                            address2,
+                            city,
+                            province,
+                            country,
+                            zip,
+                            lastName,
+                          },
+                        },
+                      },
+                    }}
                     toggleActive={toggleActive}
                     setMsg={setMsg}
                     setToastError={setToastError}
