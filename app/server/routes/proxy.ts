@@ -72,14 +72,14 @@ router.get('/app_proxy', validateSignature, async (ctx: Context) => {
   const app = await readFileThunk(`${process.env.APP_PROXY}/build/index.html`);
   ctx.body = `
     {% if customer %}
-      {% if customer.id == ${params.customerId} %}
+      {% if customer.id == ${params.customer_id} %}
         <script>
         const currentCustomer = {{ customer.id }};
         console.log(currentCustomer);
         </script>
         ${app}
       {% else %}
-      <p><a href="/apps/app_proxy?customerId={{customer.id}}">View Subscriptions</a></p>
+      <p><a href="/apps/app_proxy?customer_id={{customer.id}}">View Subscriptions</a></p>
       {% endif %}
     {% else %}
     <p>Please Login!</p>
