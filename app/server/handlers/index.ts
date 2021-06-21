@@ -11,6 +11,7 @@ import { createSubscriptionBillingAttempt } from './mutations/create-billing-att
 import { updateSubscriptionContract } from './mutations/update-subscription-contract';
 import { updateSubscriptionDraft } from './mutations/update-subscription-draft';
 import { commitSubscriptionDraft } from './mutations/commit-subscription-draft';
+import { updatePaymentMethod } from './mutations/update-payment-method';
 import { getSellingPlans } from './queries/get-all-selling-plans';
 import { getSellingPlanById } from './queries/get-selling-plan';
 import { getSubscriptionContracts } from './queries/get-subscription-contracts';
@@ -32,6 +33,7 @@ export {
   updateSubscriptionContract,
   updateSubscriptionDraft,
   commitSubscriptionDraft,
+  updatePaymentMethod,
   getSellingPlans,
   getSellingPlanById,
   getSubscriptionContracts,

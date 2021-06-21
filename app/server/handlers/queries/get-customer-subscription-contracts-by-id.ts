@@ -43,8 +43,12 @@ export function CUSTOMER_SUBSCRIPTIONS_CONTRACTS_BY_ID_GET() {
                         company
                         firstName
                         lastName
+                        phone
                       }
                     }
+                  }
+                  customerPaymentMethod {
+                    id
                   }
                   lines(first: 5) {
                     edges {

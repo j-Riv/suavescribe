@@ -285,6 +285,20 @@ function EditSubscription() {
                   value={company}
                 />
                 <TextField
+                  label="First Name"
+                  type="text"
+                  placeholder="First Name"
+                  onChange={firstName => setFirstName(firstName)}
+                  value={firstName}
+                />
+                <TextField
+                  label="Last Name"
+                  type="text"
+                  placeholder="Last Name"
+                  onChange={lastName => setLastName(lastName)}
+                  value={lastName}
+                />
+                <TextField
                   label="Address 1"
                   type="text"
                   placeholder="Address1"
@@ -333,13 +347,15 @@ function EditSubscription() {
                       deliveryMethod: {
                         shipping: {
                           address: {
+                            company,
+                            firstName,
+                            lastName,
                             address1,
                             address2,
                             city,
                             province,
                             country,
                             zip,
-                            lastName,
                           },
                         },
                       },

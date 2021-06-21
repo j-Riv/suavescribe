@@ -7,6 +7,7 @@ import Koa, { Context, Next } from 'koa';
 import next from 'next';
 import Router from 'koa-router';
 import cors from '@koa/cors';
+import serve from 'koa-static';
 import morgan from 'koa-morgan';
 import bodyParser from 'koa-bodyparser';
 import subscriptionRouter from './routes/subscriptions';
@@ -50,6 +51,8 @@ app.prepare().then(async () => {
   // scheduler();
 
   const server = new Koa();
+  // Serve Static
+  server.use(serve(`${process.env.APP_PROXY}/app_proxy/build/`));
   server.proxy = true;
   // setup access logger
   server.use(morgan('combined', { stream: stream }));
