@@ -1,6 +1,9 @@
 import dotenv from 'dotenv';
 import 'isomorphic-fetch';
 import { Context } from 'koa';
+import jwt from 'jsonwebtoken';
+import fs from 'fs';
+import nodemailer from 'nodemailer';
 import {
   commitSubscriptionDraft,
   createClient,
@@ -15,6 +18,32 @@ import logger from '../logger';
 dotenv.config();
 
 const pgStorage = new PgStore();
+
+const readFileThunk = (src: string) => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(src, { encoding: 'utf8' }, (err, data) => {
+      if (err) return reject(err);
+      resolve(data);
+    });
+  });
+};
+
+const verifyToken = (shop: string, customer_id: string, token: string) => {
+  try {
+    const decoded: any = jwt.verify(token, process.env.APP_PROXY_SECRET);
+    console.log('DECODED', decoded);
+    if (
+      decoded &&
+      decoded.customer_id === customer_id &&
+      decoded.shop === shop
+    ) {
+      return true;
+    }
+  } catch (e) {
+    console.log('ERROR VERIFYING TOKEN', e.message);
+    return false;
+  }
+};
 
 export const getCustomerSubscriptions = async (ctx: Context) => {
   const params = ctx.request.query;
@@ -174,5 +203,110 @@ export const updateSubscriptionShippingAddress = async (ctx: Context) => {
   } catch (e) {
     console.log('ERROR', e.message);
     return (ctx.status = 401);
+  }
+};
+
+const sendEmail = (customerEmail: string, url: string) => {
+  console.log('EMAIL', process.env.APP_PROXY_EMAIL);
+  console.log('PASS', process.env.APP_PROXY_EMAIL_PASS);
+  let transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.APP_PROXY_EMAIL,
+      pass: process.env.APP_PROXY_EMAIL_PASS,
+    },
+  });
+  let mailOptions = {
+    from: process.env.APP_PROXY_EMAIL,
+    to: customerEmail,
+    subject: 'App Proxy Secure Login Link',
+    text: `This is your secure login: ${url} This link expires in 15 minutes.`,
+    html: `
+      <p>This is your secure login:</p>
+      <a href="${url}">Please click here!</a>
+      <p>This link expires in 15 minutes.</p>
+    `,
+  };
+  console.log('SENDING EMAIL!', customerEmail);
+  transporter.sendMail(mailOptions, (err, data) => {
+    if (err) {
+      console.log('Errors occured', err.message);
+      return false;
+    }
+    console.log('Email sent!!!', data);
+    return true;
+  });
+};
+
+export const generateCustomerAuth = async (ctx: Context) => {
+  console.log('APP PROXY GENERATE TOKEN');
+  // get customer id from body
+  const params = ctx.request.query;
+  const body = ctx.request.body;
+  if (body.customerId && params.shop) {
+    console.log('CUSTOMER ID && SHOP SUPPLIED');
+    // check if customer exists
+    // generate auth token
+    const shop = params.shop as string;
+    const customer_id = body.customerId as string;
+    const customer_email = body.customerEmail as string;
+    const token = jwt.sign(
+      {
+        shop: shop,
+        customer_id: customer_id,
+      },
+      process.env.APP_PROXY_SECRET,
+      { expiresIn: '15m' }
+    );
+    const url = `https://${shop}/apps/app_proxy?shop=${shop}&customer_id=${customer_id}&token=${token}`;
+    // generate email
+    const emailResponse = sendEmail(customer_email, url);
+    ctx.body = { msg: emailResponse };
+  } else {
+    console.log('NO SHOP OR CUSTOMER ID SUPPLIED');
+    ctx.body = { msg: 'No Shop or Customer ID Supplied' };
+  }
+};
+
+export const applicationProxy = async (ctx: Context) => {
+  const params = ctx.request.query;
+  if (params.token && params.shop && params.customer_id) {
+    console.log('ALL 3 REQS');
+    const token = params.token as string;
+    const shop = params.shop as string;
+    const customer_id = params.customer_id as string;
+    const verified = verifyToken(shop, customer_id, token);
+    console.log('VERIFIED', verified);
+    ctx.set('Content-Type', 'application/liquid');
+    if (verified) {
+      // ctx.body = fs.createReadStream(
+      //   `${process.env.APP_PROXY}/build/index.html`
+      // );
+      const app = await readFileThunk(
+        `${process.env.APP_PROXY}/build/index.html`
+      );
+      ctx.body = `
+        {% if customer %}
+          {% if customer.id == ${params.customer_id} %}
+            <script>
+            const currentCustomer = {{ customer.id }};
+            console.log(currentCustomer);
+            </script>
+            ${app}
+          {% else %}
+          <p><a href="/apps/app_proxy?customer_id={{customer.id}}">View Subscriptions</a></p>
+          {% endif %}
+        {% else %}
+        <p>Please Login!</p>
+        {% endif %}
+      `;
+    } else {
+      ctx.body = 'VERIFICATION FAILED';
+    }
+  } else {
+    console.log('ERROR', 'Missing Token, Shop or Customer Id.');
+    ctx.body = `
+      <p>ERROR: Missing Token, Shop or Customer Id.</p>
+    `;
   }
 };

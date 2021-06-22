@@ -53,6 +53,8 @@ CREATE TABLE active_shops (id varchar NOT NULL PRIMARY KEY, scope varchar NOT NU
 CREATE TABLE sessions (id varchar NOT NULL PRIMARY KEY, session json NOT NULL);
 # Create Contracts Table
 CREATE TABLE subscription_contracts (id varchar NOT NULL PRIMARY KEY, shop varchar NOT NULL, status varchar NOT NULL, next_billing_date date NOT NULL, interval varchar NOT NULL, interval_count integer NOT NULL, contract json NOT NULL);
+# Create App Proxy Table
+CREATE TABLE app_proxy (shop varchar NOT NULL, customer varchar NOT NULL, token varchar NOT NULL);
 ```
 
 Build App Image

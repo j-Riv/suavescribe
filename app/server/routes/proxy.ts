@@ -2,10 +2,13 @@ import dotenv from 'dotenv';
 import Router from 'koa-router';
 import crypto from 'crypto';
 import fs from 'fs';
+import jwt from 'jsonwebtoken';
 import { Context, Next } from 'koa';
 import {
+  applicationProxy,
   updateCustomerSubscription,
   updateSubscriptionPaymentMethod,
+  generateCustomerAuth,
   getCustomerSubscriptions,
   updateSubscriptionShippingAddress,
 } from '../controllers/proxy';
@@ -44,6 +47,17 @@ const readFileThunk = src => {
   });
 };
 
+const verifyToken = (token: string) => {
+  try {
+    const decoded = jwt.verify(token, process.env.APP_PROXY_SECRET);
+    console.log('DECODED', decoded);
+    if (decoded) return true;
+  } catch (e) {
+    console.log('ERROR VERIFYING TOKEN', e.message);
+    return false;
+  }
+};
+
 // App Proxy routes
 
 router.post(
@@ -65,43 +79,21 @@ router.post(
 );
 
 // send react app
-router.get('/app_proxy', validateSignature, async (ctx: Context) => {
-  const params = ctx.request.query;
-  ctx.set('Content-Type', 'application/liquid');
-  // ctx.body = fs.createReadStream(`${process.env.APP_PROXY}/build/index.html`);
-  const app = await readFileThunk(`${process.env.APP_PROXY}/build/index.html`);
-  ctx.body = `
-    {% if customer %}
-      {% if customer.id == ${params.customer_id} %}
-        <script>
-        const currentCustomer = {{ customer.id }};
-        console.log(currentCustomer);
-        </script>
-        ${app}
-      {% else %}
-      <p><a href="/apps/app_proxy?customer_id={{customer.id}}">View Subscriptions</a></p>
-      {% endif %}
-    {% else %}
-    <p>Please Login!</p>
-    {% endif %}
-  `;
-});
-
-// router.get('/app_proxy/address', validateSignature, async (ctx: Context) => {
+// router.get('/app_proxy', validateSignature, async (ctx: Context) => {
 //   const params = ctx.request.query;
 //   ctx.set('Content-Type', 'application/liquid');
 //   // ctx.body = fs.createReadStream(`${process.env.APP_PROXY}/build/index.html`);
 //   const app = await readFileThunk(`${process.env.APP_PROXY}/build/index.html`);
 //   ctx.body = `
 //     {% if customer %}
-//       {% if customer.id == ${params.customerId} %}
+//       {% if customer.id == ${params.customer_id} %}
 //         <script>
 //         const currentCustomer = {{ customer.id }};
 //         console.log(currentCustomer);
 //         </script>
 //         ${app}
 //       {% else %}
-//       <p><a href="/apps/app_proxy?customerId={{customer.id}}">View Subscriptions</a></p>
+//       <p><a href="/apps/app_proxy?customer_id={{customer.id}}">View Subscriptions</a></p>
 //       {% endif %}
 //     {% else %}
 //     <p>Please Login!</p>
@@ -123,10 +115,15 @@ router.get('/app_proxy/static/js/:file', (ctx: Context) => {
   );
 });
 
+//test
+router.get('/app_proxy/', validateSignature, applicationProxy);
+
 router.post(
   '/app_proxy/subscriptions',
   validateSignature,
   getCustomerSubscriptions
 );
+
+router.post('/app_proxy/auth', validateSignature, generateCustomerAuth);
 
 export default router;
