@@ -2,7 +2,6 @@ import dotenv from 'dotenv';
 import Router from 'koa-router';
 import crypto from 'crypto';
 import fs from 'fs';
-import jwt from 'jsonwebtoken';
 import { Context, Next } from 'koa';
 import {
   applicationProxy,
@@ -10,6 +9,7 @@ import {
   updateSubscriptionPaymentMethod,
   generateCustomerAuth,
   getCustomerSubscriptions,
+  liquidApplicationProxy,
   updateSubscriptionShippingAddress,
 } from '../controllers/proxy';
 
@@ -38,26 +38,6 @@ const validateSignature = (ctx: Context, next: Next) => {
   }
 };
 
-const readFileThunk = src => {
-  return new Promise((resolve, reject) => {
-    fs.readFile(src, { encoding: 'utf8' }, (err, data) => {
-      if (err) return reject(err);
-      resolve(data);
-    });
-  });
-};
-
-const verifyToken = (token: string) => {
-  try {
-    const decoded = jwt.verify(token, process.env.APP_PROXY_SECRET);
-    console.log('DECODED', decoded);
-    if (decoded) return true;
-  } catch (e) {
-    console.log('ERROR VERIFYING TOKEN', e.message);
-    return false;
-  }
-};
-
 // App Proxy routes
 
 router.post(
@@ -78,28 +58,9 @@ router.post(
   updateSubscriptionShippingAddress
 );
 
-// send react app
-// router.get('/app_proxy', validateSignature, async (ctx: Context) => {
-//   const params = ctx.request.query;
-//   ctx.set('Content-Type', 'application/liquid');
-//   // ctx.body = fs.createReadStream(`${process.env.APP_PROXY}/build/index.html`);
-//   const app = await readFileThunk(`${process.env.APP_PROXY}/build/index.html`);
-//   ctx.body = `
-//     {% if customer %}
-//       {% if customer.id == ${params.customer_id} %}
-//         <script>
-//         const currentCustomer = {{ customer.id }};
-//         console.log(currentCustomer);
-//         </script>
-//         ${app}
-//       {% else %}
-//       <p><a href="/apps/app_proxy?customer_id={{customer.id}}">View Subscriptions</a></p>
-//       {% endif %}
-//     {% else %}
-//     <p>Please Login!</p>
-//     {% endif %}
-//   `;
-// });
+// send react app as liquid
+router.get('/app_proxy', validateSignature, liquidApplicationProxy);
+// router.get('/app_proxy/', validateSignature, applicationProxy);
 
 router.get('/app_proxy/static/css/:file', (ctx: Context) => {
   ctx.set('Content-Type', 'text/css');
@@ -114,9 +75,6 @@ router.get('/app_proxy/static/js/:file', (ctx: Context) => {
     `${process.env.APP_PROXY}/build/static/js/${ctx.params.file}`
   );
 });
-
-//test
-router.get('/app_proxy/', validateSignature, applicationProxy);
 
 router.post(
   '/app_proxy/subscriptions',
