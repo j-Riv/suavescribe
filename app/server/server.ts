@@ -48,7 +48,7 @@ app.prepare().then(async () => {
   const shops = Object.keys(ACTIVE_SHOPIFY_SHOPS);
   logger.log('info', `Loaded Active Shops: ${shops}`);
   // init scheduler
-  // scheduler();
+  scheduler();
 
   const server = new Koa();
   // Serve Static
