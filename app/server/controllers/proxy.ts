@@ -264,13 +264,16 @@ export const liquidApplicationProxy = async (ctx: Context) => {
         </script>
         ${app}
       {% else %}
-      <p><a href="/apps/app_proxy?customer_id={{customer.id}}">View Subscriptions</a></p>
+      <div style="text-align: center;">
+        <p>Something went wrong ...</p>
+        <p><a href="/account">Go Back to Account</a></p>
+      </div>
       {% endif %}
     {% else %}
     <p>Please Login!</p>
     {% endif %}
   `;
-}
+};
 
 export const applicationProxy = async (ctx: Context) => {
   const params = ctx.request.query;
@@ -282,7 +285,9 @@ export const applicationProxy = async (ctx: Context) => {
     ctx.set('Content-Type', 'text/html');
     // ctx.set('Content-Type', 'application/liquid');
     if (verified) {
-      ctx.body = fs.createReadStream(`${process.env.APP_PROXY}/build/index.html`);
+      ctx.body = fs.createReadStream(
+        `${process.env.APP_PROXY}/build/index.html`
+      );
     } else {
       ctx.body = 'VERIFICATION FAILED';
     }
