@@ -34,6 +34,7 @@ function UpdateSubscriptionButton(props: Props) {
     UPDATE_SUBSCRIPTION_CONTRACT,
     {
       onCompleted: data => {
+        console.log('UPDATE SUBSCRIPTION CONTRACT', data);
         if (lineId) {
           updateDraftLine(
             data.subscriptionContractUpdate.draft.id,
@@ -48,23 +49,63 @@ function UpdateSubscriptionButton(props: Props) {
   );
   // Update subscription draft -> draft id
   const [updateSubscriptionDraft] = useMutation(UPDATE_SUBSCRIPTION_DRAFT, {
-    onCompleted: data => commitDraft(data.subscriptionDraftUpdate.draft.id),
+    onCompleted: data => {
+      try {
+        if (data.subscriptionDraftUpdate.userErrors.length > 0) {
+          setLoading(false);
+          setToastError(true);
+          setMsg(data.subscriptionDraftUpdate.userErrors[0].message);
+          toggleActive();
+        } else {
+          setToastError(false);
+          commitDraft(data.subscriptionDraftUpdate.draft.id);
+        }
+      } catch (e) {
+        console.log('Error', e.message);
+        setToastError(true);
+        setMsg('Error Updating Subscription');
+        toggleActive();
+      }
+    },
   });
   // Update subscription draft line -> draft id
   const [updateSubscriptionDraftLine] = useMutation(
     UPDATE_SUBSCRIPTION_DRAFT_LINE,
     {
-      onCompleted: data =>
-        commitDraft(data.subscriptionDraftLineUpdate.draft.id),
+      onCompleted: data => {
+        try {
+          if (data.subscriptionDraftLineUpdate.userErrors.length > 0) {
+            setLoading(false);
+            setToastError(true);
+            setMsg(data.subscriptionDraftLineUpdate.userErrors[0].message);
+            toggleActive();
+          } else {
+            setToastError(false);
+            commitDraft(data.subscriptionDraftLineUpdate.draft.id);
+          }
+        } catch (e) {
+          console.log('Error', e.message);
+          setToastError(true);
+          setMsg('Error Updating Subscription');
+          toggleActive();
+        }
+      },
     }
   );
   // Commit subscription draft -> update toast msg and make it active
   const [commitSubscriptionDraft] = useMutation(COMMIT_SUBSCRIPTION_DRAFT, {
     onCompleted: () => {
-      setLoading(false);
-      setMsg('Updated Subscription');
-      toggleActive();
-      refetch();
+      try {
+        setLoading(false);
+        setMsg('Updated Subscription');
+        toggleActive();
+        refetch();
+      } catch (e) {
+        console.log('Error', e.message);
+        setToastError(true);
+        setMsg('Error Refetching Subscription');
+        toggleActive();
+      }
     },
   });
 

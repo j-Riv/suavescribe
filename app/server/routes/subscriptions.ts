@@ -30,7 +30,7 @@ const verifyJwt = async (ctx: Context, next: Next) => {
     );
     // set shop
     ctx.state.shop = decoded.payload.dest.replace(/https:\/\//, '');
-    await next();
+    return await next();
   } catch (err) {
     console.log('Error', err.message);
     return (ctx.status = 401);

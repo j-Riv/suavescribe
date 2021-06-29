@@ -11,10 +11,13 @@ import { createSubscriptionBillingAttempt } from './mutations/create-billing-att
 import { updateSubscriptionContract } from './mutations/update-subscription-contract';
 import { updateSubscriptionDraft } from './mutations/update-subscription-draft';
 import { commitSubscriptionDraft } from './mutations/commit-subscription-draft';
+import { updatePaymentMethod } from './mutations/update-payment-method';
 import { getSellingPlans } from './queries/get-all-selling-plans';
 import { getSellingPlanById } from './queries/get-selling-plan';
 import { getSubscriptionContracts } from './queries/get-subscription-contracts';
 import { getSubscriptionContract } from './queries/get-subscription-contract';
+import { getCustomerSubscriptionContractsById } from './queries/get-customer-subscription-contracts-by-id';
+import { getProductsById } from './queries/get-products-by-id';
 
 export {
   createClient,
@@ -30,8 +33,11 @@ export {
   updateSubscriptionContract,
   updateSubscriptionDraft,
   commitSubscriptionDraft,
+  updatePaymentMethod,
   getSellingPlans,
   getSellingPlanById,
   getSubscriptionContracts,
   getSubscriptionContract,
+  getCustomerSubscriptionContractsById,
+  getProductsById,
 };

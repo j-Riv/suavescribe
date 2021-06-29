@@ -20,9 +20,9 @@ class RedisStore {
 
   constructor() {
     // Create a new redis client
-    // local
+    // if local
     // this.client = redis.createClient();
-    // docker
+    // if docker
     this.client = redis.createClient({ host: 'redis' });
     // Use Node's `promisify` to have redis return a promise from the client methods
     this.getAsync = promisify(this.client.get).bind(this.client);

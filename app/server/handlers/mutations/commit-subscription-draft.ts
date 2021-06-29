@@ -30,7 +30,11 @@ export const commitSubscriptionDraft = async (
       },
     })
     .then((response: any) => {
-      return response.data.subscriptionDraftCommit.contract.id;
+      const data = response.data.subscriptionDraftCommit;
+      if (data.userErrors.length > 0) {
+        return data.userErrors;
+      }
+      return data.contract.id;
     });
 
   return subscriptionDraftCommit;

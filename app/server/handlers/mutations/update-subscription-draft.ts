@@ -36,8 +36,11 @@ export const updateSubscriptionDraft = async (
       },
     })
     .then((response: any) => {
-      console.log('+++++ RESPONSE +++++', response);
-      return response.data.subscriptionDraftUpdate.draft.id;
+      const data = response.data.subscriptionDraftUpdate;
+      if (data.userErrors.length > 0) {
+        return data.userErrors;
+      }
+      return data.draft.id;
     });
 
   return subscriptionDraftUpdate;

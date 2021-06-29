@@ -7,9 +7,11 @@ import Koa, { Context, Next } from 'koa';
 import next from 'next';
 import Router from 'koa-router';
 import cors from '@koa/cors';
+import serve from 'koa-static';
 import morgan from 'koa-morgan';
 import bodyParser from 'koa-bodyparser';
 import subscriptionRouter from './routes/subscriptions';
+import proxyRouter from './routes/proxy';
 import RedisStore from './redis-store';
 import PgStore from './pg-store';
 import { scheduler } from './scheduler';
@@ -49,6 +51,8 @@ app.prepare().then(async () => {
   scheduler();
 
   const server = new Koa();
+  // Serve Static
+  server.use(serve(`${process.env.APP_PROXY}/app_proxy/build/`));
   server.proxy = true;
   // setup access logger
   server.use(morgan('combined', { stream: stream }));
@@ -225,6 +229,25 @@ app.prepare().then(async () => {
     ctx.res.statusCode = 200;
   };
 
+  // const readFileThunk = src => {
+  //   return new Promise((resolve, reject) => {
+  //     fs.readFile(src, { encoding: 'utf8' }, (err, data) => {
+  //       if (err) return reject(err);
+  //       resolve(data);
+  //     });
+  //   });
+  // };
+
+  // // online app extension
+  // router.get('/app_proxy', async function (ctx) {
+  //   console.log('THIS IS THE PROXY');
+  //   console.log(ctx.request);
+  //   ctx.set('Content-Type', 'application/liquid');
+  //   ctx.body = await readFileThunk(__dirname + '/example.liquid');
+  //   ctx.res.statusCode = 200;
+  // });
+  // // online app extension
+
   router.get('/', async (ctx: Context) => {
     const shop = ctx.query.shop;
     logger.log('info', `Shop: ${shop}`);
@@ -250,10 +273,13 @@ app.prepare().then(async () => {
   // App Extension
   server.use(subscriptionRouter.routes());
   server.use(subscriptionRouter.allowedMethods());
+  server.use(proxyRouter.routes());
+  server.use(proxyRouter.allowedMethods());
 
   router.get('(/_next/static/.*)', handleRequest); // Static content is clear
   router.get('/_next/webpack-hmr', handleRequest); // Webpack content is clear
   router.get('/subscriptions', handleRequest);
+
   router.get('(.*)', verifyRequest(), handleRequest);
 
   server.use(router.allowedMethods());

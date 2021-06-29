@@ -22,6 +22,7 @@ export const updateSubscriptionContract = async (
   client: ApolloClient<unknown>,
   id: string
 ) => {
+  console.log('UPDATING SUBSCRIPTION CONTRACT ID', id);
   const subscriptionContractUpdate = await client
     .mutate({
       mutation: SUBSCRIPTION_CONTRACT_UPDATE(),

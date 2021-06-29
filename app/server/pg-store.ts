@@ -20,7 +20,7 @@ class PgStore {
 
   constructor() {
     // Create a new pg client
-    // local
+    // if local
     // this.client = new Client({
     //   user: process.env.PG_USER,
     //   host: process.env.PG_HOST,
@@ -28,7 +28,7 @@ class PgStore {
     //   password: process.env.PG_PASSWORD,
     //   port: Number(process.env.PG_PORT) || 5432,
     // });
-    // docker
+    // if docker
     this.client = new Client(
       `postgres://${process.env.PG_USER}:${process.env.PG_PASSWORD}@postgres:5432/${process.env.PG_DB}`
     );

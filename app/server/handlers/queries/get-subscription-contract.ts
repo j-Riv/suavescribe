@@ -68,6 +68,22 @@ export function SUBSCRIPTION_CONTRACT_GET() {
           interval
           intervalCount
         }
+        deliveryMethod {
+          ... on SubscriptionDeliveryMethodShipping {
+            address {
+              address1
+              address2
+              city
+              country
+              province
+              zip
+              name
+              company
+              firstName
+              lastName
+            }
+          }
+        }
       }
     }
   `;
@@ -149,6 +165,20 @@ export const getSubscriptionContract = async (
             billingPolicy: {
               interval: string;
               intervalCount: number;
+            };
+            deliveryMethod: {
+              address: {
+                address1: string;
+                address2: string;
+                city: string;
+                country: string;
+                province: string;
+                zip: string;
+                name: string;
+                company: string;
+                firstName: string;
+                lastName: string;
+              };
             };
           };
         };
