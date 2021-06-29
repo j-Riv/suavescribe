@@ -52,7 +52,7 @@ app.prepare().then(async () => {
 
   const server = new Koa();
   // Serve Static
-  server.use(serve(`${process.env.APP_PROXY}/app_proxy/build/`));
+  server.use(serve(`${process.env.APP_PROXY}/build/`));
   server.proxy = true;
   // setup access logger
   server.use(morgan('combined', { stream: stream }));
@@ -228,25 +228,6 @@ app.prepare().then(async () => {
     ctx.respond = false;
     ctx.res.statusCode = 200;
   };
-
-  // const readFileThunk = src => {
-  //   return new Promise((resolve, reject) => {
-  //     fs.readFile(src, { encoding: 'utf8' }, (err, data) => {
-  //       if (err) return reject(err);
-  //       resolve(data);
-  //     });
-  //   });
-  // };
-
-  // // online app extension
-  // router.get('/app_proxy', async function (ctx) {
-  //   console.log('THIS IS THE PROXY');
-  //   console.log(ctx.request);
-  //   ctx.set('Content-Type', 'application/liquid');
-  //   ctx.body = await readFileThunk(__dirname + '/example.liquid');
-  //   ctx.res.statusCode = 200;
-  // });
-  // // online app extension
 
   router.get('/', async (ctx: Context) => {
     const shop = ctx.query.shop;
