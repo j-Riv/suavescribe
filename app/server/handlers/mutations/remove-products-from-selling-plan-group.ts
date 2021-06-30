@@ -18,7 +18,10 @@ export function SELLING_PLAN_REMOVE_PRODUCT() {
 
 export const removeProductsFromSellingPlanGroup = async (ctx: Context) => {
   const { client } = ctx;
-  const body = JSON.parse(ctx.request.body);
+  const body = ctx.request.body as {
+    sellingPlanGroupId: string;
+    productId: string;
+  };
   const { sellingPlanGroupId, productId } = body;
   const variables = {
     id: sellingPlanGroupId,

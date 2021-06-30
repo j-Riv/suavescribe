@@ -27,7 +27,10 @@ export function SELLING_PLAN_ADD_PRODUCT_VARIANT() {
 
 export const addProductVariantToSellingPlanGroups = async (ctx: Context) => {
   const { client } = ctx;
-  const body = JSON.parse(ctx.request.body);
+  const body = ctx.request.body as {
+    variantId: string;
+    selectedPlans: string[];
+  };
   const { variantId, selectedPlans } = body;
   const variables = {
     id: variantId,

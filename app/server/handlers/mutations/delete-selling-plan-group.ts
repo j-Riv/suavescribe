@@ -19,7 +19,9 @@ export function SELLING_PLAN_GROUP_DELETE() {
 
 export const deleteSellingPlanGroup = async (ctx: Context) => {
   const { client } = ctx;
-  const body = JSON.parse(ctx.request.body);
+  const body = ctx.request.body as {
+    sellingPlanGroupId: string;
+  };
   const { sellingPlanGroupId } = body;
   const variables = {
     id: sellingPlanGroupId,

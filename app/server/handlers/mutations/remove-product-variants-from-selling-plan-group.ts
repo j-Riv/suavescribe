@@ -26,7 +26,10 @@ export const removeProductVariantsFromSellingPlanGroup = async (
   ctx: Context
 ) => {
   const { client } = ctx;
-  const body = JSON.parse(ctx.request.body);
+  const body = ctx.request.body as {
+    sellingPlanGroupId: string;
+    variantIds: string[];
+  };
   const { sellingPlanGroupId, variantIds } = body;
   const variables = {
     id: sellingPlanGroupId,
