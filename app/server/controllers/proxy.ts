@@ -282,10 +282,7 @@ export const liquidApplicationProxy = async (ctx: Context) => {
   const params = ctx.request.query;
   ctx.set('Content-Type', 'application/liquid');
   // ctx.body = fs.createReadStream(`${process.env.APP_PROXY}/build/index.html`);
-  // const app = await readFileThunk(`${process.env.APP_PROXY}/build/index.html`);
-  const app = await readFileThunk(
-    path.join(__dirname, '../../app_proxy/build/index.html')
-  );
+  const app = await readFileThunk(`${process.env.APP_PROXY}/build/index.html`);
   ctx.body = `
     {% if customer %}
       {% if customer.id == ${params.customer_id} %}
@@ -316,11 +313,8 @@ export const applicationProxy = async (ctx: Context) => {
     ctx.set('Content-Type', 'text/html');
     // ctx.set('Content-Type', 'application/liquid');
     if (verified) {
-      // ctx.body = fs.createReadStream(
-      //   `${process.env.APP_PROXY}/build/index.html`
-      // );
       ctx.body = fs.createReadStream(
-        path.join(__dirname, '../../app_proxy/build/index.html')
+        `${process.env.APP_PROXY}/build/index.html`
       );
     } else {
       ctx.body = 'VERIFICATION FAILED';
