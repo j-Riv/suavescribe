@@ -9,7 +9,6 @@ WORKDIR /usr/app
 
 # copy source files
 COPY . /usr/app
-COPY ../../app_proxy /usr/app/
 
 # install dependencies
 RUN npm install
