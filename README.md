@@ -62,7 +62,7 @@ docker build --tag jriv/suavescribe:latest .
 
 Traefik Setup
 ```yaml
-#Traefik.yml
+# create file at data/traefik/traefik.yml
 api:
   dashboard: true
   
