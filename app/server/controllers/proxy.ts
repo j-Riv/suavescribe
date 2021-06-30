@@ -4,7 +4,8 @@ import { Context } from 'koa';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import nodemailer from 'nodemailer';
-import path from 'path';
+import OAuth from 'oauth-1.0a';
+import crypto from 'crypto';
 import {
   commitSubscriptionDraft,
   createClient,
@@ -15,7 +16,6 @@ import {
   updatePaymentMethod,
 } from '../handlers';
 import PgStore from '../pg-store';
-import logger from '../logger';
 dotenv.config();
 
 const pgStorage = new PgStore();
@@ -218,33 +218,80 @@ export const updateSubscriptionShippingAddress = async (ctx: Context) => {
   }
 };
 
-const sendEmail = (customerEmail: string, url: string) => {
-  let transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.APP_PROXY_EMAIL,
-      pass: process.env.APP_PROXY_EMAIL_PASS,
-    },
-  });
-  let mailOptions = {
-    from: process.env.APP_PROXY_EMAIL,
-    to: customerEmail,
-    subject: 'App Proxy Secure Login Link',
-    text: `This is your secure login: ${url} This link expires in 15 minutes.`,
-    html: `
-      <p>This is your secure login:</p>
-      <a href="${url}">Please click here!</a>
-      <p>This link expires in 15 minutes.</p>
-    `,
+// const sendSmtpEmail = (email: string, url: string) => {
+//   let transporter = nodemailer.createTransport({
+//     service: 'gmail',
+//     auth: {
+//       user: process.env.APP_PROXY_EMAIL,
+//       pass: process.env.APP_PROXY_EMAIL_PASS,
+//     },
+//   });
+//   let mailOptions = {
+//     from: process.env.APP_PROXY_EMAIL,
+//     to: email,
+//     subject: 'App Proxy Secure Login Link',
+//     text: `This is your secure login: ${url} This link expires in 15 minutes.`,
+//     html: `
+//       <p>This is your secure login:</p>
+//       <a href="${url}">Please click here!</a>
+//       <p>This link expires in 15 minutes.</p>
+//     `,
+//   };
+//   transporter.sendMail(mailOptions, (err, data) => {
+//     if (err) {
+//       console.log('ERROR SENDING MAIL', err.message);
+//       return false;
+//     }
+//     console.log('EMAIL SENT!!!', data);
+//     return true;
+//   });
+// };
+
+const sendNsEmail = async (email: string, link: string) => {
+  const accountID = process.env.APP_PROXY_NS_ACCT_ID;
+  const token = {
+    key: process.env.APP_PROXY_NS_ACCESS_TOKEN,
+    secret: process.env.APP_PROXY_NS_TOKEN_SECRET,
   };
-  transporter.sendMail(mailOptions, (err, data) => {
-    if (err) {
-      console.log('ERROR SENDING MAIL', err.message);
-      return false;
-    }
-    console.log('EMAIL SENT!!!', data);
-    return true;
+  const consumer = {
+    key: process.env.APP_PROXY_NS_CONSUMER_KEY,
+    secret: process.env.APP_PROXY_NS_CONSUMER_SECRET,
+  };
+  const requestData = {
+    url: process.env.APP_PROXY_NS_EMAIL_URL,
+    method: 'POST',
+  };
+
+  const oauth = new OAuth({
+    consumer: consumer,
+    signature_method: 'HMAC-SHA256',
+    hash_function(base_string, key) {
+      return crypto
+        .createHmac('sha256', key)
+        .update(base_string)
+        .digest('base64');
+    },
+    realm: accountID,
   });
+  const authorization = oauth.authorize(requestData, token);
+  const header: any = oauth.toHeader(authorization);
+  header.Authorization += ', realm="' + accountID + '"';
+  header['content-type'] = 'application/json';
+  header['user-agent'] = 'Suavescribe/1.0 (Language=JavaScript/ES6)';
+  try {
+    const response = await fetch(requestData.url, {
+      method: requestData.method,
+      headers: header,
+      body: JSON.stringify({
+        email,
+        link,
+      }),
+    });
+    const res = await response.json();
+    return res;
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 export const generateCustomerAuth = async (ctx: Context) => {
@@ -270,8 +317,10 @@ export const generateCustomerAuth = async (ctx: Context) => {
     );
     const url = `https://${shop}/apps/app_proxy?shop=${shop}&customer_id=${customer_id}&token=${token}`;
     // generate email
-    const emailResponse = sendEmail(customer_email, url);
-    ctx.body = { msg: emailResponse };
+    // const emailResponse = sendSmtpEmail(customer_email, url);
+    // ctx.body = { msg: emailResponse };
+    const emailResponse = await sendNsEmail(customer_email, url);
+    ctx.body = emailResponse;
   } else {
     console.log('NO SHOP OR CUSTOMER ID SUPPLIED');
     ctx.body = { error: 'No Shop or Customer ID Supplied' };
