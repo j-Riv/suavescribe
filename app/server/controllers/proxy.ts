@@ -47,7 +47,10 @@ const verifyToken = (shop: string, customer_id: string, token: string) => {
 
 export const getCustomerSubscriptions = async (ctx: Context) => {
   const params = ctx.request.query;
-  const body = JSON.parse(ctx.request.body);
+  console.log('TYPE OF', typeof ctx.request.body);
+  const body = ctx.request.body as {
+    customerId: string;
+  };
   const customerId = body.customerId as string;
   if (customerId) {
     try {
@@ -82,9 +85,13 @@ export const getCustomerSubscriptions = async (ctx: Context) => {
 
 export const updateCustomerSubscription = async (ctx: Context) => {
   const params = ctx.request.query;
-  const body = ctx.request.body;
-  const subscriptionContractId = body.subscriptionContractId as string;
-  const status = body.status as string;
+  console.log('TYPE OF', typeof ctx.request.body);
+  const body = ctx.request.body as {
+    subscriptionContractId: string;
+    status: string;
+  };
+  const subscriptionContractId = body.subscriptionContractId;
+  const status = body.status;
   try {
     const shop = params.shop as string;
     if (shop) {
@@ -113,7 +120,10 @@ export const updateCustomerSubscription = async (ctx: Context) => {
 
 export const updateSubscriptionPaymentMethod = async (ctx: Context) => {
   const params = ctx.request.query;
-  const body = ctx.request.body;
+  console.log('TYPE OF', typeof ctx.request.body);
+  const body = ctx.request.body as {
+    paymentMethodId: string;
+  };
   const paymentMethodId = body.paymentMethodId as string;
   try {
     const shop = params.shop as string;
@@ -136,7 +146,20 @@ export const updateSubscriptionPaymentMethod = async (ctx: Context) => {
 
 export const updateSubscriptionShippingAddress = async (ctx: Context) => {
   const params = ctx.request.query;
-  const body = JSON.parse(ctx.request.body);
+  console.log('TYPE OF', typeof ctx.request.body);
+  const body = ctx.request.body as {
+    subscriptionContractId: string;
+    address1: string;
+    address2: string;
+    city: string;
+    province: string;
+    country: string;
+    zip: string;
+    firstName: string;
+    lastName: string;
+    company: string;
+    phone: string;
+  };
   const {
     subscriptionContractId,
     address1,
@@ -226,7 +249,11 @@ const sendEmail = (customerEmail: string, url: string) => {
 export const generateCustomerAuth = async (ctx: Context) => {
   // get customer id from body
   const params = ctx.request.query;
-  const body = ctx.request.body;
+  console.log('TYPE OF', typeof ctx.request.body);
+  const body = ctx.request.body as {
+    customerId: string;
+    customerEmail: string;
+  };
   if (body.customerId && params.shop) {
     // generate auth token
     const shop = params.shop as string;
