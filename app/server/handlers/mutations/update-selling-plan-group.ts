@@ -126,7 +126,7 @@ const createInput = (body: Body) => {
 
 export const updateSellingPlanGroup = async (ctx: Context) => {
   const { client } = ctx;
-  const body = JSON.parse(ctx.request.body);
+  const body = ctx.request.body as any;
   const variables = createInput(body);
   const updatedSellingPlanGroupId = await client
     .mutate({

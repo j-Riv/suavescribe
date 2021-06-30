@@ -27,3 +27,4 @@ data/postgres
 data/redis/*
 !data/redis/redis.conf
 data/traefik
+app/app_proxy/*

@@ -124,7 +124,9 @@ const buildResponse = (data: SellingPlanGroup) => {
 
 export const getSellingPlanById = async (ctx: Context) => {
   const { client } = ctx;
-  const body = JSON.parse(ctx.request.body);
+  const body = ctx.request.body as {
+    sellingPlanGroupId: string;
+  };
   const { sellingPlanGroupId } = body;
   const sellingPlanGroup = await client
     .query({

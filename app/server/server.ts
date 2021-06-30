@@ -52,7 +52,7 @@ app.prepare().then(async () => {
 
   const server = new Koa();
   // Serve Static
-  server.use(serve(`${process.env.APP_PROXY}/build/`));
+  // server.use(serve(`${process.env.APP_PROXY}/build/`));
   server.proxy = true;
   // setup access logger
   server.use(morgan('combined', { stream: stream }));
@@ -259,7 +259,7 @@ app.prepare().then(async () => {
 
   router.get('(/_next/static/.*)', handleRequest); // Static content is clear
   router.get('/_next/webpack-hmr', handleRequest); // Webpack content is clear
-  router.get('/subscriptions', handleRequest);
+  // router.get('/subscriptions', handleRequest);
 
   router.get('(.*)', verifyRequest(), handleRequest);
 

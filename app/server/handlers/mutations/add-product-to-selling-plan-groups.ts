@@ -27,7 +27,10 @@ export function SELLING_PLAN_ADD_PRODUCT() {
 
 export const addProductToSellingPlanGroups = async (ctx: Context) => {
   const { client } = ctx;
-  const body = JSON.parse(ctx.request.body);
+  const body = ctx.request.body as {
+    productId: string;
+    selectedPlans: string[];
+  };
   const { productId, selectedPlans } = body;
   const variables = {
     id: productId,
