@@ -51,8 +51,6 @@ app.prepare().then(async () => {
   scheduler();
 
   const server = new Koa();
-  // Serve Static
-  // server.use(serve(`${process.env.APP_PROXY}/build/`));
   server.proxy = true;
   // setup access logger
   server.use(morgan('combined', { stream: stream }));
@@ -67,6 +65,60 @@ app.prepare().then(async () => {
 
   const router = new Router();
   server.keys = [Shopify.Context.API_SECRET_KEY];
+
+  // Webhook Handlers
+  const appUninstallHandler = async (
+    _topic: string,
+    shop: string,
+    _body: string
+  ) => {
+    logger.log('info', `App uninstalled: ${shop}`);
+    delete ACTIVE_SHOPIFY_SHOPS[shop];
+    pgStorage.deleteActiveShop(shop);
+  };
+
+  const subscriptionContractsCreateHandler = async (
+    _topic: string,
+    shop: string,
+    body: string
+  ) => {
+    logger.log('info', `Subscription Contract Create Webhook`);
+    const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
+    pgStorage.createContract(shop, token, body);
+  };
+
+  const subscriptionContractsUpdateHandler = async (
+    _topic: string,
+    shop: string,
+    body: string
+  ) => {
+    logger.log('info', `Subscription Contract Update Webhook`);
+    const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
+    pgStorage.updateContract(shop, token, body);
+  };
+
+  const subscriptionBillingAttemptSuccessHandler = async (
+    _topic: string,
+    shop: string,
+    body: string
+  ) => {
+    logger.log('info', `Subscription Billing Attempt Success Webhook`);
+    const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
+    pgStorage.updateNextBillingDate(shop, token, body);
+  };
+
+  const subscriptionBillingAttemptFailureHandler = async (
+    _topic: string,
+    shop: string,
+    body: string
+  ) => {
+    console.log('SUBSCRIPTION_BILLING_ATTEMPTS_FAILURE');
+    logger.log('info', `Subscription Billing Attempt Failure Webhook`);
+    const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
+    // Will more than likely create  an errors table to display error notifications to user.
+    logger.log('error', JSON.stringify(body));
+  };
+
   // Offline
   server.use(
     createShopifyAuth({
@@ -85,11 +137,7 @@ app.prepare().then(async () => {
             accessToken,
             path: '/webhooks',
             topic: 'APP_UNINSTALLED',
-            webhookHandler: async (_topic, shop, _body) => {
-              logger.log('info', `App uninstalled: ${shop}`);
-              delete ACTIVE_SHOPIFY_SHOPS[shop];
-              pgStorage.deleteActiveShop(shop);
-            },
+            webhookHandler: appUninstallHandler,
           });
 
         if (!registerUninstallWebhook.success) {
@@ -105,11 +153,7 @@ app.prepare().then(async () => {
             accessToken,
             path: '/webhooks',
             topic: 'SUBSCRIPTION_CONTRACTS_CREATE',
-            webhookHandler: async (_topic, shop, body) => {
-              logger.log('info', `Subscription Contract Create Webhook`);
-              const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
-              pgStorage.createContract(shop, token, body);
-            },
+            webhookHandler: subscriptionContractsCreateHandler,
           });
 
         if (!registerCreateSubscription.success) {
@@ -125,11 +169,7 @@ app.prepare().then(async () => {
             accessToken,
             path: '/webhooks',
             topic: 'SUBSCRIPTION_CONTRACTS_UPDATE',
-            webhookHandler: async (_topic, shop, body) => {
-              logger.log('info', `Subscription Contract Update Webhook`);
-              const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
-              pgStorage.updateContract(shop, token, body);
-            },
+            webhookHandler: subscriptionContractsUpdateHandler,
           });
 
         if (!registerUpdateSubscription.success) {
@@ -145,14 +185,7 @@ app.prepare().then(async () => {
             accessToken,
             path: '/webhooks',
             topic: 'SUBSCRIPTION_BILLING_ATTEMPTS_SUCCESS',
-            webhookHandler: async (_topic, shop, body) => {
-              logger.log(
-                'info',
-                `Subscription Billing Attempt Success Webhook`
-              );
-              const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
-              pgStorage.updateNextBillingDate(shop, token, body);
-            },
+            webhookHandler: subscriptionBillingAttemptSuccessHandler,
           });
 
         if (!registerBillingAttemptSuccess.success) {
@@ -168,16 +201,7 @@ app.prepare().then(async () => {
             accessToken,
             path: '/webhooks',
             topic: 'SUBSCRIPTION_BILLING_ATTEMPTS_FAILURE',
-            webhookHandler: async (_topic, shop, body) => {
-              console.log('SUBSCRIPTION_BILLING_ATTEMPTS_FAILURE');
-              logger.log(
-                'info',
-                `Subscription Billing Attempt Failure Webhook`
-              );
-              const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
-              // Will more than likely create  an errors table to display error notifications to user.
-              logger.log('error', JSON.stringify(body));
-            },
+            webhookHandler: subscriptionBillingAttemptFailureHandler,
           });
 
         if (!registerBillingAttemptFailure.success) {
@@ -193,6 +217,36 @@ app.prepare().then(async () => {
       },
     })
   );
+
+  // re-register webhooks
+  Shopify.Webhooks.Registry.webhookRegistry.push({
+    path: '/webhooks',
+    topic: 'APP_UNINSTALLED',
+    webhookHandler: appUninstallHandler,
+  });
+
+  Shopify.Webhooks.Registry.webhookRegistry.push({
+    path: '/webhooks',
+    topic: 'SUBSCRIPTION_CONTRACTS_CREATE',
+    webhookHandler: subscriptionContractsCreateHandler,
+  });
+
+  Shopify.Webhooks.Registry.webhookRegistry.push({
+    path: '/webhooks',
+    topic: 'SUBSCRIPTION_CONTRACTS_UPDATE',
+    webhookHandler: subscriptionContractsUpdateHandler,
+  });
+
+  Shopify.Webhooks.Registry.webhookRegistry.push({
+    path: '/webhooks',
+    topic: 'SUBSCRIPTION_BILLING_ATTEMPTS_SUCCESS',
+    webhookHandler: subscriptionBillingAttemptSuccessHandler,
+  });
+  Shopify.Webhooks.Registry.webhookRegistry.push({
+    path: '/webhooks',
+    topic: 'SUBSCRIPTION_BILLING_ATTEMPTS_FAILURE',
+    webhookHandler: subscriptionBillingAttemptFailureHandler,
+  });
 
   // Online
   server.use(
