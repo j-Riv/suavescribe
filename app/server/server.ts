@@ -32,7 +32,7 @@ Shopify.Context.initialize({
   API_SECRET_KEY: process.env.SHOPIFY_API_SECRET!,
   SCOPES: process.env.SCOPES!!.split(','),
   HOST_NAME: process.env.HOST!.replace(/https:\/\//, ''),
-  API_VERSION: ApiVersion.January21,
+  API_VERSION: ApiVersion.July21,
   IS_EMBEDDED_APP: true,
   SESSION_STORAGE: new Shopify.Session.CustomSessionStorage(
     sessionStorage.storeCallback,
@@ -79,8 +79,8 @@ app.prepare().then(async () => {
         // save active shop
         pgStorage.storeActiveShop({ shop, scope, accessToken });
         // Register Webhooks
-        const registerUninstallWebhook = await Shopify.Webhooks.Registry.register(
-          {
+        const registerUninstallWebhook =
+          await Shopify.Webhooks.Registry.register({
             shop,
             accessToken,
             path: '/webhooks',
@@ -90,8 +90,7 @@ app.prepare().then(async () => {
               delete ACTIVE_SHOPIFY_SHOPS[shop];
               pgStorage.deleteActiveShop(shop);
             },
-          }
-        );
+          });
 
         if (!registerUninstallWebhook.success) {
           logger.log(
@@ -100,8 +99,8 @@ app.prepare().then(async () => {
           );
         }
         // Register Create Contract Webhook
-        const registerCreateSubscription = await Shopify.Webhooks.Registry.register(
-          {
+        const registerCreateSubscription =
+          await Shopify.Webhooks.Registry.register({
             shop,
             accessToken,
             path: '/webhooks',
@@ -111,8 +110,7 @@ app.prepare().then(async () => {
               const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
               pgStorage.createContract(shop, token, body);
             },
-          }
-        );
+          });
 
         if (!registerCreateSubscription.success) {
           logger.log(
@@ -121,8 +119,8 @@ app.prepare().then(async () => {
           );
         }
         // Register Update Contract Webhook
-        const registerUpdateSubscription = await Shopify.Webhooks.Registry.register(
-          {
+        const registerUpdateSubscription =
+          await Shopify.Webhooks.Registry.register({
             shop,
             accessToken,
             path: '/webhooks',
@@ -132,8 +130,7 @@ app.prepare().then(async () => {
               const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
               pgStorage.updateContract(shop, token, body);
             },
-          }
-        );
+          });
 
         if (!registerUpdateSubscription.success) {
           logger.log(
@@ -142,8 +139,8 @@ app.prepare().then(async () => {
           );
         }
         // Billing Attempt Success Webhook
-        const registerBillingAttemptSuccess = await Shopify.Webhooks.Registry.register(
-          {
+        const registerBillingAttemptSuccess =
+          await Shopify.Webhooks.Registry.register({
             shop,
             accessToken,
             path: '/webhooks',
@@ -156,8 +153,7 @@ app.prepare().then(async () => {
               const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
               pgStorage.updateNextBillingDate(shop, token, body);
             },
-          }
-        );
+          });
 
         if (!registerBillingAttemptSuccess.success) {
           logger.log(
@@ -166,8 +162,8 @@ app.prepare().then(async () => {
           );
         }
         // Billing Attempt Success Webhook
-        const registerBillingAttemptFailure = await Shopify.Webhooks.Registry.register(
-          {
+        const registerBillingAttemptFailure =
+          await Shopify.Webhooks.Registry.register({
             shop,
             accessToken,
             path: '/webhooks',
@@ -182,8 +178,7 @@ app.prepare().then(async () => {
               // Will more than likely create  an errors table to display error notifications to user.
               logger.log('error', JSON.stringify(body));
             },
-          }
-        );
+          });
 
         if (!registerBillingAttemptFailure.success) {
           logger.log(
