@@ -379,7 +379,6 @@ class PgStore {
       let contract = await this.getLocalContract(id);
       // if it doesnt get it from Shopify and insert into database
       if (contract.rowCount === 0) {
-        console.log('CONTRACT DOESNT EXIST LETS GRAB IT AND SAVE IT');
         const res = await getSubscriptionContract(client, id);
         contract = (await this.createLocalContract(
           shop,

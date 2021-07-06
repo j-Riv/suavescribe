@@ -99,7 +99,7 @@ function Index() {
           <Pagination
             hasPrevious={pageInfo.hasPreviousPage}
             onPrevious={() => {
-              console.log(`PREV -> ${subsPerPage} + ${firstCursor}`);
+              // console.log(`PREV -> ${subsPerPage} + ${firstCursor}`);
               fetchMore({
                 query: GET_PREV_SUBSCRIPTION_CONTRACTS,
                 variables: {
@@ -110,7 +110,7 @@ function Index() {
             }}
             hasNext={pageInfo.hasNextPage}
             onNext={() => {
-              console.log(`NEXT -> ${subsPerPage} + ${lastCursor}`);
+              // console.log(`NEXT -> ${subsPerPage} + ${lastCursor}`);
               fetchMore({
                 variables: {
                   first: subsPerPage,

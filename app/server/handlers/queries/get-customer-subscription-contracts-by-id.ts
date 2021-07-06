@@ -77,7 +77,6 @@ export const getCustomerSubscriptionContractsById = async (
   customerId: string
 ) => {
   const { client } = ctx;
-  console.log('LOOKING FOR ALL SUBSCRIPTIONS FOR CUSTOMER WITH ID', customerId);
   const subscriptionContracts = await client
     .query({
       query: CUSTOMER_SUBSCRIPTIONS_CONTRACTS_BY_ID_GET(),
@@ -87,10 +86,6 @@ export const getCustomerSubscriptionContractsById = async (
       },
     })
     .then((response: { data: any }) => {
-      console.log(
-        'GET CUSTOMER SUBSCRIPTION CONTRACTS BY ID',
-        response.data.customers
-      );
       return response.data.customers.edges.length > 0
         ? response.data.customers.edges[0].node.subscriptionContracts.edges
         : response.data.customers.edges;

@@ -16,7 +16,6 @@ const router = new Router();
 dotenv.config();
 
 const verifyJwt = async (ctx: Context, next: Next) => {
-  console.log('VERIFYING JWT');
   const token = ctx.request.headers['x-suavescribe-token'];
   if (!token) return (ctx.status = 401);
   try {
