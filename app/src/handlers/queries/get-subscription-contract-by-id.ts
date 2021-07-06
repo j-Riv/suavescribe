@@ -6,6 +6,7 @@ export const GET_SUBSCRIPTION_BY_ID = gql`
       id
       status
       nextBillingDate
+      lastPaymentStatus
       customer {
         id
         firstName

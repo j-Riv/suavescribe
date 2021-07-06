@@ -7,7 +7,7 @@ import Koa, { Context, Next } from 'koa';
 import next from 'next';
 import Router from 'koa-router';
 import cors from '@koa/cors';
-import serve from 'koa-static';
+// import serve from 'koa-static';
 import morgan from 'koa-morgan';
 import bodyParser from 'koa-bodyparser';
 import subscriptionRouter from './routes/subscriptions';
@@ -115,6 +115,28 @@ app.prepare().then(async () => {
     console.log('SUBSCRIPTION_BILLING_ATTEMPTS_FAILURE');
     logger.log('info', `Subscription Billing Attempt Failure Webhook`);
     const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
+    const data = JSON.parse(body);
+    const errorCodes = [
+      'EXPIRED_PAYMENT_METHOD',
+      'INVALID_PAYMENT_METHOD',
+      'PAYMENT_METHOD_NOT_FOUND',
+    ];
+    if (
+      data.errorCode === 'PAYMENT_METHOD_DECLINED' ||
+      data.errorCode === 'AUTHENTICATION_ERROR' ||
+      data.errorCode === 'UNEXPECTED_ERROR'
+    ) {
+      // will try again tomorrow
+      pgStorage.updateSubscriptionContractAfterFailure(
+        shop,
+        token,
+        body,
+        false
+      );
+    } else {
+      // get payment method id and send email
+      pgStorage.updateSubscriptionContractAfterFailure(shop, token, body, true);
+    }
     // Will more than likely create  an errors table to display error notifications to user.
     logger.log('error', JSON.stringify(body));
   };

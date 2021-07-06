@@ -44,6 +44,19 @@ function Index() {
     redirect.dispatch(Redirect.Action.APP, href);
   };
 
+  interface Contract {
+    node: {
+      id: string;
+      status: string;
+      customer: {
+        id: string;
+        email: string;
+      };
+      nextBillingDate: string;
+      lastPaymentStatus: string;
+    };
+  }
+
   return (
     <Page
       title="Dashboard"
@@ -64,9 +77,10 @@ function Index() {
               'Email',
               'Customer ID',
               'Next Order Date',
+              'Last Payment Status',
               'Actions',
             ]}
-            rows={subscriptionContracts.map(contract => {
+            rows={subscriptionContracts.map((contract: Contract) => {
               return [
                 <Badge
                   status={
@@ -79,6 +93,7 @@ function Index() {
                 contract.node.customer.email,
                 formatId(contract.node.customer.id),
                 formatDate(contract.node.nextBillingDate),
+                contract.node.lastPaymentStatus,
                 <Button
                   plain
                   onClick={() =>

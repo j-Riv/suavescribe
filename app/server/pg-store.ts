@@ -9,9 +9,10 @@ import {
   updateSubscriptionContract,
   updateSubscriptionDraft,
   commitSubscriptionDraft,
+  updatePaymentMethod,
 } from './handlers';
 import { ApolloClient } from '@apollo/client';
-import { generateNextBillingDate } from './utils';
+import { generateNextBillingDate, generateNewBillingDate } from './utils';
 import logger from './logger';
 dotenv.config();
 
@@ -266,14 +267,14 @@ class PgStore {
       const interval = contract.billingPolicy.interval;
       const intervalCount = contract.billingPolicy.intervalCount;
       const query = `
-          INSERT INTO subscription_contracts (id, shop, status, next_billing_date, interval, interval_count, contract) VALUES ('${
-            contract.id
-          }', '${shop}', '${contract.status}', '${
+        INSERT INTO subscription_contracts (id, shop, status, next_billing_date, interval, interval_count, contract) VALUES ('${
+          contract.id
+        }', '${shop}', '${contract.status}', '${
         contract.nextBillingDate
       }', '${interval}', '${intervalCount}', '${JSON.stringify(
         contract
       )}') RETURNING *;
-        `;
+      `;
       return await this.client.query(query);
     } catch (err) {
       logger.log('error', err.message);
@@ -287,14 +288,37 @@ class PgStore {
       const interval = contract.billingPolicy.interval;
       const intervalCount = contract.billingPolicy.intervalCount;
       const query = `
-            UPDATE subscription_contracts SET status = '${
-              contract.status
-            }', next_billing_date = '${
+        UPDATE subscription_contracts SET status = '${
+          contract.status
+        }', next_billing_date = '${
         contract.nextBillingDate
       }', interval = '${interval}', interval_count = '${intervalCount}', contract = '${JSON.stringify(
         contract
       )}' WHERE id = '${contract.id}' RETURNING *;
+      `;
+      return await this.client.query(query);
+    } catch (err) {
+      logger.log('error', err.message);
+    }
+  };
+  // update payment failure
+  updateLocalContractPaymentFailure = async (
+    shop: string,
+    id: string,
+    reset: boolean
+  ) => {
+    try {
+      logger.log('info', `Updating Local Contract: ${id} - Payment Failure`);
+      let query: string;
+      if (reset) {
+        query = `
+          UPDATE subscription_contracts SET payment_failure_count = 0 WHERE shop = '${shop} AND id = '${id} RETURNGIN *;
         `;
+      } else {
+        query = `
+          UPDATE subscription_contracts SET payment_failure_count = payment_failure_count + 1 WHERE shop = '${shop}' AND id = '${id}' RETURNING *;
+        `;
+      }
       return await this.client.query(query);
     } catch (err) {
       logger.log('error', err.message);
@@ -365,7 +389,7 @@ class PgStore {
   /* 
     Updates the Next Billing Date based on the interval and interval count.
     Checks to see if the contract exists locally (it should, but just to be safe).
-    The Update Contract Webhook will trigger after this and UPdate the local database.
+    The Update Contract Webhook will trigger after this and Update the local database.
   */
   updateNextBillingDate = async (shop: string, token: string, body: any) => {
     body = JSON.parse(body);
@@ -386,6 +410,8 @@ class PgStore {
         )) as QueryResult<any>;
       } else {
         logger.log('info', `Contract exits lets update it: ${id}`);
+        // update paymen method failure
+        await this.updateLocalContractPaymentFailure(shop, id, true);
       }
       // interval
       const interval = contract.rows[0].interval;
@@ -414,6 +440,82 @@ class PgStore {
       const contractId = await commitSubscriptionDraft(client, updatedDraftId);
       logger.log('info', `Contract Id: ${contractId}`);
       return contractId;
+    } catch (err) {
+      logger.log('error', err.message);
+    }
+  };
+
+  /* 
+    Updates the Next Billing Date after a payment failure.
+    Checks to see if the contract exists locally (it should, but just to be safe).
+    The Update Contract Webhook will trigger after this and Update the local database.
+  */
+  updateSubscriptionContractAfterFailure = async (
+    shop: string,
+    token: string,
+    body: any,
+    updatePayment: boolean
+  ) => {
+    body = JSON.parse(body);
+    const id = body.admin_graphql_api_subscription_contract_id;
+
+    try {
+      logger.log('info', `Updating Next Billing Date: ${id}`);
+      // create apollo client
+      const client: ApolloClient<unknown> = createClient(shop, token);
+      // check if contract exists
+      let contract = await this.getLocalContract(id);
+      // if it doesnt get it from Shopify and insert into database
+      if (contract.rowCount === 0) {
+        const res = await getSubscriptionContract(client, id);
+        contract = (await this.createLocalContract(
+          shop,
+          res
+        )) as QueryResult<any>;
+      } else {
+        logger.log('info', `Contract exits lets update it: ${id}`);
+        // update paymen method failure
+        await this.updateLocalContractPaymentFailure(shop, id, false);
+        if (updatePayment) {
+          await this.updatePaymentMethod(shop, token, body);
+        }
+      }
+      // generate next billing date
+      const nextBillingDate = generateNewBillingDate();
+      logger.log('info', `Next Billing Date -> ${nextBillingDate}`);
+      // update next billing date on shopify get results use results to update local db.
+      // get draft id
+      const draftId = await updateSubscriptionContract(client, id);
+      logger.log('info', `Draft Id: ${draftId}`);
+      // create input & update draft
+      const input = {
+        nextBillingDate: nextBillingDate,
+      };
+      const updatedDraftId = await updateSubscriptionDraft(
+        client,
+        draftId,
+        input
+      );
+      logger.log('info', `Updated Draft Id: ${updatedDraftId}`);
+      // commit changes to draft
+      const contractId = await commitSubscriptionDraft(client, updatedDraftId);
+      logger.log('info', `Contract Id: ${contractId}`);
+      return contractId;
+    } catch (err) {
+      logger.log('error', err.message);
+    }
+  };
+
+  updatePaymentMethod = async (shop: string, token: string, body: any) => {
+    body = JSON.parse(body);
+    const id = body.admin_graphql_api_subscription_contract_id;
+    try {
+      // create apollo client
+      const client: ApolloClient<unknown> = createClient(shop, token);
+      const res = await getSubscriptionContract(client, id);
+      const paymentMethodId = res.customerPaymentMethod.id;
+      const customerId = await updatePaymentMethod(client, paymentMethodId);
+      return customerId;
     } catch (err) {
       logger.log('error', err.message);
     }

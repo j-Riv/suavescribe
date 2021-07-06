@@ -20,6 +20,7 @@ interface Props {
   data: {
     subscriptionContract: {
       nextBillingDate: string;
+      lastPaymentStatus: string;
       originOrder: {
         legacyResourceId: string;
       };
@@ -86,6 +87,10 @@ function SubscriptionInformation(props: Props) {
         <p>
           <span className="bold">Next Order Date: </span>
           {formatDate(data.subscriptionContract.nextBillingDate)}
+        </p>
+        <p>
+          <span className="bold">Last Payment Status: </span>
+          {data.subscriptionContract.lastPaymentStatus}
         </p>
         <div className="products">
           {data.subscriptionContract.lines.edges.length ? (
