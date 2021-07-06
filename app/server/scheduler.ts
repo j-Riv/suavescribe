@@ -30,7 +30,7 @@ export const scheduler = () => {
   });
 
   const cleanupJob = schedule.scheduleJob(everyday3am, async function () {
-    logger.log('info', `Running Contract Sync Rule: ${everyday3am}`);
+    logger.log('info', `Running Cleanup Sync Rule: ${everyday3am}`);
     runCancellation();
   });
 };
