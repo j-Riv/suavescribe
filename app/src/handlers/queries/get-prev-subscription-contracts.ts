@@ -29,6 +29,9 @@ export const GET_PREV_SUBSCRIPTION_CONTRACTS = gql`
                 pricingPolicy {
                   cycleDiscounts {
                     adjustmentType
+                    adjustmentValue {
+                      __typename
+                    }
                     computedPrice {
                       amount
                     }
@@ -45,21 +48,9 @@ export const GET_PREV_SUBSCRIPTION_CONTRACTS = gql`
             interval
             intervalCount
           }
-          deliveryMethod {
-            ... on SubscriptionDeliveryMethodShipping {
-              address {
-                address1
-                address2
-                city
-                country
-                province
-                zip
-                name
-                company
-                firstName
-                lastName
-              }
-            }
+          billingPolicy {
+            interval
+            intervalCount
           }
         }
       }
