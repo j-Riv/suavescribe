@@ -11,6 +11,7 @@ WORKDIR /usr/app
 COPY . /usr/app
 
 # install dependencies
+RUN npm -g install cross-env
 RUN npm install
 
 # start app
