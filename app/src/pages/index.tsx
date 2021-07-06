@@ -31,6 +31,8 @@ function Index() {
   if (loading) return <LoadingIndex tableRows={5} />;
   if (error) return <ErrorState err={error.message} />;
 
+  console.log('DATA', data);
+
   const subscriptionContracts = data?.subscriptionContracts?.edges;
   const pageInfo = data?.subscriptionContracts?.pageInfo;
   const firstCursor = subscriptionContracts[0]?.cursor;
@@ -97,7 +99,7 @@ function Index() {
           <Pagination
             hasPrevious={pageInfo.hasPreviousPage}
             onPrevious={() => {
-              console.log('Prev');
+              console.log(`PREV -> ${subsPerPage} + ${firstCursor}`);
               fetchMore({
                 query: GET_PREV_SUBSCRIPTION_CONTRACTS,
                 variables: {
@@ -108,7 +110,7 @@ function Index() {
             }}
             hasNext={pageInfo.hasNextPage}
             onNext={() => {
-              console.log('Next');
+              console.log(`NEXT -> ${subsPerPage} + ${lastCursor}`);
               fetchMore({
                 variables: {
                   first: subsPerPage,
