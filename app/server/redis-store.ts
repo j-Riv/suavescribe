@@ -87,7 +87,6 @@ class RedisStore {
   */
   deleteCallback = async (id: string) => {
     logger.log('info', `Deleting session: ${id}`);
-    // console.log('DELETING', id);
     try {
       // Inside our try, we use the `delAsync` method to delete our session.
       // This method returns a boolean (true is successful, false if not)

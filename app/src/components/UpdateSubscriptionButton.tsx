@@ -34,7 +34,6 @@ function UpdateSubscriptionButton(props: Props) {
     UPDATE_SUBSCRIPTION_CONTRACT,
     {
       onCompleted: data => {
-        console.log('UPDATE SUBSCRIPTION CONTRACT', data);
         if (lineId) {
           updateDraftLine(
             data.subscriptionContractUpdate.draft.id,

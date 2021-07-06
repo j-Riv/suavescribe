@@ -117,40 +117,6 @@ export const getSubscriptionContract = async (
               currencyCode: string;
               amount: string;
             };
-            // lineCount: number;
-            // lines: {
-            //   edges: [
-            //     {
-            //       node: {
-            //         id: string;
-            //         productId: string;
-            //         title: string;
-            //         variantTitle: string;
-            //         quantity: number;
-            //         requiresShipping: boolean;
-            //         variantImage: {
-            //           originalSrc: string;
-            //           altText: string;
-            //         };
-            //         pricingPolicy: {
-            //           cycleDiscounts: {
-            //             adjustmentType: string;
-            //             adjustmentValue: {
-            //               __typename: string;
-            //             };
-            //             computedPrice: {
-            //               amount: string;
-            //             };
-            //           };
-            //           basePrice: {
-            //             amount: string;
-            //             currencyCode: string;
-            //           };
-            //         };
-            //       };
-            //     }
-            //   ];
-            // };
             originOrder: {
               legacyResourceId: string;
             };

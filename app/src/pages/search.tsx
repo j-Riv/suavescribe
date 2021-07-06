@@ -34,7 +34,6 @@ function Index() {
     const subscriptionContracts = customer.subscriptionContracts?.edges;
 
     const appRedirect = (href: string) => {
-      console.log('redirecting');
       redirect.dispatch(Redirect.Action.APP, href);
     };
 
