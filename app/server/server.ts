@@ -104,7 +104,7 @@ app.prepare().then(async () => {
   ) => {
     logger.log('info', `Subscription Billing Attempt Success Webhook`);
     const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
-    pgStorage.updateNextBillingDate(shop, token, body);
+    pgStorage.updateSubscriptionContractAfterSuccess(shop, token, body);
   };
 
   const subscriptionBillingAttemptFailureHandler = async (

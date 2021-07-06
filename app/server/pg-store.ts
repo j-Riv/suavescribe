@@ -391,7 +391,11 @@ class PgStore {
     Checks to see if the contract exists locally (it should, but just to be safe).
     The Update Contract Webhook will trigger after this and Update the local database.
   */
-  updateNextBillingDate = async (shop: string, token: string, body: any) => {
+  updateSubscriptionContractAfterSuccess = async (
+    shop: string,
+    token: string,
+    body: any
+  ) => {
     body = JSON.parse(body);
     const id = body.admin_graphql_api_subscription_contract_id;
 
