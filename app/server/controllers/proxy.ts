@@ -329,27 +329,43 @@ export const generateCustomerAuth = async (ctx: Context) => {
 
 export const liquidApplicationProxy = async (ctx: Context) => {
   const params = ctx.request.query;
-  ctx.set('Content-Type', 'application/liquid');
-  // ctx.body = fs.createReadStream(`${process.env.APP_PROXY}/build/index.html`);
-  const app = await readFileThunk(`${process.env.APP_PROXY}/build/index.html`);
-  ctx.body = `
-    {% if customer %}
-      {% if customer.id == ${params.customer_id} %}
-        <script>
-        const currentCustomer = {{ customer.id }};
-        console.log(currentCustomer);
-        </script>
-        ${app}
-      {% else %}
-      <div style="text-align: center;">
-        <p>Something went wrong ...</p>
-        <p><a href="/account">Go Back to Account</a></p>
-      </div>
-      {% endif %}
-    {% else %}
-    <p>Please Login!</p>
-    {% endif %}
-  `;
+  if (params.token && params.shop && params.customer_id) {
+    const token = params.token as string;
+    const shop = params.shop as string;
+    const customer_id = params.customer_id as string;
+    const verified = verifyToken(shop, customer_id, token);
+    ctx.set('Content-Type', 'application/liquid');
+    if (verified) {
+      const app = await readFileThunk(
+        `${process.env.APP_PROXY}/build/index.html`
+      );
+      ctx.body = `
+        {% if customer %}
+          {% if customer.id == ${params.customer_id} %}
+            <script>
+            const currentCustomer = {{ customer.id }};
+            console.log(currentCustomer);
+            </script>
+            ${app}
+          {% else %}
+          <div style="text-align: center;">
+            <p>Something went wrong ...</p>
+            <p><a href="/account">Go Back to Account</a></p>
+          </div>
+          {% endif %}
+        {% else %}
+        <p>Please Login!</p>
+        {% endif %}
+      `;
+    } else {
+      ctx.body = 'VERIFICATION FAILED';
+    }
+  } else {
+    console.log('ERROR', 'Missing Token, Shop or Customer Id.');
+    ctx.body = `
+      <p>ERROR: Missing Token, Shop or Customer Id.</p>
+    `;
+  }
 };
 
 export const applicationProxy = async (ctx: Context) => {
