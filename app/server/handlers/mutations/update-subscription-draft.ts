@@ -27,6 +27,7 @@ export const updateSubscriptionDraft = async (
   input: any
 ) => {
   console.log('INPUT', input);
+
   const subscriptionDraftUpdate = await client
     .mutate({
       mutation: SUBSCRIPTION_DRAFT_UPDATE(),

@@ -7,6 +7,7 @@ export function SUBSCRIPTION_DRAFT_COMMIT() {
       subscriptionDraftCommit(draftId: $draftId) {
         contract {
           id
+          status
         }
         userErrors {
           code

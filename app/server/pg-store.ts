@@ -312,7 +312,7 @@ class PgStore {
       let query: string;
       if (reset) {
         query = `
-          UPDATE subscription_contracts SET payment_failure_count = 0 WHERE shop = '${shop} AND id = '${id} RETURNGIN *;
+          UPDATE subscription_contracts SET payment_failure_count = 0 WHERE shop = '${shop} AND id = '${id} RETURNING *;
         `;
       } else {
         query = `
@@ -392,6 +392,16 @@ class PgStore {
       );
       let res: any;
       if (exists.rowCount > 0) {
+        const paymentFailureCount = exists.rows[0].payment_failure_count;
+        const status = exists.rows[0].status;
+        if (
+          status === 'CANCELLED' &&
+          contract.status !== 'CANCELLED' &&
+          paymentFailureCount >= 2
+        ) {
+          console.log('RESET PAYMENT FAILURE METHOD');
+          this.updateLocalContractPaymentFailure(shop, id, true);
+        }
         res = await this.updateLocalContract(shop, contract);
       } else {
         res = await this.createLocalContract(shop, contract);
