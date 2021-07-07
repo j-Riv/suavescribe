@@ -112,7 +112,6 @@ app.prepare().then(async () => {
     shop: string,
     body: string
   ) => {
-    console.log('SUBSCRIPTION_BILLING_ATTEMPTS_FAILURE');
     logger.log('info', `Subscription Billing Attempt Failure Webhook`);
     const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
     const data = JSON.parse(body);
@@ -241,6 +240,7 @@ app.prepare().then(async () => {
   );
 
   // re-register webhooks
+  logger.log('info', 'REGISTERING WEBHOOKS');
   Shopify.Webhooks.Registry.webhookRegistry.push({
     path: '/webhooks',
     topic: 'APP_UNINSTALLED',
