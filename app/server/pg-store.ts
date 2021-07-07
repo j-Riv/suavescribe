@@ -396,7 +396,7 @@ class PgStore {
         const status = exists.rows[0].status;
         if (
           status === 'CANCELLED' &&
-          contract.status !== 'CANCELLED' &&
+          contract.status !== 'ACTIVE' &&
           paymentFailureCount >= 2
         ) {
           console.log('RESET PAYMENT FAILURE COUNT');
