@@ -19,7 +19,7 @@ export const scheduler = () => {
   const everyday3am = '0 0 3 * * *'; // every day at 1 am
   const everyday6am = '0 0 6 * * *'; // every day at 6 am
   const everyday12am = '0 0 0 * * *'; // every day at 12 am
-  const everyhour = '* 0 * * * *';
+  const everyhour = '0 0 */1 * * *';
 
   const scheduleJob = schedule.scheduleJob(everyday6am, async function () {
     logger.log('info', `Running Billing Attempt Rule: ${everyday6am}`);
