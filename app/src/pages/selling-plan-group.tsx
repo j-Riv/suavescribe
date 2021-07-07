@@ -23,7 +23,7 @@ import { formatId } from '../utils/formatters';
 import LoadingSellingPlan from '../components/LoadingSellingPlan';
 import ErrorState from '../components/ErrorState';
 import UpdateSellingPlanGroupButton from '../components/UpdateSellingPlanGroupButton';
-import { Product } from '../types/subscriptions';
+import { Product as ShopifyProduct } from '../types/subscriptions';
 
 const Information = styled.div`
   .bold {
@@ -176,7 +176,7 @@ function SellingPlanGroup() {
                   </Message>
                 </TextStyle>
                 {data.sellingPlanGroup.products.edges.map(
-                  (product: Product) => {
+                  (product: ShopifyProduct) => {
                     return (
                       <Product key={product.node.id}>
                         <Thumbnail
