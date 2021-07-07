@@ -14,7 +14,7 @@ import subscriptionRouter from './routes/subscriptions';
 import proxyRouter from './routes/proxy';
 import RedisStore from './redis-store';
 import PgStore from './pg-store';
-import { scheduler } from './scheduler';
+import { scheduler, runSubscriptionContractSync } from './scheduler';
 import logger, { stream } from './logger';
 
 dotenv.config();
@@ -291,6 +291,19 @@ app.prepare().then(async () => {
     }),
     async (ctx: Context, next: Next) => {
       await Shopify.Utils.graphqlProxy(ctx.req, ctx.res);
+    }
+  );
+
+  router.get(
+    '/sync',
+    verifyRequest({
+      returnHeader: true,
+      authRoute: `/auth`,
+      fallbackRoute: `/install/auth`,
+    }),
+    (ctx: Context, next: Next) => {
+      runSubscriptionContractSync();
+      ctx.res.statusCode = 200;
     }
   );
 

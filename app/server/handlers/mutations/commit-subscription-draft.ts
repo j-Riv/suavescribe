@@ -30,7 +30,7 @@ export const commitSubscriptionDraft = async (
         draftId: id,
       },
     })
-    .then((response: any) => {
+    .then((response: { data?: any }) => {
       const data = response.data.subscriptionDraftCommit;
       if (data.userErrors.length > 0) {
         return data.userErrors;

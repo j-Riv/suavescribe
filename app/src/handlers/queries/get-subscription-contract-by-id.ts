@@ -37,9 +37,6 @@ export const GET_SUBSCRIPTION_BY_ID = gql`
             pricingPolicy {
               cycleDiscounts {
                 adjustmentType
-                adjustmentValue {
-                  __typename
-                }
                 computedPrice {
                   amount
                 }
@@ -54,11 +51,6 @@ export const GET_SUBSCRIPTION_BY_ID = gql`
       }
       originOrder {
         legacyResourceId
-      }
-      status
-      lastPaymentStatus
-      customerPaymentMethod {
-        id
       }
       deliveryPolicy {
         interval

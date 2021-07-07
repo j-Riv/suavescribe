@@ -33,7 +33,7 @@ export const updatePaymentMethod = async (
         customerPaymentMethodId: id,
       },
     })
-    .then((response: any) => {
+    .then((response: { data?: any }) => {
       return response.data.customerPaymentMethodSendUpdateEmail.customer.id;
     });
 

@@ -11,6 +11,7 @@ import {
 import Table from '../components/Table';
 import LoadingSellingPlans from '../components/LoadingSellingPlans';
 import ErrorState from '../components/ErrorState';
+import { SellingPlanGroup } from '../types/subscriptions';
 
 const Actions = styled.div`
   display: grid;
@@ -71,26 +72,30 @@ function SellingPlanGroups() {
             <Table
               contentTypes={['text', 'text', 'text']}
               headings={['Name', 'Summary', 'Actions']}
-              rows={data.sellingPlanGroups.edges.map(group => {
-                return [
-                  group.node.name,
-                  group.node.summary,
-                  <Actions>
-                    <RemoveButton
-                      id={group.node.id}
-                      toggleActive={toggleActive}
-                    />
-                    <Button
-                      plain
-                      onClick={() =>
-                        appRedirect(`/selling-plan-group/?id=${group.node.id}`)
-                      }
-                    >
-                      View
-                    </Button>
-                  </Actions>,
-                ];
-              })}
+              rows={data.sellingPlanGroups.edges.map(
+                (group: SellingPlanGroup) => {
+                  return [
+                    group.node.name,
+                    group.node.summary,
+                    <Actions>
+                      <RemoveButton
+                        id={group.node.id}
+                        toggleActive={toggleActive}
+                      />
+                      <Button
+                        plain
+                        onClick={() =>
+                          appRedirect(
+                            `/selling-plan-group/?id=${group.node.id}`
+                          )
+                        }
+                      >
+                        View
+                      </Button>
+                    </Actions>,
+                  ];
+                }
+              )}
             />
           )}
         </Card>

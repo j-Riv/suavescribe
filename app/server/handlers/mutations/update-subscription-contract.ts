@@ -30,7 +30,7 @@ export const updateSubscriptionContract = async (
         contractId: id,
       },
     })
-    .then((response: any) => {
+    .then((response: { data?: any }) => {
       return response.data.subscriptionContractUpdate.draft.id;
     });
 

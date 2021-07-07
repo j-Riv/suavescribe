@@ -37,6 +37,7 @@ export const scheduler = () => {
 };
 
 export const runBillingAttempts = async () => {
+  console.log('RUNNING BILLING ATTEMPTS');
   // get active shopify stores
   const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
   const shops = Object.keys(ACTIVE_SHOPIFY_SHOPS);
@@ -66,6 +67,7 @@ export const runBillingAttempts = async () => {
 };
 
 export const runSubscriptionContractSync = async () => {
+  console.log('RUNNING SUBSCRIPTION CONTRACT SYNC');
   // get active shopify stores
   const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
   const shops = Object.keys(ACTIVE_SHOPIFY_SHOPS);
@@ -74,6 +76,7 @@ export const runSubscriptionContractSync = async () => {
       logger.log('info', `Syncing contracts for shop: ${shop}`);
       const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
       await pgStorage.saveAllContracts(shop, token);
+      return { msg: true };
     } catch (err) {
       logger.log('error', err.message);
     }
@@ -81,6 +84,7 @@ export const runSubscriptionContractSync = async () => {
 };
 
 export const runCancellation = async () => {
+  console.log('RUNNING CLEANUP');
   // get active shopify stores
   const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
   const shops = Object.keys(ACTIVE_SHOPIFY_SHOPS);
