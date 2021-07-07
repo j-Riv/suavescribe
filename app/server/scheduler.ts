@@ -19,14 +19,15 @@ export const scheduler = () => {
   const everyday3am = '0 0 3 * * *'; // every day at 1 am
   const everyday6am = '0 0 6 * * *'; // every day at 6 am
   const everyday12am = '0 0 0 * * *'; // every day at 12 am
+  const everyhour = '* 0 * * * *';
 
   const scheduleJob = schedule.scheduleJob(everyday6am, async function () {
     logger.log('info', `Running Billing Attempt Rule: ${everyday6am}`);
-    run();
+    runBillingAttempts();
   });
-  const syncJob = schedule.scheduleJob(everyday12am, async function () {
-    logger.log('info', `Running Contract Sync Rule: ${everyday12am}`);
-    sync();
+  const syncJob = schedule.scheduleJob(everyhour, async function () {
+    logger.log('info', `Running Contract Sync Rule: ${everyhour}`);
+    runSubscriptionContractSync();
   });
 
   const cleanupJob = schedule.scheduleJob(everyday3am, async function () {
@@ -35,7 +36,7 @@ export const scheduler = () => {
   });
 };
 
-const run = async () => {
+export const runBillingAttempts = async () => {
   // get active shopify stores
   const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
   const shops = Object.keys(ACTIVE_SHOPIFY_SHOPS);
@@ -64,7 +65,7 @@ const run = async () => {
   });
 };
 
-const sync = async () => {
+export const runSubscriptionContractSync = async () => {
   // get active shopify stores
   const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
   const shops = Object.keys(ACTIVE_SHOPIFY_SHOPS);
@@ -79,7 +80,7 @@ const sync = async () => {
   });
 };
 
-const runCancellation = async () => {
+export const runCancellation = async () => {
   // get active shopify stores
   const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
   const shops = Object.keys(ACTIVE_SHOPIFY_SHOPS);
