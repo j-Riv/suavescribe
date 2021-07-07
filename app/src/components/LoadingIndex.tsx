@@ -32,15 +32,17 @@ function LoadingIndex(props: { tableRows: number }) {
                 headings={[
                   'ID',
                   'Email',
-                  'Customer ID',
+                  // 'Customer ID',
                   'Created At',
                   'Next Order Date',
+                  'Last Payment Status',
                   'Actions',
                 ]}
                 rows={Array.from(new Array(tableRows)).map((_, i) => {
                   return [
                     <SkeletonBodyText key={i} lines={1} />,
                     <SkeletonBodyText key={i} lines={1} />,
+                    // <SkeletonBodyText key={i} lines={1} />,
                     <SkeletonBodyText key={i} lines={1} />,
                     <SkeletonBodyText key={i} lines={1} />,
                     <SkeletonBodyText key={i} lines={1} />,

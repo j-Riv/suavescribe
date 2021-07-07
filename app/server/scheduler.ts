@@ -13,7 +13,7 @@ import logger from './logger';
 const pgStorage = new PgStore();
 
 export const scheduler = () => {
-  logger.log('info', `Scheduler initialized ...`);
+  // logger.log('info', `Scheduler initialized ...`);
   const every10sec = '*/10 * * * *'; // every 10 seconds for testing
   const everymin = '*/1 * * * *'; // every min
   const everyday3am = '0 0 3 * * *'; // every day at 1 am
@@ -88,39 +88,35 @@ const runCancellation = async () => {
     // get token
     const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
     // get all active contracts for shop
-    const contracts = await pgStorage.getLocalContractsByShop(shop);
+    const contracts =
+      await pgStorage.getLocalContractsWithPaymentFailuresByShop(shop);
     if (contracts) {
       // loop through contracts
       contracts.forEach(async contract => {
         // if payment failures > 2 change status to cancelled.
-        if (contract.payment_failure_count >= 2) {
-          try {
-            const client = createClient(shop, token);
-            // get draft id
-            const draftId = await updateSubscriptionContract(
-              client,
-              contract.id
-            );
-            logger.log('info', `Draft Id: ${draftId}`);
-            // create input & update draft
-            const input = {
-              status: 'CANCELLED',
-            };
-            const updatedDraftId = await updateSubscriptionDraft(
-              client,
-              draftId,
-              input
-            );
-            logger.log('info', `Updated Draft Id: ${updatedDraftId}`);
-            // commit changes to draft
-            const contractId = await commitSubscriptionDraft(
-              client,
-              updatedDraftId
-            );
-            logger.log('info', `Contract Id: ${contractId}`);
-          } catch (err) {
-            logger.log('error', err.message);
-          }
+        try {
+          const client = createClient(shop, token);
+          // get draft id
+          const draftId = await updateSubscriptionContract(client, contract.id);
+          logger.log('info', `Draft Id: ${draftId}`);
+          // create input & update draft
+          const input = {
+            status: 'CANCELLED',
+          };
+          const updatedDraftId = await updateSubscriptionDraft(
+            client,
+            draftId,
+            input
+          );
+          logger.log('info', `Updated Draft Id: ${updatedDraftId}`);
+          // commit changes to draft
+          const contractId = await commitSubscriptionDraft(
+            client,
+            updatedDraftId
+          );
+          logger.log('info', `Contract Id: ${contractId}`);
+        } catch (err) {
+          logger.log('error', err.message);
         }
       });
     }

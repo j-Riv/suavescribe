@@ -344,6 +344,22 @@ class PgStore {
     }
   };
 
+  getLocalContractsWithPaymentFailuresByShop = async (shop: string) => {
+    try {
+      logger.log(
+        'info',
+        `Gettting all contracts for shop: ${shop} with 2 or more payment failures`
+      );
+      const query = `
+        SELECT * FROM subscription_contracts WHERE payment_failure_count >= 2 AND shop = '${shop}' AND status = 'ACTIVE'; 
+      `;
+      const res = await this.client.query(query);
+      return res.rows;
+    } catch (err) {
+      logger.log('error', err.message);
+    }
+  };
+
   // Webhooks
   createContract = async (shop: string, token: string, body: any) => {
     body = JSON.parse(body);
