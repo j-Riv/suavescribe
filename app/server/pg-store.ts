@@ -399,8 +399,8 @@ class PgStore {
           contract.status !== 'CANCELLED' &&
           paymentFailureCount >= 2
         ) {
-          console.log('RESET PAYMENT FAILURE METHOD');
-          this.updateLocalContractPaymentFailure(shop, id, true);
+          console.log('RESET PAYMENT FAILURE COUNT');
+          await this.updateLocalContractPaymentFailure(shop, id, true);
         }
         res = await this.updateLocalContract(shop, contract);
       } else {
