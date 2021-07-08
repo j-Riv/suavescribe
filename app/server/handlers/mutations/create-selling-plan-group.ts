@@ -62,10 +62,9 @@ const createInput = (body: Body) => {
   if (plans > 1) {
     for (let i = 1; i <= plans; i++) {
       let deliveryOption = `Delivered every ${i} ${intervalTitle}s`;
-      let planName = `${deliveryOption}${savingsName}`;
+      const planName = `${deliveryOption}${savingsName}`;
       if (i === 1) {
         deliveryOption = `Delivered every ${intervalTitle}`;
-        planName = `${deliveryOption}${savingsName}`;
       }
       let sellingPlan = {
         name: planName,
@@ -96,11 +95,15 @@ const createInput = (body: Body) => {
       sellingPlans.push(sellingPlan);
     }
   } else {
+    let deliveryOption = `Delivered every ${intervalCount} ${intervalTitle}s`;
+    if (intervalCountNumber === 1) {
+      deliveryOption = `Delivered every ${intervalTitle}`;
+    }
     sellingPlans = [
       {
-        name: `Delivered every ${intervalCount} ${intervalTitle}s${savingsName}`,
-        description: `Delivered every ${intervalCount}${savingsDescription}. Auto renews, skip, cancel anytime.`,
-        options: `Delivered every ${intervalCount}`,
+        name: `${deliveryOption}${savingsName}`,
+        description: `${deliveryOption}${savingsDescription}. Auto renews, skip, cancel anytime.`,
+        options: deliveryOption,
         position: 0,
         billingPolicy: {
           recurring: {
