@@ -226,8 +226,11 @@ function EditSubscription() {
                   label="Item"
                   options={data.subscriptionContract.lines.edges.map(
                     (line: Line) => {
+                      const label = line.node.variantTitle
+                        ? `${line.node.title} - ${line.node.variantTitle}`
+                        : `${line.node.title}`;
                       return {
-                        label: `${line.node.title} - ${line.node.variantTitle}`,
+                        label: label,
                         value: line.node.productId,
                       };
                     }
