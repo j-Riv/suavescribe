@@ -52,17 +52,24 @@ const createInput = (body: Body) => {
   const intervalCountNumber = parseInt(intervalCount);
   const percentageOffNumber = parseFloat(percentageOff);
   const plans = parseInt(numberOfPlans);
+  // savings
+  let savingsDescription = '';
+  let savingsName = '';
+  if (percentageOffNumber > 0) {
+    savingsDescription = `, save ${percentageOff}% on every order`;
+    savingsName = ` (Save ${percentageOff}%)`;
+  }
   if (plans > 1) {
     for (let i = 1; i <= plans; i++) {
       let deliveryOption = `Delivered every ${i} ${intervalTitle}s`;
-      let planName = `${deliveryOption} (Save ${percentageOff}%)`;
+      let planName = `${deliveryOption}${savingsName}`;
       if (i === 1) {
         deliveryOption = `Delivered every ${intervalTitle}`;
-        planName = `${deliveryOption} (Save ${percentageOff}%)`;
+        planName = `${deliveryOption}${savingsName}`;
       }
       let sellingPlan = {
         name: planName,
-        description: `${deliveryOption}, save ${percentageOff}% on every order. Auto renews, skip, cancel anytime.`,
+        description: `${deliveryOption}${savingsDescription}. Auto renews, skip, cancel anytime.`,
         options: deliveryOption,
         position: i,
         billingPolicy: {
@@ -91,8 +98,8 @@ const createInput = (body: Body) => {
   } else {
     sellingPlans = [
       {
-        name: `Delivered every ${intervalCount} ${intervalTitle}s (Save ${percentageOff}%)`,
-        description: `Delivered every ${intervalCount}, save ${percentageOff}% on every order. Auto renews, skip, cancel anytime.`,
+        name: `Delivered every ${intervalCount} ${intervalTitle}s${savingsName}`,
+        description: `Delivered every ${intervalCount}${savingsDescription}. Auto renews, skip, cancel anytime.`,
         options: `Delivered every ${intervalCount}`,
         position: 0,
         billingPolicy: {
