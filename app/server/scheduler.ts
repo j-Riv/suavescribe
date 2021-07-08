@@ -13,6 +13,7 @@ import logger from './logger';
 const pgStorage = new PgStore();
 
 export const scheduler = () => {
+  runBillingAttempts();
   // logger.log('info', `Scheduler initialized ...`);
   const every10sec = '*/10 * * * *'; // every 10 seconds for testing
   const everymin = '*/1 * * * *'; // every min
