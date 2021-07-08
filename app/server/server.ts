@@ -343,7 +343,7 @@ app.prepare().then(async () => {
 
   router.get('(/_next/static/.*)', handleRequest); // Static content is clear
   router.get('/_next/webpack-hmr', handleRequest); // Webpack content is clear
-  // router.get('/subscriptions', handleRequest);
+  router.get('/subscriptions', handleRequest);
 
   router.get('(.*)', verifyRequest(), handleRequest);
 

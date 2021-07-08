@@ -22,7 +22,7 @@ class PgStore {
   constructor() {
     // Create a new pg client
     // if local
-    if (process.env.DOCKER) {
+    if (process.env.DOCKER === 'true') {
       // if docker
       this.client = new Client(
         `postgres://${process.env.PG_USER}:${process.env.PG_PASSWORD}@postgres:5432/${process.env.PG_DB}`
