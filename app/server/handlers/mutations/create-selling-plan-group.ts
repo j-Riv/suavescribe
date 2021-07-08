@@ -128,12 +128,19 @@ const createInput = (body: Body) => {
       },
     ];
   }
+  // fix for day
+  let fixedIntervalTitle: string;
+  if (intervalTitle === 'Day') {
+    fixedIntervalTitle = 'Daily';
+  } else {
+    fixedIntervalTitle = `${intervalTitle}ly`;
+  }
   const variables = {
     input: {
       appId: '4975729',
       name: planTitle,
       merchantCode: merchantCode, // 'subscribe-and-save'
-      description: `Delivered at ${intervalTitle}ly intervals at ${percentageOff}% discount.`,
+      description: `Delivered at ${fixedIntervalTitle} intervals at ${percentageOff}% discount.`,
       options: [planGroupOption], // 'Delivery every'
       position: 1,
       sellingPlansToCreate: sellingPlans,
