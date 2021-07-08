@@ -5,7 +5,7 @@ import { Context } from 'koa';
 export function SELLING_PLAN_GET() {
   return gql`
     query {
-      sellingPlanGroups(first: 5) {
+      sellingPlanGroups(first: 50) {
         edges {
           node {
             id
@@ -13,7 +13,7 @@ export function SELLING_PLAN_GET() {
             description
             options
             name
-            sellingPlans(first: 5) {
+            sellingPlans(first: 50) {
               edges {
                 node {
                   id
