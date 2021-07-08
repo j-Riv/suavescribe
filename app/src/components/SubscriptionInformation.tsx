@@ -101,7 +101,12 @@ function SubscriptionInformation(props: Props) {
                   alt={line.node.variantImage.altText}
                 />
                 <div className="information">
-                  <p>{`${line.node.title} - ${line.node.variantTitle}`}</p>
+                  <p>
+                    {line.node.title}
+                    {line.node.variantTitle
+                      ? ` - ${line.node.variantTitle}`
+                      : ''}
+                  </p>
                   <p>
                     {` x ${line.node.quantity} @ $${formatMoney(
                       line.node.pricingPolicy.cycleDiscounts[0].computedPrice
