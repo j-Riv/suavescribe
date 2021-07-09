@@ -4,6 +4,7 @@ import 'isomorphic-fetch';
 import {
   createClient,
   createSubscriptionBillingAttempt,
+  getSubscriptionContract,
   updateSubscriptionContract,
   updateSubscriptionDraft,
   commitSubscriptionDraft,
@@ -49,16 +50,24 @@ export const runBillingAttempts = async () => {
     // get all active contracts for shop
     const contracts = await pgStorage.getLocalContractsByShop(shop);
     if (contracts) {
+      console.log(`FOUND ${contracts.length} TO BILL`);
       // loop through contracts
       contracts.forEach(async contract => {
         // create billing attempt
         try {
           const client = createClient(shop, token);
-          const billingAttempt = await createSubscriptionBillingAttempt(
-            client,
-            contract.id
-          );
-          logger.log('info', `Created Billing Attempt: ${billingAttempt}`);
+          // check billing date on shopify
+          const c = await getSubscriptionContract(client, contract.id);
+          if (
+            c.nextBillingDate.split('T')[0] ===
+            contract.next_billing_date.toISOString().substring(0, 10)
+          ) {
+            const billingAttempt = await createSubscriptionBillingAttempt(
+              client,
+              contract.id
+            );
+            logger.log('info', `Created Billing Attempt: ${billingAttempt}`);
+          }
         } catch (err) {
           logger.log('error', err.message);
         }
@@ -66,6 +75,36 @@ export const runBillingAttempts = async () => {
     }
   });
 };
+
+// export const runBillingAttempts = async () => {
+//   console.log('RUNNING BILLING ATTEMPTS');
+//   // get active shopify stores
+//   const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
+//   const shops = Object.keys(ACTIVE_SHOPIFY_SHOPS);
+//   // loop through active shops
+//   shops.forEach(async (shop: string) => {
+//     // get token
+//     const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
+//     // get all active contracts for shop
+//     const contracts = await pgStorage.getLocalContractsByShop(shop);
+//     if (contracts) {
+//       // loop through contracts
+//       contracts.forEach(async contract => {
+//         // create billing attempt
+//         try {
+//           const client = createClient(shop, token);
+//           const billingAttempt = await createSubscriptionBillingAttempt(
+//             client,
+//             contract.id
+//           );
+//           logger.log('info', `Created Billing Attempt: ${billingAttempt}`);
+//         } catch (err) {
+//           logger.log('error', err.message);
+//         }
+//       });
+//     }
+//   });
+// };
 
 export const runSubscriptionContractSync = async () => {
   console.log('RUNNING SUBSCRIPTION CONTRACT SYNC');

@@ -5,6 +5,7 @@ export const GET_SUBSCRIPTION_BY_ID = gql`
     subscriptionContract(id: $id) {
       id
       status
+      createdAt
       nextBillingDate
       lastPaymentStatus
       customer {

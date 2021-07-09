@@ -73,6 +73,7 @@ export interface SellingPlan {
 export interface SubscriptionContract {
   id: string;
   status: string;
+  createdAt: string;
   nextBillingDate: string;
   lastPaymentStatus: string;
   customer: {
