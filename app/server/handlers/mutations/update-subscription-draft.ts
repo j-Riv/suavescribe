@@ -27,6 +27,7 @@ export const updateSubscriptionDraft = async (
   input: any
 ) => {
   console.log('INPUT', input);
+
   const subscriptionDraftUpdate = await client
     .mutate({
       mutation: SUBSCRIPTION_DRAFT_UPDATE(),
@@ -35,7 +36,7 @@ export const updateSubscriptionDraft = async (
         input: input,
       },
     })
-    .then((response: any) => {
+    .then((response: { data?: any }) => {
       const data = response.data.subscriptionDraftUpdate;
       if (data.userErrors.length > 0) {
         return data.userErrors;

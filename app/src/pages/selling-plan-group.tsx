@@ -23,6 +23,7 @@ import { formatId } from '../utils/formatters';
 import LoadingSellingPlan from '../components/LoadingSellingPlan';
 import ErrorState from '../components/ErrorState';
 import UpdateSellingPlanGroupButton from '../components/UpdateSellingPlanGroupButton';
+import { Product as ShopifyProduct } from '../types/subscriptions';
 
 const Information = styled.div`
   .bold {
@@ -174,17 +175,19 @@ function SellingPlanGroup() {
                     product page.
                   </Message>
                 </TextStyle>
-                {data.sellingPlanGroup.products.edges.map(product => {
-                  return (
-                    <Product key={product.node.id}>
-                      <Thumbnail
-                        source={product.node.featuredImage.originalSrc}
-                        alt={product.node.featuredImage.altTxt}
-                      />
-                      <p>{product.node.title}</p>
-                    </Product>
-                  );
-                })}
+                {data.sellingPlanGroup.products.edges.map(
+                  (product: ShopifyProduct) => {
+                    return (
+                      <Product key={product.node.id}>
+                        <Thumbnail
+                          source={product.node.featuredImage.originalSrc}
+                          alt={product.node.featuredImage.altText}
+                        />
+                        <p>{product.node.title}</p>
+                      </Product>
+                    );
+                  }
+                )}
               </Card>
             </Layout.Section>
             <Layout.AnnotatedSection
@@ -217,8 +220,10 @@ function SellingPlanGroup() {
                     <Select
                       label="Interval"
                       options={[
+                        { label: 'Daily', value: 'DAY' },
                         { label: 'Weekly', value: 'WEEK' },
                         { label: 'Monthly', value: 'MONTH' },
+                        { label: 'Yearly', value: 'YEAR' },
                       ]}
                       onChange={interval => setInterval(interval)}
                       value={interval}

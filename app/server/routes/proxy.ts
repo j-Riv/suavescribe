@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import { Context, Next } from 'koa';
 import {
-  applicationProxy,
+  // applicationProxy,
   updateCustomerSubscription,
   updateSubscriptionPaymentMethod,
   generateCustomerAuth,

@@ -5,6 +5,8 @@ import { Session } from '@shopify/shopify-api/dist/auth/session';
 import redis from 'redis';
 import { promisify } from 'util';
 import logger from './logger';
+import dotenv from 'dotenv';
+dotenv.config();
 
 class RedisStore {
   private client: redis.RedisClient;
@@ -20,10 +22,13 @@ class RedisStore {
 
   constructor() {
     // Create a new redis client
-    // if local
-    // this.client = redis.createClient();
-    // if docker
-    this.client = redis.createClient({ host: 'redis' });
+    if (process.env.DOCKER === 'true') {
+      // if docker
+      this.client = redis.createClient({ host: 'redis' });
+    } else {
+      // if local
+      this.client = redis.createClient();
+    }
     // Use Node's `promisify` to have redis return a promise from the client methods
     this.getAsync = promisify(this.client.get).bind(this.client);
     this.setAsync = promisify(this.client.set).bind(this.client);

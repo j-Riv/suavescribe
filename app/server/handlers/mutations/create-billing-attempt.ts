@@ -40,7 +40,7 @@ export const createSubscriptionBillingAttempt = async (
       mutation: CREATE_SUBSCRIPTION_BILLING_ATTEMPT(),
       variables: variables,
     })
-    .then((response: any) => {
+    .then((response: { data?: any }) => {
       return response.data.subscriptionBillingAttemptCreate
         .subscriptionBillingAttempt;
     });

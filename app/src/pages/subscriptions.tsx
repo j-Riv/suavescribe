@@ -23,6 +23,7 @@ import CustomerInformation from '../components/CustomerInformation';
 import SubscriptionInformation from '../components/SubscriptionInformation';
 import UpdateSubscriptionButton from '../components/UpdateSubscriptionButton';
 import UpdatePaymentMethodButton from '../components/UpdatePaymentMethodButton';
+import { SubscriptionContract, Line } from '../types/subscriptions';
 
 function EditSubscription() {
   // Get id from path
@@ -34,7 +35,7 @@ function EditSubscription() {
   const [status, setStatus] = useState<string>();
   const [contractId, setContractId] = useState<string>();
   const [nextBillingDate, setNextBillingDate] = useState<string>();
-  const [lineItems, setLineItems] = useState<any[]>();
+  const [lineItems, setLineItems] = useState<Line[]>();
   const [lineItem, setLineItem] = useState<string>();
   const [lineId, setLineId] = useState<string>();
   const [lineItemQuantity, setLineItemQuantity] = useState<string>();
@@ -76,7 +77,9 @@ function EditSubscription() {
     onCompleted: data => setInitialData(data),
   });
   // Set Data
-  const setInitialData = (data: any) => {
+  const setInitialData = (data: {
+    subscriptionContract: SubscriptionContract;
+  }) => {
     if (data.subscriptionContract) {
       const d = data.subscriptionContract;
       setStatus(d.status);
@@ -104,10 +107,10 @@ function EditSubscription() {
   };
 
   const handleLineItemChange = (productId: string) => {
-    lineItems.map(node => {
-      if (node.productId === productId) {
-        setLineItemQuantity(node.quantity);
-        setLineId(node.id);
+    lineItems.map((line: Line) => {
+      if (line.node.productId === productId) {
+        setLineItemQuantity(line.node.quantity);
+        setLineId(line.node.id);
       }
     });
     setLineItem(productId);
@@ -221,12 +224,17 @@ function EditSubscription() {
               <Card sectioned>
                 <Select
                   label="Item"
-                  options={data.subscriptionContract.lines.edges.map(line => {
-                    return {
-                      label: `${line.node.title} - ${line.node.variantTitle}`,
-                      value: line.node.productId,
-                    };
-                  })}
+                  options={data.subscriptionContract.lines.edges.map(
+                    (line: Line) => {
+                      const label = line.node.variantTitle
+                        ? `${line.node.title} - ${line.node.variantTitle}`
+                        : `${line.node.title}`;
+                      return {
+                        label: label,
+                        value: line.node.productId,
+                      };
+                    }
+                  )}
                   onChange={lineItem => handleLineItemChange(lineItem)}
                   value={lineItem}
                 />

@@ -8,6 +8,7 @@ interface Body {
   merchantCode: string;
   intervalOption: string;
   numberOfPlans: string;
+  intervalCount: string;
   planGroupOption: string;
 }
 
@@ -41,48 +42,105 @@ const createInput = (body: Body) => {
     merchantCode,
     intervalOption,
     numberOfPlans,
+    intervalCount,
     planGroupOption,
   } = body;
   // Set interval for naming
   const intervalTitle = cleanInterval(intervalOption);
   // Set number of plans
+  let sellingPlans: any[] = [];
+  const intervalCountNumber = parseInt(intervalCount);
+  const percentageOffNumber = parseFloat(percentageOff);
   const plans = parseInt(numberOfPlans);
-  const sellingPlans: any[] = [];
-  for (let i = 1; i <= plans; i++) {
-    let deliveryOption = `Delivered every ${i} ${intervalTitle}s`;
-    let planName = `${deliveryOption} (Save ${percentageOff}%)`;
-    if (i === 1) {
-      deliveryOption = `Delivered every ${intervalTitle}`;
-      planName = `${deliveryOption} (Save ${percentageOff}%)`;
-    }
-    let sellingPlan = {
-      name: planName,
-      description: `${deliveryOption}, save ${percentageOff}% on every order. Auto renews, skip, cancel anytime.`,
-      options: deliveryOption,
-      position: i,
-      billingPolicy: {
-        recurring: { interval: intervalOption, intervalCount: i },
-      },
-      deliveryPolicy: {
-        recurring: { interval: intervalOption, intervalCount: i },
-      },
-      pricingPolicies: [
-        {
-          fixed: {
-            adjustmentType: 'PERCENTAGE',
-            adjustmentValue: { percentage: parseFloat(percentageOff) },
+  // savings
+  let savingsDescription = '';
+  let savingsName = '';
+  if (percentageOffNumber > 0) {
+    savingsDescription = `, save ${percentageOff}% on every order`;
+    savingsName = ` (Save ${percentageOff}%)`;
+  }
+  if (plans > 1) {
+    for (let i = 1; i <= plans; i++) {
+      let deliveryOption = `Delivered every ${i} ${intervalTitle}s`;
+      const planName = `${deliveryOption}${savingsName}`;
+      if (i === 1) {
+        deliveryOption = `Delivered every ${intervalTitle}`;
+      }
+      let sellingPlan = {
+        name: planName,
+        description: `${deliveryOption}${savingsDescription}. Auto renews, skip, cancel anytime.`,
+        options: deliveryOption,
+        position: i,
+        billingPolicy: {
+          recurring: {
+            interval: intervalOption,
+            intervalCount: i * intervalCountNumber,
           },
         },
-      ],
-    };
-    sellingPlans.push(sellingPlan);
+        deliveryPolicy: {
+          recurring: {
+            interval: intervalOption,
+            intervalCount: i * intervalCountNumber,
+          },
+        },
+        pricingPolicies: [
+          {
+            fixed: {
+              adjustmentType: 'PERCENTAGE',
+              adjustmentValue: { percentage: percentageOffNumber },
+            },
+          },
+        ],
+      };
+      sellingPlans.push(sellingPlan);
+    }
+  } else {
+    let deliveryOption = `Delivered every ${intervalCount} ${intervalTitle}s`;
+    if (intervalCountNumber === 1) {
+      deliveryOption = `Delivered every ${intervalTitle}`;
+    }
+    sellingPlans = [
+      {
+        name: `${deliveryOption}${savingsName}`,
+        description: `${deliveryOption}${savingsDescription}. Auto renews, skip, cancel anytime.`,
+        options: deliveryOption,
+        position: 0,
+        billingPolicy: {
+          recurring: {
+            interval: intervalOption,
+            intervalCount: intervalCountNumber,
+          },
+        },
+        deliveryPolicy: {
+          recurring: {
+            interval: intervalOption,
+            intervalCount: intervalCountNumber,
+          },
+        },
+        pricingPolicies: [
+          {
+            fixed: {
+              adjustmentType: 'PERCENTAGE',
+              adjustmentValue: { percentage: percentageOffNumber },
+            },
+          },
+        ],
+      },
+    ];
+  }
+  // fix for day
+  let fixedIntervalTitle: string;
+  if (intervalTitle === 'Day') {
+    fixedIntervalTitle = 'Daily';
+  } else {
+    fixedIntervalTitle = `${intervalTitle}ly`;
   }
   const variables = {
     input: {
       appId: '4975729',
       name: planTitle,
       merchantCode: merchantCode, // 'subscribe-and-save'
-      description: `Delivered at ${intervalTitle}ly intervals at ${percentageOff}% discount.`,
+      description: `Delivered at ${fixedIntervalTitle} intervals at ${percentageOff}% discount.`,
       options: [planGroupOption], // 'Delivery every'
       position: 1,
       sellingPlansToCreate: sellingPlans,

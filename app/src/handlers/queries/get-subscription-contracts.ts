@@ -15,6 +15,7 @@ export const GET_SUBSCRIPTION_CONTRACTS = gql`
           status
           nextBillingDate
           appAdminUrl
+          lastPaymentStatus
           customer {
             id
             firstName

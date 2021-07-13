@@ -10,6 +10,7 @@ import Table from '../components/Table';
 import LoadingIndex from '../components/LoadingIndex';
 import ErrorState from '../components/ErrorState';
 import SearchBar from '../components/SearchBar';
+import { Contract } from '../types/subscriptions';
 
 function Index() {
   const router = useRouter();
@@ -55,11 +56,12 @@ function Index() {
                 'Status',
                 'ID',
                 'Email',
-                'Customer ID',
+                // 'Customer ID',
                 'Next Order Date',
+                'Last Payment Status',
                 'Actions',
               ]}
-              rows={subscriptionContracts.map(contract => {
+              rows={subscriptionContracts.map((contract: Contract) => {
                 return [
                   <Badge
                     status={
@@ -68,10 +70,11 @@ function Index() {
                   >
                     {contract.node.status}
                   </Badge>,
-                  formatId(contract.node.id),
+                  // formatId(contract.node.id),
                   contract.node.customer.email,
                   formatId(contract.node.customer.id),
                   formatDate(contract.node.nextBillingDate),
+                  contract.node.lastPaymentStatus,
                   <Button
                     plain
                     onClick={() =>

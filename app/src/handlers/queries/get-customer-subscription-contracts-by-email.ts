@@ -20,6 +20,7 @@ export const GET_CUSTOMER_SUBSCRIPTION_CONTRACTS_BY_EMAIL = gql`
                 id
                 status
                 nextBillingDate
+                lastPaymentStatus
                 customer {
                   id
                   email

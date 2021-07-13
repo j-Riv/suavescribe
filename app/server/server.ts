@@ -7,14 +7,14 @@ import Koa, { Context, Next } from 'koa';
 import next from 'next';
 import Router from 'koa-router';
 import cors from '@koa/cors';
-import serve from 'koa-static';
+// import serve from 'koa-static';
 import morgan from 'koa-morgan';
 import bodyParser from 'koa-bodyparser';
 import subscriptionRouter from './routes/subscriptions';
 import proxyRouter from './routes/proxy';
 import RedisStore from './redis-store';
 import PgStore from './pg-store';
-import { scheduler } from './scheduler';
+import { scheduler, runSubscriptionContractSync } from './scheduler';
 import logger, { stream } from './logger';
 
 dotenv.config();
@@ -104,7 +104,7 @@ app.prepare().then(async () => {
   ) => {
     logger.log('info', `Subscription Billing Attempt Success Webhook`);
     const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
-    pgStorage.updateNextBillingDate(shop, token, body);
+    pgStorage.updateSubscriptionContractAfterSuccess(shop, token, body);
   };
 
   const subscriptionBillingAttemptFailureHandler = async (
@@ -112,9 +112,30 @@ app.prepare().then(async () => {
     shop: string,
     body: string
   ) => {
-    console.log('SUBSCRIPTION_BILLING_ATTEMPTS_FAILURE');
     logger.log('info', `Subscription Billing Attempt Failure Webhook`);
     const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
+    const data = JSON.parse(body);
+    const errorCodes = [
+      'EXPIRED_PAYMENT_METHOD',
+      'INVALID_PAYMENT_METHOD',
+      'PAYMENT_METHOD_NOT_FOUND',
+    ];
+    if (
+      data.errorCode === 'PAYMENT_METHOD_DECLINED' ||
+      data.errorCode === 'AUTHENTICATION_ERROR' ||
+      data.errorCode === 'UNEXPECTED_ERROR'
+    ) {
+      // will try again tomorrow
+      pgStorage.updateSubscriptionContractAfterFailure(
+        shop,
+        token,
+        body,
+        false
+      );
+    } else {
+      // get payment method id and send email
+      pgStorage.updateSubscriptionContractAfterFailure(shop, token, body, true);
+    }
     // Will more than likely create  an errors table to display error notifications to user.
     logger.log('error', JSON.stringify(body));
   };
@@ -219,6 +240,7 @@ app.prepare().then(async () => {
   );
 
   // re-register webhooks
+  logger.log('info', 'REGISTERING WEBHOOKS');
   Shopify.Webhooks.Registry.webhookRegistry.push({
     path: '/webhooks',
     topic: 'APP_UNINSTALLED',
@@ -272,6 +294,19 @@ app.prepare().then(async () => {
     }
   );
 
+  router.get(
+    '/sync',
+    verifyRequest({
+      returnHeader: true,
+      authRoute: `/auth`,
+      fallbackRoute: `/install/auth`,
+    }),
+    (ctx: Context, next: Next) => {
+      runSubscriptionContractSync();
+      ctx.res.statusCode = 200;
+    }
+  );
+
   const handleRequest = async (ctx: Context) => {
     await handle(ctx.req, ctx.res);
     ctx.respond = false;
@@ -308,7 +343,7 @@ app.prepare().then(async () => {
 
   router.get('(/_next/static/.*)', handleRequest); // Static content is clear
   router.get('/_next/webpack-hmr', handleRequest); // Webpack content is clear
-  // router.get('/subscriptions', handleRequest);
+  router.get('/subscriptions', handleRequest);
 
   router.get('(.*)', verifyRequest(), handleRequest);
 

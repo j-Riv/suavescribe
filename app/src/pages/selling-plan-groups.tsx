@@ -11,6 +11,7 @@ import {
 import Table from '../components/Table';
 import LoadingSellingPlans from '../components/LoadingSellingPlans';
 import ErrorState from '../components/ErrorState';
+import { SellingPlanGroup } from '../types/subscriptions';
 
 const Actions = styled.div`
   display: grid;
@@ -67,31 +68,37 @@ function SellingPlanGroups() {
       <Frame>
         <TitleBar title="Selling Plan Groups" />
         <Card sectioned>
-          {data && (
+          {data && data.sellingPlanGroups.length > 0 ? (
             <Table
               contentTypes={['text', 'text', 'text']}
               headings={['Name', 'Summary', 'Actions']}
-              rows={data.sellingPlanGroups.edges.map(group => {
-                return [
-                  group.node.name,
-                  group.node.summary,
-                  <Actions>
-                    <RemoveButton
-                      id={group.node.id}
-                      toggleActive={toggleActive}
-                    />
-                    <Button
-                      plain
-                      onClick={() =>
-                        appRedirect(`/selling-plan-group/?id=${group.node.id}`)
-                      }
-                    >
-                      View
-                    </Button>
-                  </Actions>,
-                ];
-              })}
+              rows={data.sellingPlanGroups.edges.map(
+                (group: SellingPlanGroup) => {
+                  return [
+                    group.node.name,
+                    group.node.summary,
+                    <Actions>
+                      <RemoveButton
+                        id={group.node.id}
+                        toggleActive={toggleActive}
+                      />
+                      <Button
+                        plain
+                        onClick={() =>
+                          appRedirect(
+                            `/selling-plan-group/?id=${group.node.id}`
+                          )
+                        }
+                      >
+                        View
+                      </Button>
+                    </Actions>,
+                  ];
+                }
+              )}
             />
+          ) : (
+            <p style={{ textAlign: 'center' }}>No Selling Plans Found!</p>
           )}
         </Card>
         {toastMarkup}

@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, Card, Thumbnail } from '@shopify/polaris';
 import styled from 'styled-components';
 import { formatDate, formatMoney } from '../utils/formatters';
+import { SubscriptionContract } from '../types/subscriptions';
 
 const Container = styled.div`
   .product {
@@ -18,51 +19,15 @@ const Container = styled.div`
 
 interface Props {
   data: {
-    subscriptionContract: {
-      nextBillingDate: string;
-      originOrder: {
-        legacyResourceId: string;
-      };
-      lines: {
-        edges: [
-          {
-            node: {
-              id: string;
-              title: string;
-              quantity: string;
-              variantTitle: string;
-              variantImage: {
-                originalSrc: string;
-                altText: string;
-              };
-              pricingPolicy: {
-                cycleDiscounts: [
-                  {
-                    computedPrice: {
-                      amount: string;
-                    };
-                  }
-                ];
-              };
-            };
-          }
-        ];
-      };
-      billingPolicy: {
-        interval: string;
-        intervalCount: number;
-      };
-      deliveryPolicy: {
-        interval: string;
-        intervalCount: number;
-      };
-    };
+    subscriptionContract: SubscriptionContract;
   };
   adminRedirect: (url: string) => void;
 }
 
 function SubscriptionInformation(props: Props) {
   const { data, adminRedirect } = props;
+
+  console.log('DATA', data);
 
   return (
     <Card title="Subscription" sectioned>
@@ -78,6 +43,10 @@ function SubscriptionInformation(props: Props) {
           View Original Order
         </Button>
         <p>
+          <span className="bold">Date Created: </span>
+          {formatDate(data.subscriptionContract.createdAt)}
+        </p>
+        <p>
           <span className="bold">Interval: </span>
           {`Every ${
             data.subscriptionContract.billingPolicy.intervalCount
@@ -86,6 +55,10 @@ function SubscriptionInformation(props: Props) {
         <p>
           <span className="bold">Next Order Date: </span>
           {formatDate(data.subscriptionContract.nextBillingDate)}
+        </p>
+        <p>
+          <span className="bold">Last Payment Status: </span>
+          {data.subscriptionContract.lastPaymentStatus}
         </p>
         <div className="products">
           {data.subscriptionContract.lines.edges.length ? (
@@ -96,7 +69,12 @@ function SubscriptionInformation(props: Props) {
                   alt={line.node.variantImage.altText}
                 />
                 <div className="information">
-                  <p>{`${line.node.title} - ${line.node.variantTitle}`}</p>
+                  <p>
+                    {line.node.title}
+                    {line.node.variantTitle
+                      ? ` - ${line.node.variantTitle}`
+                      : ''}
+                  </p>
                   <p>
                     {` x ${line.node.quantity} @ $${formatMoney(
                       line.node.pricingPolicy.cycleDiscounts[0].computedPrice
