@@ -68,7 +68,7 @@ function SellingPlanGroups() {
       <Frame>
         <TitleBar title="Selling Plan Groups" />
         <Card sectioned>
-          {data && (
+          {data && data.sellingPlanGroups.length > 0 ? (
             <Table
               contentTypes={['text', 'text', 'text']}
               headings={['Name', 'Summary', 'Actions']}
@@ -97,6 +97,8 @@ function SellingPlanGroups() {
                 }
               )}
             />
+          ) : (
+            <p style={{ textAlign: 'center' }}>No Selling Plans Found!</p>
           )}
         </Card>
         {toastMarkup}

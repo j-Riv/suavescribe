@@ -54,9 +54,13 @@ function Index() {
 
   const subscriptionContracts = data?.subscriptionContracts?.edges;
   const pageInfo = data?.subscriptionContracts?.pageInfo;
-  const firstCursor = subscriptionContracts[0]?.cursor;
-  const lastCursor =
-    subscriptionContracts[subscriptionContracts.length - 1].cursor;
+  let firstCursor: string = '';
+  let lastCursor: string = '';
+  console.log('SUBSCRIPTION CONTRACTS', subscriptionContracts);
+  if (subscriptionContracts.length > 0) {
+    firstCursor = subscriptionContracts[0]?.cursor;
+    lastCursor = subscriptionContracts[subscriptionContracts.length - 1].cursor;
+  }
 
   const appRedirect = (href: string) => {
     redirect.dispatch(Redirect.Action.APP, href);
@@ -95,6 +99,7 @@ function Index() {
             content: 'Run Sync',
             onAction: handleManualSync,
             destructive: false,
+            disabled: subscriptionContracts.length === 0,
           }}
         />
         {toastMarkup}
@@ -102,72 +107,74 @@ function Index() {
           <SearchBar />
         </Card>
         <Card title="Subscriptions" sectioned>
-          {data && (
-            <Table
-              contentTypes={['text', 'text', 'text', 'text', 'text', 'text']}
-              headings={[
-                'Status',
-                'ID',
-                'Email',
-                // 'Customer ID',
-                'Next Order Date',
-                'Last Payment Status',
-                'Actions',
-              ]}
-              rows={subscriptionContracts.map((contract: Contract) => {
-                return [
-                  <Badge
-                    status={
-                      contract.node.status === 'ACTIVE' ? 'success' : 'warning'
-                    }
-                  >
-                    {contract.node.status}
-                  </Badge>,
-                  formatId(contract.node.id),
-                  contract.node.customer.email,
-                  // formatId(contract.node.customer.id),
-                  formatDate(contract.node.nextBillingDate),
-                  contract.node.lastPaymentStatus,
-                  <Button
-                    plain
-                    onClick={() =>
-                      appRedirect(
-                        `/subscriptions?customer_id=${formatId(
-                          contract.node.customer.id
-                        )}&id=${formatId(contract.node.id)}`
-                      )
-                    }
-                  >
-                    View
-                  </Button>,
-                ];
-              })}
-            />
-          )}
-          {data && (
-            <Pagination
-              hasPrevious={pageInfo.hasPreviousPage}
-              onPrevious={() => {
-                // console.log(`PREV -> ${subsPerPage} + ${firstCursor}`);
-                fetchMore({
-                  query: GET_PREV_SUBSCRIPTION_CONTRACTS,
-                  variables: {
-                    last: subsPerPage,
-                    before: firstCursor,
-                  },
-                });
-              }}
-              hasNext={pageInfo.hasNextPage}
-              onNext={() => {
-                // console.log(`NEXT -> ${subsPerPage} + ${lastCursor}`);
-                fetchMore({
-                  variables: {
-                    first: subsPerPage,
-                    after: lastCursor,
-                  },
-                });
-              }}
-            />
+          {data && subscriptionContracts.length > 0 ? (
+            <>
+              <Table
+                contentTypes={['text', 'text', 'text', 'text', 'text', 'text']}
+                headings={[
+                  'Status',
+                  'ID',
+                  'Email',
+                  // 'Customer ID',
+                  'Next Order Date',
+                  'Last Payment Status',
+                  'Actions',
+                ]}
+                rows={subscriptionContracts.map((contract: Contract) => {
+                  return [
+                    <Badge
+                      status={
+                        contract.node.status === 'ACTIVE'
+                          ? 'success'
+                          : 'warning'
+                      }
+                    >
+                      {contract.node.status}
+                    </Badge>,
+                    formatId(contract.node.id),
+                    contract.node.customer.email,
+                    // formatId(contract.node.customer.id),
+                    formatDate(contract.node.nextBillingDate),
+                    contract.node.lastPaymentStatus,
+                    <Button
+                      plain
+                      onClick={() =>
+                        appRedirect(
+                          `/subscriptions?customer_id=${formatId(
+                            contract.node.customer.id
+                          )}&id=${formatId(contract.node.id)}`
+                        )
+                      }
+                    >
+                      View
+                    </Button>,
+                  ];
+                })}
+              />
+              <Pagination
+                hasPrevious={pageInfo.hasPreviousPage}
+                onPrevious={() => {
+                  fetchMore({
+                    query: GET_PREV_SUBSCRIPTION_CONTRACTS,
+                    variables: {
+                      last: subsPerPage,
+                      before: firstCursor,
+                    },
+                  });
+                }}
+                hasNext={pageInfo.hasNextPage}
+                onNext={() => {
+                  fetchMore({
+                    variables: {
+                      first: subsPerPage,
+                      after: lastCursor,
+                    },
+                  });
+                }}
+              />
+            </>
+          ) : (
+            <p style={{ textAlign: 'center' }}>No Subscriptions Found</p>
           )}
         </Card>
       </Frame>
