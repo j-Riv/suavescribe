@@ -269,7 +269,7 @@ const sendMailGun = async (email: string, link: string) => {
   mg.messages().send(data, function (error, body) {
     if (error) console.error('ERROR', error);
     console.log('MAILGUN RESPONSE', body);
-    return body;
+    return body.message;
   });
 };
 
@@ -297,7 +297,8 @@ export const generateCustomerAuth = async (ctx: Context) => {
     const url = `https://${shop}/apps/app_proxy?shop=${shop}&customer_id=${customer_id}&token=${token}`;
     // generate email
     const emailResponse = await sendMailGun(customer_email, url);
-    ctx.body = emailResponse;
+    ctx.status = 200;
+    ctx.body = { message: emailResponse };
   } else {
     console.log('NO SHOP OR CUSTOMER ID SUPPLIED');
     ctx.body = { error: 'No Shop or Customer ID Supplied' };
