@@ -30,7 +30,6 @@ const readFileThunk = (src: string) => {
 const verifyToken = (shop: string, customer_id: string, token: string) => {
   try {
     const decoded: any = jwt.verify(token, process.env.APP_PROXY_SECRET);
-    console.log('DECODED', decoded);
     if (
       decoded &&
       decoded.customer_id === customer_id &&
@@ -46,7 +45,6 @@ const verifyToken = (shop: string, customer_id: string, token: string) => {
 
 export const getCustomerSubscriptions = async (ctx: Context) => {
   const params = ctx.request.query;
-  console.log('TYPE OF', typeof ctx.request.body);
   const body = ctx.request.body as {
     customerId: string;
     token: string;
@@ -55,10 +53,8 @@ export const getCustomerSubscriptions = async (ctx: Context) => {
   if (customerId) {
     try {
       const shop = params.shop as string;
-      console.log(`SHOP: ${shop}, TOKEN: ${token}, CUSTOMER_ID: ${customerId}`);
       if (shop && token) {
         const verified = verifyToken(shop, customerId, token);
-        console.log('VERIFIED', verified);
         if (verified) {
           const res = await pgStorage.loadCurrentShop(shop);
           if (res) {
@@ -93,7 +89,6 @@ export const getCustomerSubscriptions = async (ctx: Context) => {
 
 export const updateCustomerSubscription = async (ctx: Context) => {
   const params = ctx.request.query;
-  console.log('TYPE OF', typeof ctx.request.body);
   const body = ctx.request.body as {
     token: string;
     customerId: string;
@@ -136,7 +131,6 @@ export const updateCustomerSubscription = async (ctx: Context) => {
 
 export const updateSubscriptionPaymentMethod = async (ctx: Context) => {
   const params = ctx.request.query;
-  console.log('TYPE OF', typeof ctx.request.body);
   const body = ctx.request.body as {
     token: string;
     customerId: string;
@@ -276,7 +270,6 @@ const sendMailGun = async (email: string, link: string) => {
 export const generateCustomerAuth = async (ctx: Context) => {
   // get customer id from body
   const params = ctx.request.query;
-  console.log('TYPE OF', typeof ctx.request.body);
   const body = ctx.request.body as {
     customerId: string;
     customerEmail: string;
@@ -327,10 +320,6 @@ export const liquidApplicationProxy = async (ctx: Context) => {
       ctx.body = `
         {% if customer %}
           {% if customer.id == ${params.customer_id} %}
-            <script>
-            const currentCustomer = {{ customer.id }};
-            console.log(currentCustomer);
-            </script>
             ${app}
           {% else %}
           <div style="text-align: center;">
