@@ -56,7 +56,6 @@ function Index() {
   const pageInfo = data?.subscriptionContracts?.pageInfo;
   let firstCursor: string = '';
   let lastCursor: string = '';
-  console.log('SUBSCRIPTION CONTRACTS', subscriptionContracts);
   if (subscriptionContracts.length > 0) {
     firstCursor = subscriptionContracts[0]?.cursor;
     lastCursor = subscriptionContracts[subscriptionContracts.length - 1].cursor;
