@@ -23,33 +23,36 @@ export function CUSTOMER_SUBSCRIPTIONS_CONTRACTS_BY_ID_GET() {
                   id
                   status
                   nextBillingDate
-                  orders(first: 1, reverse: true) {
-                    edges {
-                      node {
-                        id
-                        subtotalPriceSet {
-                          shopMoney {
-                            amount
-                          }
-                        }
-                        totalShippingPriceSet {
-                          shopMoney {
-                            amount
-                          }
-                        }
-                        totalTaxSet {
-                          shopMoney {
-                            amount
-                          }
-                        }
-                        totalPriceSet {
-                          shopMoney {
-                            amount
-                          }
-                        }
-                      }
-                    }
+                  deliveryPrice {
+                    amount
                   }
+                  # orders(first: 1, reverse: true) {
+                  #   edges {
+                  #     node {
+                  #       id
+                  #       subtotalPriceSet {
+                  #         shopMoney {
+                  #           amount
+                  #         }
+                  #       }
+                  #       totalShippingPriceSet {
+                  #         shopMoney {
+                  #           amount
+                  #         }
+                  #       }
+                  #       totalTaxSet {
+                  #         shopMoney {
+                  #           amount
+                  #         }
+                  #       }
+                  #       totalPriceSet {
+                  #         shopMoney {
+                  #           amount
+                  #         }
+                  #       }
+                  #     }
+                  #   }
+                  # }
                   customerPaymentMethod {
                     id
                   }
@@ -89,6 +92,14 @@ export function CUSTOMER_SUBSCRIPTIONS_CONTRACTS_BY_ID_GET() {
                         variantImage {
                           altText
                           originalSrc
+                        }
+                        currentPrice {
+                          amount
+                        }
+                        pricingPolicy {
+                          basePrice {
+                            amount
+                          }
                         }
                       }
                     }
