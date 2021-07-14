@@ -59,6 +59,10 @@ export function CUSTOMER_SUBSCRIPTIONS_CONTRACTS_BY_ID_GET() {
                         quantity
                         title
                         variantTitle
+                        variantImage {
+                          altText
+                          originalSrc
+                        }
                       }
                     }
                   }
