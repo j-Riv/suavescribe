@@ -87,7 +87,7 @@ export interface SubscriptionContract {
   };
   deliveryPrice: {
     currencyCode: string;
-    amount: number;
+    amount: string;
   };
   lineCount: number;
   lines: {
@@ -132,6 +132,9 @@ export interface Line {
       originalSrc: string;
       altText: string;
     };
+    currentPrice: {
+      amount: string;
+    };
     pricingPolicy: {
       cycleDiscounts: {
         adjustmentType: string;
@@ -140,7 +143,7 @@ export interface Line {
         };
       };
       basePrice: {
-        amount: number;
+        amount: string;
         currencyCode: string;
       };
     };

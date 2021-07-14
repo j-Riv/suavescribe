@@ -35,6 +35,9 @@ export const GET_SUBSCRIPTION_BY_ID = gql`
               originalSrc
               altText
             }
+            currentPrice {
+              amount
+            }
             pricingPolicy {
               cycleDiscounts {
                 adjustmentType

@@ -60,6 +60,10 @@ function SubscriptionInformation(props: Props) {
           <span className="bold">Last Payment Status: </span>
           {data.subscriptionContract.lastPaymentStatus}
         </p>
+        <p>
+          <span className="bold">Shipping Cost: </span>$
+          {formatMoney(data.subscriptionContract.deliveryPrice.amount)}
+        </p>
         <div className="products">
           {data.subscriptionContract.lines.edges.length ? (
             data.subscriptionContract.lines.edges.map(line => (
@@ -76,10 +80,9 @@ function SubscriptionInformation(props: Props) {
                       : ''}
                   </p>
                   <p>
-                    {` x ${line.node.quantity} @ $${formatMoney(
-                      line.node.pricingPolicy.cycleDiscounts[0].computedPrice
-                        .amount
-                    )}`}
+                    {`$${formatMoney(line.node.currentPrice.amount)} x ${
+                      line.node.quantity
+                    }`}
                   </p>
                 </div>
               </div>

@@ -109,7 +109,7 @@ function EditSubscription() {
   const handleLineItemChange = (productId: string) => {
     lineItems.map((line: Line) => {
       if (line.node.productId === productId) {
-        setLineItemQuantity(line.node.quantity);
+        setLineItemQuantity(String(line.node.quantity));
         setLineId(line.node.id);
       }
     });
