@@ -53,7 +53,7 @@ export interface SubscriptionLine {
     variantId: string;
     title: string;
     variantTitle: string;
-    quantity: string;
+    quantity: number;
     requiresShipping: boolean;
     variantImage: {
       originalSrc: string;

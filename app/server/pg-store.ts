@@ -332,9 +332,9 @@ class PgStore {
     Gets all contracts with Next Billing Date of Today for a given store.
   */
   getLocalContractsByShop = async (shop: string) => {
-    const today = new Date().toISOString().substring(0, 10) + 'T00:00:00Z';
+    // const today = new Date().toISOString().substring(0, 10) + 'T00:00:00Z';
     // testing
-    // const today = '2021-03-25T00:00:00Z';
+    const today = '2021-07-23T00:00:00Z';
     try {
       logger.log('info', `Gettting all contracts for shop: ${shop}`);
       const query = `

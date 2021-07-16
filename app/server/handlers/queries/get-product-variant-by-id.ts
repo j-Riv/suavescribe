@@ -26,7 +26,7 @@ export const getProductVariantById = async (
     .query({
       query: PRODUCT_VARIANT_BY_ID_GET(),
       variables: {
-        ids: id,
+        id: id,
       },
     })
     .then(

@@ -69,22 +69,22 @@ export const runBillingAttempts = async () => {
             contract.next_billing_date.toISOString().substring(0, 10)
           ) {
             // check if quantity exists
-            let inStock = true;
             let oosProducts: string[] = [];
             shopifyContract.lines.edges.forEach(
               async (line: SubscriptionLine) => {
+                console.log('CHECKING PRODUCT', line.node.variantId);
                 const variantProduct = await getProductVariantById(
                   client,
                   line.node.variantId
                 );
                 if (variantProduct.inventoryQuantity <= 0) {
-                  inStock = false;
+                  console.log('FOUND OUT OF STOCK ITEM', line.node.variantId);
                   oosProducts.push(variantProduct.product.title);
                 }
               }
             );
             // create billing attempt
-            if (inStock) {
+            if (oosProducts.length > 0) {
               const billingAttempt = await createSubscriptionBillingAttempt(
                 client,
                 contract.id
@@ -105,13 +105,10 @@ export const runBillingAttempts = async () => {
                 draftId
               );
               // send email
-              const email = shopifyContract.customer.email;
-              const emailResponse = await sendMailGun(
-                email,
-                shopifyContract,
-                oosProducts
-              );
-              console.log('EMAIL RESPONSE', emailResponse);
+              if (subscriptionId === contract.id) {
+                const email = shopifyContract.customer.email;
+                sendMailGun(email, shopifyContract, oosProducts);
+              }
             }
           }
         } catch (err) {
@@ -232,12 +229,15 @@ const sendMailGun = async (
     `;
   });
   outOfStockList += '</ul>';
+  const id = sub.id.split('/');
   const data = {
     from: `${process.env.MAILGUN_SENDER} <no-repoy@${process.env.MAILGUN_DOMAIN}>`,
-    to: `${email}, process.env.MAILGUN_ADMIN_EMAIL`,
+    to: `${email}, ${process.env.MAILGUN_ADMIN_EMAIL}`,
     subject: 'Subscription Has Been Paused Due To Item(s) Being Out Of Stock',
     html: `
-      <p>Subscription (${sub.id}) has been paused due to the following items being out of stock:</p>
+      <p>Subscription (${
+        id[id.length - 1]
+      }) has been paused due to the following items being out of stock:</p>
       ${outOfStockList}
     `,
   };
