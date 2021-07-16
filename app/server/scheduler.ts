@@ -233,8 +233,8 @@ const sendMailGun = async (
   });
   outOfStockList += '</ul>';
   const data = {
-    from: 'Suavecito Pomade <no-reply@suavescribe.suavecito.com>',
-    to: `${email}, jriv@suavecito.com`,
+    from: `${process.env.MAILGUN_SENDER} <no-repoy@${process.env.MAILGUN_DOMAIN}>`,
+    to: `${email}, process.env.MAILGUN_ADMIN_EMAIL`,
     subject: 'Subscription Has Been Paused Due To Item(s) Being Out Of Stock',
     html: `
       <p>Subscription (${sub.id}) has been paused due to the following items being out of stock:</p>
