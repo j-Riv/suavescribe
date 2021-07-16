@@ -77,7 +77,7 @@ export const runBillingAttempts = async () => {
                   client,
                   line.node.variantId
                 );
-                if (variantProduct.inventoryQuantity <= 0) {
+                if (variantProduct.inventoryQuantity <= line.node.quantity) {
                   console.log('FOUND OUT OF STOCK ITEM', line.node.variantId);
                   oosProducts.push(variantProduct.product.title);
                 }
