@@ -18,6 +18,7 @@ import { getSubscriptionContracts } from './queries/get-subscription-contracts';
 import { getSubscriptionContract } from './queries/get-subscription-contract';
 import { getCustomerSubscriptionContractsById } from './queries/get-customer-subscription-contracts-by-id';
 import { getProductsById } from './queries/get-products-by-id';
+import { getProductVariantById } from './queries/get-product-variant-by-id';
 
 export {
   createClient,
@@ -40,4 +41,5 @@ export {
   getSubscriptionContract,
   getCustomerSubscriptionContractsById,
   getProductsById,
+  getProductVariantById,
 };

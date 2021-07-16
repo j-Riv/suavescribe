@@ -1,5 +1,6 @@
 import 'isomorphic-fetch';
 import { gql, ApolloClient } from '@apollo/client';
+import { SubscriptionContract } from '../../types/subscriptions';
 
 export function SUBSCRIPTION_CONTRACT_GET() {
   return gql`
@@ -22,37 +23,35 @@ export function SUBSCRIPTION_CONTRACT_GET() {
           amount
         }
         # lineCount
-        # lines(first: 10) {
-        #   edges {
-        #     node {
-        #       id
-        #       productId
-        #       title
-        #       variantTitle
-        #       quantity
-        #       requiresShipping
-        #       variantImage {
-        #         originalSrc
-        #         altText
-        #       }
-        #       pricingPolicy {
-        #         cycleDiscounts {
-        #           adjustmentType
-        #           adjustmentValue {
-        #             __typename
-        #           }
-        #           computedPrice {
-        #             amount
-        #           }
-        #         }
-        #         basePrice {
-        #           amount
-        #           currencyCode
-        #         }
-        #       }
-        #     }
-        #   }
-        # }
+        lines(first: 10) {
+          edges {
+            node {
+              id
+              productId
+              variantId
+              title
+              variantTitle
+              quantity
+              requiresShipping
+              variantImage {
+                originalSrc
+                altText
+              }
+              pricingPolicy {
+                cycleDiscounts {
+                  adjustmentType
+                  computedPrice {
+                    amount
+                  }
+                }
+                basePrice {
+                  amount
+                  currencyCode
+                }
+              }
+            }
+          }
+        }
         originOrder {
           legacyResourceId
         }
@@ -103,50 +102,7 @@ export const getSubscriptionContract = async (
     .then(
       (response: {
         data: {
-          subscriptionContract: {
-            id: string;
-            status: string;
-            nextBillingDate: string;
-            customer: {
-              id: string;
-              firstName: string;
-              lastName: string;
-              email: string;
-            };
-            deliveryPrice: {
-              currencyCode: string;
-              amount: string;
-            };
-            originOrder: {
-              legacyResourceId: string;
-            };
-            lastPaymentStatus: string;
-            customerPaymentMethod: {
-              id: string;
-            };
-            deliveryPolicy: {
-              interval: string;
-              intervalCount: number;
-            };
-            billingPolicy: {
-              interval: string;
-              intervalCount: number;
-            };
-            deliveryMethod: {
-              address: {
-                address1: string;
-                address2: string;
-                city: string;
-                country: string;
-                province: string;
-                zip: string;
-                name: string;
-                company: string;
-                firstName: string;
-                lastName: string;
-              };
-            };
-          };
+          subscriptionContract: SubscriptionContract;
         };
       }) => {
         return response.data.subscriptionContract;
