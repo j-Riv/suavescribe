@@ -7,15 +7,24 @@ import Koa, { Context, Next } from 'koa';
 import next from 'next';
 import Router from 'koa-router';
 import cors from '@koa/cors';
-// import serve from 'koa-static';
 import morgan from 'koa-morgan';
 import bodyParser from 'koa-bodyparser';
 import subscriptionRouter from './routes/subscriptions';
 import proxyRouter from './routes/proxy';
 import RedisStore from './redis-store';
 import PgStore from './pg-store';
-import { scheduler, runSubscriptionContractSync } from './scheduler';
+import { scheduler } from './scheduler';
 import logger, { stream } from './logger';
+
+interface Session {
+  id: string;
+  shop: string;
+  state: string;
+  isOnline: boolean;
+  expires: Date;
+  accessToken: string;
+  scope: string;
+}
 
 dotenv.config();
 const sessionStorage = new RedisStore();
@@ -301,8 +310,39 @@ app.prepare().then(async () => {
       authRoute: `/auth`,
       fallbackRoute: `/install/auth`,
     }),
-    (ctx: Context, next: Next) => {
-      runSubscriptionContractSync();
+    async (ctx: Context, next: Next) => {
+      const currentSession = await Shopify.Utils.loadCurrentSession(
+        ctx.req,
+        ctx.res,
+        false
+      );
+      const { shop, accessToken } = currentSession as Session;
+      try {
+        logger.log('info', `Syncing contracts for shop: ${shop}`);
+        await pgStorage.saveAllContracts(shop, accessToken);
+      } catch (err) {
+        logger.log('error', err.message);
+      }
+      ctx.res.statusCode = 200;
+    }
+  );
+
+  router.get(
+    '/payment-failed',
+    verifyRequest({
+      returnHeader: true,
+      authRoute: `/auth`,
+      fallbackRoute: `/install/auth`,
+    }),
+    async (ctx: Context, next: Next) => {
+      const currentSession = await Shopify.Utils.loadCurrentSession(
+        ctx.req,
+        ctx.res,
+        false
+      );
+      const { shop } = currentSession as Session;
+      const contracts = await pgStorage.getAllPaymentFailures(shop);
+      ctx.body = { contracts };
       ctx.res.statusCode = 200;
     }
   );

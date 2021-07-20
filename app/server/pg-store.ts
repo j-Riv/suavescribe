@@ -588,6 +588,21 @@ class PgStore {
       logger.log('error', err.message);
     }
   };
+
+  /*
+    Get all payment failures 
+  */
+  getAllPaymentFailures = async (shop: string) => {
+    try {
+      const query = `
+        SELECT contract FROM subscription_contracts WHERE shop = '${shop}' AND (contract ->> 'status') = 'ACTIVE' AND (contract ->> 'lastPaymentStatus') <> 'SUCCEEDED'; 
+      `;
+      const res = await this.client.query(query);
+      return res.rows;
+    } catch (err) {
+      logger.log('error', err.message);
+    }
+  };
 }
 
 export default PgStore;

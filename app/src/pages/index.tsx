@@ -88,7 +88,7 @@ function Index() {
   return (
     <Page
       title="Dashboard"
-      titleMetadata={<Badge status="success">Active</Badge>}
+      // titleMetadata={<Badge status="success">Active</Badge>}
       subtitle="Subscription Contracts"
     >
       <Frame>
@@ -125,7 +125,9 @@ function Index() {
                       status={
                         contract.node.status === 'ACTIVE'
                           ? 'success'
-                          : 'warning'
+                          : contract.node.status === 'PAUSED'
+                          ? 'warning'
+                          : 'critical'
                       }
                     >
                       {contract.node.status}

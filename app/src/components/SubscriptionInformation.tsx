@@ -68,10 +68,12 @@ function SubscriptionInformation(props: Props) {
           {data.subscriptionContract.lines.edges.length ? (
             data.subscriptionContract.lines.edges.map(line => (
               <div key={line.node.id} className="product">
-                <Thumbnail
-                  source={line.node.variantImage.originalSrc}
-                  alt={line.node.variantImage.altText}
-                />
+                {line.node.variantImage && (
+                  <Thumbnail
+                    source={line.node.variantImage.originalSrc}
+                    alt={line.node.variantImage.altText}
+                  />
+                )}
                 <div className="information">
                   <p>
                     {line.node.title}
