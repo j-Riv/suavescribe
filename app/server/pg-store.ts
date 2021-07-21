@@ -336,7 +336,7 @@ class PgStore {
     try {
       logger.log('info', `Gettting all contracts for shop: ${shop}`);
       const query = `
-        SELECT * FROM subscription_contracts WHERE next_billing_date = '${today}' AND shop = '${shop}' AND status = 'ACTIVE'; 
+        SELECT * FROM subscription_contracts WHERE next_billing_date = '${today}' AND shop = '${shop}' AND status = 'ACTIVE' AND payment_failure_count < 2; 
       `;
       const res = await this.client.query(query);
       return res.rows;
