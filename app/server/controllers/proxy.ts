@@ -245,19 +245,18 @@ export const updateSubscriptionShippingAddress = async (ctx: Context) => {
 };
 
 const sendMailGun = async (email: string, link: string) => {
-  console.log('SENDING EMAIL VIA MAILGUN');
   const mg = mailgun({
     apiKey: process.env.MAILGUN_API_KEY,
     domain: process.env.MAILGUN_DOMAIN,
   });
   const data = {
-    from: 'Suavecito Pomade <no-reply@suavescribe.suavecito.com>',
-    to: `${email}, jriv@suavecito.com`,
+    from: `${process.env.MAILGUN_SENDER} <no-repoy@${process.env.MAILGUN_DOMAIN}>`,
+    to: `${email}, ${process.env.MAILGUN_ADMIN_EMAIL}`,
     subject: 'Subscription Authorization Link',
     html: `
       <p>Hello,<br>Below is your secure login link:</p>
       <p>${link}</p>
-      <p>This link will expire in 15 minutes. To generate a new link please visit: <a href="https://suavecito.com/account">suavecito.com/account</a> and select Manage Subscriptions.</p>
+      <p>This link will expire in 15 minutes. To generate a new link please visit: <a href="https://${process.env.MAILGUN_SHOP}/account">suavecito.com/account</a> and select Manage Subscriptions.</p>
     `,
   };
   mg.messages().send(data, function (error, body) {

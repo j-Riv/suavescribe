@@ -1,4 +1,6 @@
+import dotenv from 'dotenv';
 import schedule from 'node-schedule';
+import mailgun from 'mailgun-js';
 import PgStore from './pg-store';
 import 'isomorphic-fetch';
 import {
@@ -8,8 +10,11 @@ import {
   updateSubscriptionContract,
   updateSubscriptionDraft,
   commitSubscriptionDraft,
+  getProductVariantById,
 } from './handlers';
 import logger from './logger';
+import { SubscriptionContract, SubscriptionLine } from './types/subscriptions';
+dotenv.config();
 
 const pgStorage = new PgStore();
 
@@ -57,16 +62,54 @@ export const runBillingAttempts = async () => {
         try {
           const client = createClient(shop, token);
           // check billing date on shopify
-          const c = await getSubscriptionContract(client, contract.id);
+          const shopifyContract: SubscriptionContract =
+            await getSubscriptionContract(client, contract.id);
           if (
-            c.nextBillingDate.split('T')[0] ===
+            shopifyContract.nextBillingDate.split('T')[0] ===
             contract.next_billing_date.toISOString().substring(0, 10)
           ) {
-            const billingAttempt = await createSubscriptionBillingAttempt(
-              client,
-              contract.id
+            // check if quantity exists
+            let oosProducts: string[] = [];
+            shopifyContract.lines.edges.forEach(
+              async (line: SubscriptionLine) => {
+                console.log('CHECKING PRODUCT', line.node.variantId);
+                const variantProduct = await getProductVariantById(
+                  client,
+                  line.node.variantId
+                );
+                if (variantProduct.inventoryQuantity <= line.node.quantity) {
+                  console.log('FOUND OUT OF STOCK ITEM', line.node.variantId);
+                  oosProducts.push(variantProduct.product.title);
+                }
+              }
             );
-            logger.log('info', `Created Billing Attempt: ${billingAttempt}`);
+            // create billing attempt
+            if (oosProducts.length > 0) {
+              const billingAttempt = await createSubscriptionBillingAttempt(
+                client,
+                contract.id
+              );
+              logger.log('info', `Created Billing Attempt: ${billingAttempt}`);
+            } else {
+              // pause subscription and send email
+              // update subscription
+              let draftId = await updateSubscriptionContract(
+                client,
+                contract.id
+              );
+              draftId = await updateSubscriptionDraft(client, draftId, {
+                status: 'PAUSED',
+              });
+              const subscriptionId = await commitSubscriptionDraft(
+                client,
+                draftId
+              );
+              // send email
+              if (subscriptionId === contract.id) {
+                const email = shopifyContract.customer.email;
+                sendMailGun(email, shopifyContract, oosProducts);
+              }
+            }
           }
         } catch (err) {
           logger.log('error', err.message);
@@ -165,5 +208,42 @@ export const runCancellation = async () => {
         }
       });
     }
+  });
+};
+
+const sendMailGun = async (
+  email: string,
+  sub: SubscriptionContract,
+  oosProducts: string[]
+) => {
+  console.log('SENDING EMAIL VIA MAILGUN');
+  const mg = mailgun({
+    apiKey: process.env.MAILGUN_API_KEY,
+    domain: process.env.MAILGUN_DOMAIN,
+  });
+  // get oos products
+  let outOfStockList: string = '<ul>';
+  oosProducts.forEach(variantProduct => {
+    outOfStockList += `
+      <li>${variantProduct}</li>
+    `;
+  });
+  outOfStockList += '</ul>';
+  const id = sub.id.split('/');
+  const data = {
+    from: `${process.env.MAILGUN_SENDER} <no-repoy@${process.env.MAILGUN_DOMAIN}>`,
+    to: `${email}, ${process.env.MAILGUN_ADMIN_EMAIL}`,
+    subject: 'Subscription Has Been Paused Due To Item(s) Being Out Of Stock',
+    html: `
+      <p>Subscription (${
+        id[id.length - 1]
+      }) has been paused due to the following items being out of stock:</p>
+      ${outOfStockList}
+    `,
+  };
+  mg.messages().send(data, function (error, body) {
+    if (error) console.error('ERROR', error);
+    console.log('MAILGUN RESPONSE', body);
+    return body.message;
   });
 };

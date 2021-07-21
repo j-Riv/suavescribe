@@ -56,7 +56,6 @@ function Index() {
   const pageInfo = data?.subscriptionContracts?.pageInfo;
   let firstCursor: string = '';
   let lastCursor: string = '';
-  console.log('SUBSCRIPTION CONTRACTS', subscriptionContracts);
   if (subscriptionContracts.length > 0) {
     firstCursor = subscriptionContracts[0]?.cursor;
     lastCursor = subscriptionContracts[subscriptionContracts.length - 1].cursor;
@@ -89,7 +88,7 @@ function Index() {
   return (
     <Page
       title="Dashboard"
-      titleMetadata={<Badge status="success">Active</Badge>}
+      // titleMetadata={<Badge status="success">Active</Badge>}
       subtitle="Subscription Contracts"
     >
       <Frame>
@@ -126,7 +125,9 @@ function Index() {
                       status={
                         contract.node.status === 'ACTIVE'
                           ? 'success'
-                          : 'warning'
+                          : contract.node.status === 'PAUSED'
+                          ? 'warning'
+                          : 'critical'
                       }
                     >
                       {contract.node.status}

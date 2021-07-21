@@ -68,7 +68,7 @@ function SellingPlanGroups() {
       <Frame>
         <TitleBar title="Selling Plan Groups" />
         <Card sectioned>
-          {data && data.sellingPlanGroups.length > 0 ? (
+          {data && data.sellingPlanGroups.edges.length > 0 ? (
             <Table
               contentTypes={['text', 'text', 'text']}
               headings={['Name', 'Summary', 'Actions']}

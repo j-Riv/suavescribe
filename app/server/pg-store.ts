@@ -297,7 +297,7 @@ class PgStore {
         contract.nextBillingDate
       }', interval = '${interval}', interval_count = '${intervalCount}', contract = '${JSON.stringify(
         contract
-      )}' WHERE id = '${contract.id}' RETURNING *;
+      )}' WHERE shop = '${shop}' AND id = '${contract.id}' RETURNING *;
       `;
       return await this.client.query(query);
     } catch (err) {
@@ -333,8 +333,6 @@ class PgStore {
   */
   getLocalContractsByShop = async (shop: string) => {
     const today = new Date().toISOString().substring(0, 10) + 'T00:00:00Z';
-    // testing
-    // const today = '2021-03-25T00:00:00Z';
     try {
       logger.log('info', `Gettting all contracts for shop: ${shop}`);
       const query = `
@@ -586,6 +584,21 @@ class PgStore {
         }
       };
       moveAlong();
+    } catch (err) {
+      logger.log('error', err.message);
+    }
+  };
+
+  /*
+    Get all payment failures 
+  */
+  getAllPaymentFailures = async (shop: string) => {
+    try {
+      const query = `
+        SELECT contract FROM subscription_contracts WHERE shop = '${shop}' AND (contract ->> 'status') = 'ACTIVE' AND (contract ->> 'lastPaymentStatus') <> 'SUCCEEDED'; 
+      `;
+      const res = await this.client.query(query);
+      return res.rows;
     } catch (err) {
       logger.log('error', err.message);
     }

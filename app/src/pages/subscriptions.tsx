@@ -32,23 +32,23 @@ function EditSubscription() {
   const app = useAppBridge();
   const redirect = Redirect.create(app);
   // State
-  const [status, setStatus] = useState<string>();
-  const [contractId, setContractId] = useState<string>();
-  const [nextBillingDate, setNextBillingDate] = useState<string>();
-  const [lineItems, setLineItems] = useState<Line[]>();
-  const [lineItem, setLineItem] = useState<string>();
-  const [lineId, setLineId] = useState<string>();
-  const [lineItemQuantity, setLineItemQuantity] = useState<string>();
-  const [paymentMethod, setPaymentMethod] = useState<string>();
-  const [company, setCompany] = useState<string>();
+  const [status, setStatus] = useState<string>('');
+  const [contractId, setContractId] = useState<string>('');
+  const [nextBillingDate, setNextBillingDate] = useState<string>('');
+  const [lineItems, setLineItems] = useState<Line[]>([]);
+  const [lineItem, setLineItem] = useState<string>('');
+  const [lineId, setLineId] = useState<string>('');
+  const [lineItemQuantity, setLineItemQuantity] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [company, setCompany] = useState<string>('');
   const [firstName, setFirstName] = useState<string>();
-  const [lastName, setLastName] = useState<string>();
-  const [address1, setAddress1] = useState<string>();
-  const [address2, setAddress2] = useState<string>();
-  const [city, setCity] = useState<string>();
-  const [country, setCountry] = useState<string>();
-  const [province, setProvince] = useState<string>();
-  const [zip, setZip] = useState<string>();
+  const [lastName, setLastName] = useState<string>('');
+  const [address1, setAddress1] = useState<string>('');
+  const [address2, setAddress2] = useState<string>('');
+  const [city, setCity] = useState<string>('');
+  const [country, setCountry] = useState<string>('');
+  const [province, setProvince] = useState<string>('');
+  const [zip, setZip] = useState<string>('');
 
   const [active, setActive] = useState<boolean>(false);
   const [toastMsg, setToastMsg] = useState<string>('');
@@ -109,7 +109,7 @@ function EditSubscription() {
   const handleLineItemChange = (productId: string) => {
     lineItems.map((line: Line) => {
       if (line.node.productId === productId) {
-        setLineItemQuantity(line.node.quantity);
+        setLineItemQuantity(String(line.node.quantity));
         setLineId(line.node.id);
       }
     });

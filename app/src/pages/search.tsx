@@ -49,7 +49,7 @@ function Index() {
           <SearchBar />
         </Card>
         <Card title="Subscriptions" sectioned>
-          {data && (
+          {data && subscriptionContracts.length > 0 ? (
             <Table
               contentTypes={['text', 'text', 'text', 'text', 'text', 'text']}
               headings={[
@@ -90,6 +90,8 @@ function Index() {
                 ];
               })}
             />
+          ) : (
+            <p style={{ textAlign: 'center' }}>No Subscriptions Found</p>
           )}
         </Card>
       </Page>
