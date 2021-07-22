@@ -69,10 +69,8 @@ export const addProductToSubscriptionPlanGroup = async (ctx: Context) => {
       ctx.client = createClient(shop, res.accessToken);
       let product: any;
       if (body.variantId) {
-        console.log('THIS IS A VARIANT', body.variantId);
         product = await addProductVariantToSellingPlanGroups(ctx);
       } else {
-        console.log('THIS IS A PRODUCT');
         product = await addProductToSellingPlanGroups(ctx);
       }
       ctx.body = product;
@@ -135,10 +133,8 @@ export const removeProductFromSubscriptionPlanGroup = async (ctx: Context) => {
       ctx.client = createClient(shop, res.accessToken);
       let product: any;
       if (body.variantId) {
-        console.log('THIS IS A VARIANT', body.variantId);
         product = await removeProductVariantFromSellingPlanGroups(ctx);
       } else {
-        console.log('THIS IS A PRODUCT');
         product = await removeProductsFromSellingPlanGroup(ctx);
       }
       // const products = await removeProductsFromSellingPlanGroup(ctx);
