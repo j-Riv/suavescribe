@@ -3,9 +3,11 @@ import 'isomorphic-fetch';
 import { Context } from 'koa';
 import {
   addProductToSellingPlanGroups,
+  removeProductsFromSellingPlanGroup,
+  addProductVariantToSellingPlanGroups,
+  removeProductVariantFromSellingPlanGroups,
   createClient,
   createSellingPlanGroup,
-  removeProductsFromSellingPlanGroup,
   updateSellingPlanGroup,
   deleteSellingPlanGroup,
   getSellingPlans,
@@ -59,8 +61,20 @@ export const addProductToSubscriptionPlanGroup = async (ctx: Context) => {
     // this will have to call db and get accessToken
     const res = await pgStorage.loadCurrentShop(shop);
     if (res) {
+      const body = ctx.request.body as {
+        productId: string;
+        variantId?: string;
+        selectedPlans: string[];
+      };
       ctx.client = createClient(shop, res.accessToken);
-      const product = await addProductToSellingPlanGroups(ctx);
+      let product: any;
+      if (body.variantId) {
+        console.log('THIS IS A VARIANT', body.variantId);
+        product = await addProductVariantToSellingPlanGroups(ctx);
+      } else {
+        console.log('THIS IS A PRODUCT');
+        product = await addProductToSellingPlanGroups(ctx);
+      }
       ctx.body = product;
     } else {
       return (ctx.status = 401);
@@ -113,9 +127,22 @@ export const removeProductFromSubscriptionPlanGroup = async (ctx: Context) => {
     // this will have to call db and get accessToken
     const res = await pgStorage.loadCurrentShop(shop);
     if (res) {
+      const body = ctx.request.body as {
+        productId: string;
+        variantId?: string;
+        selectedPlans: string[];
+      };
       ctx.client = createClient(shop, res.accessToken);
-      const products = await removeProductsFromSellingPlanGroup(ctx);
-      ctx.body = products;
+      let product: any;
+      if (body.variantId) {
+        console.log('THIS IS A VARIANT', body.variantId);
+        product = await removeProductVariantFromSellingPlanGroups(ctx);
+      } else {
+        console.log('THIS IS A PRODUCT');
+        product = await removeProductsFromSellingPlanGroup(ctx);
+      }
+      // const products = await removeProductsFromSellingPlanGroup(ctx);
+      ctx.body = product;
     } else {
       return (ctx.status = 401);
     }

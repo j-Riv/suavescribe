@@ -2,13 +2,13 @@ import 'isomorphic-fetch';
 import { gql } from '@apollo/client';
 import { Context } from 'koa';
 
-export function SELLING_PLAN_ADD_PRODUCT_VARIANT() {
+export function SELLING_PLAN_REMOVE_PRODUCT_VARIANT() {
   return gql`
-    mutation productVariantJoinSellingPlanGroups(
+    mutation productVariantLeaveSellingPlanGroups(
       $id: ID!
       $sellingPlanGroupIds: [ID!]!
     ) {
-      productVariantJoinSellingPlanGroups(
+      productVariantLeaveSellingPlanGroups(
         id: $id
         sellingPlanGroupIds: $sellingPlanGroupIds
       ) {
@@ -25,24 +25,28 @@ export function SELLING_PLAN_ADD_PRODUCT_VARIANT() {
   `;
 }
 
-export const addProductVariantToSellingPlanGroups = async (ctx: Context) => {
+export const removeProductVariantFromSellingPlanGroups = async (
+  ctx: Context
+) => {
   const { client } = ctx;
   const body = ctx.request.body as {
     variantId: string;
-    selectedPlans: string[];
+    sellingPlanGroupId: string;
   };
-  const { variantId, selectedPlans } = body;
+  const { variantId, sellingPlanGroupId } = body;
   const variables = {
     id: variantId,
-    sellingPlanGroupIds: selectedPlans,
+    sellingPlanGroupIds: [sellingPlanGroupId],
   };
+  console.log('VARIABLES', variables);
   const productVariant = await client
     .mutate({
-      mutation: SELLING_PLAN_ADD_PRODUCT_VARIANT(),
+      mutation: SELLING_PLAN_REMOVE_PRODUCT_VARIANT(),
       variables: variables,
     })
     .then((response: { data: any }) => {
-      // response.data.productVariantJoinSellingPlanGroups.productVariant.id
+      // response.data.productVariantLeaveSellingPlanGroups.productVariant.id;
+      console.log('response', response.data);
       return response.data;
     });
 
