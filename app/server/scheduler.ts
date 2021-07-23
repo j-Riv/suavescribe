@@ -231,7 +231,7 @@ const sendMailGun = async (
   outOfStockList += '</ul>';
   const id = sub.id.split('/');
   const data = {
-    from: `${process.env.MAILGUN_SENDER} <no-repoy@${process.env.MAILGUN_DOMAIN}>`,
+    from: `${process.env.MAILGUN_SENDER} <no-reply@${process.env.MAILGUN_DOMAIN}>`,
     to: `${email}, ${process.env.MAILGUN_ADMIN_EMAIL}`,
     subject: 'Subscription Has Been Paused Due To Item(s) Being Out Of Stock',
     html: `

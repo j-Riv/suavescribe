@@ -250,7 +250,7 @@ const sendMailGun = async (email: string, link: string) => {
     domain: process.env.MAILGUN_DOMAIN,
   });
   const data = {
-    from: `${process.env.MAILGUN_SENDER} <no-repoy@${process.env.MAILGUN_DOMAIN}>`,
+    from: `${process.env.MAILGUN_SENDER} <no-reply@${process.env.MAILGUN_DOMAIN}>`,
     to: `${email}, ${process.env.MAILGUN_ADMIN_EMAIL}`,
     subject: 'Subscription Authorization Link',
     html: `
