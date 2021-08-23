@@ -84,7 +84,7 @@ export const runBillingAttempts = async () => {
               }
             );
             // create billing attempt
-            if (oosProducts.length > 0) {
+            if (oosProducts.length === 0) {
               const billingAttempt = await createSubscriptionBillingAttempt(
                 client,
                 contract.id
