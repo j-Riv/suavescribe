@@ -61,7 +61,9 @@ const createInput = (body: Body) => {
   }
   if (plans > 1) {
     for (let i = 1; i <= plans; i++) {
-      let deliveryOption = `Delivered every ${i} ${intervalTitle}s`;
+      let deliveryOption = `Delivered every ${
+        i * intervalCountNumber
+      } ${intervalTitle}s`;
       const planName = `${deliveryOption}${savingsName}`;
       if (i === 1) {
         deliveryOption = `Delivered every ${intervalTitle}`;

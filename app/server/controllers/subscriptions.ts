@@ -31,7 +31,7 @@ export const getAllSubscriptionGroups = async (ctx: Context) => {
     } else {
       return (ctx.status = 401);
     }
-  } catch (err) {
+  } catch (err: any) {
     logger.log('error', err.message);
     return (ctx.status = 500);
   }
@@ -49,7 +49,7 @@ export const getSubscriptionGroup = async (ctx: Context) => {
     } else {
       return (ctx.status = 401);
     }
-  } catch (err) {
+  } catch (err: any) {
     logger.log('error', err.message);
     return (ctx.status = 500);
   }
@@ -77,7 +77,7 @@ export const addProductToSubscriptionPlanGroup = async (ctx: Context) => {
     } else {
       return (ctx.status = 401);
     }
-  } catch (err) {
+  } catch (err: any) {
     logger.log('error', err.message);
     return (ctx.status = 500);
   }
@@ -95,7 +95,7 @@ export const createSubscriptionPlanGroup = async (ctx: Context) => {
     } else {
       return (ctx.status = 401);
     }
-  } catch (err) {
+  } catch (err: any) {
     logger.log('error', err.message);
     return (ctx.status = 500);
   }
@@ -113,7 +113,7 @@ export const editSubscriptionPlanGroup = async (ctx: Context) => {
     } else {
       return (ctx.status = 401);
     }
-  } catch (err) {
+  } catch (err: any) {
     logger.log('error', err.message);
     return (ctx.status = 500);
   }
@@ -142,7 +142,7 @@ export const removeProductFromSubscriptionPlanGroup = async (ctx: Context) => {
     } else {
       return (ctx.status = 401);
     }
-  } catch (err) {
+  } catch (err: any) {
     logger.log('error', err.message);
     return (ctx.status = 500);
   }
@@ -160,7 +160,7 @@ export const deleteSubscriptionPlanGroup = async (ctx: Context) => {
     } else {
       return (ctx.status = 401);
     }
-  } catch (err) {
+  } catch (err: any) {
     logger.log('error', err.message);
     return (ctx.status = 500);
   }

@@ -37,8 +37,8 @@ const verifyToken = (shop: string, customer_id: string, token: string) => {
     ) {
       return true;
     }
-  } catch (e) {
-    console.log('ERROR VERIFYING TOKEN', e.message);
+  } catch (err: any) {
+    console.log('ERROR VERIFYING TOKEN', err.message);
     return false;
   }
 };
@@ -76,8 +76,8 @@ export const getCustomerSubscriptions = async (ctx: Context) => {
           ctx.redirect('/accounts');
         }
       }
-    } catch (e) {
-      console.log('ERROR', e.message);
+    } catch (err: any) {
+      console.log('ERROR', err.message);
       return (ctx.status = 403);
     }
   } else {
@@ -123,8 +123,8 @@ export const updateCustomerSubscription = async (ctx: Context) => {
       ctx.status = 403;
       ctx.redirect('/accounts');
     }
-  } catch (e) {
-    console.log('ERROR', e.message);
+  } catch (err: any) {
+    console.log('ERROR', err.message);
     return (ctx.status = 403);
   }
 };
@@ -156,8 +156,8 @@ export const updateSubscriptionPaymentMethod = async (ctx: Context) => {
         ctx.redirect('/accounts');
       }
     }
-  } catch (e) {
-    console.log('ERROR', e.message);
+  } catch (err: any) {
+    console.log('ERROR', err.message);
     return (ctx.status = 403);
   }
 };
@@ -238,8 +238,8 @@ export const updateSubscriptionShippingAddress = async (ctx: Context) => {
         ctx.redirect('/accounts');
       }
     }
-  } catch (e) {
-    console.log('ERROR', e.message);
+  } catch (err: any) {
+    console.log('ERROR', err.message);
     return (ctx.status = 401);
   }
 };
