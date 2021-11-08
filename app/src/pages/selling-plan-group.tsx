@@ -23,7 +23,10 @@ import { formatId } from '../utils/formatters';
 import LoadingSellingPlan from '../components/LoadingSellingPlan';
 import ErrorState from '../components/ErrorState';
 import UpdateSellingPlanGroupButton from '../components/UpdateSellingPlanGroupButton';
-import { Product as ShopifyProduct } from '../types/subscriptions';
+import {
+  Product as ShopifyProduct,
+  ProductVariant as ShopifyProductVariant,
+} from '../types/subscriptions';
 
 const Information = styled.div`
   .bold {
@@ -171,12 +174,33 @@ function SellingPlanGroup() {
               <Card title="Products" sectioned>
                 <TextStyle variation="subdued">
                   <Message>
-                    To add Products to this Selling Plan Group, please go to the
+                    To add products to this Selling Plan Group, please go to the
                     product page.
                   </Message>
                 </TextStyle>
                 {data.sellingPlanGroup.products.edges.map(
                   (product: ShopifyProduct) => {
+                    return (
+                      <Product key={product.node.id}>
+                        <Thumbnail
+                          source={product.node.featuredImage.originalSrc}
+                          alt={product.node.featuredImage.altText}
+                        />
+                        <p>{product.node.title}</p>
+                      </Product>
+                    );
+                  }
+                )}
+              </Card>
+              <Card title="Variants" sectioned>
+                <TextStyle variation="subdued">
+                  <Message>
+                    To add variants to this Selling Plan Group, please go to the
+                    product page and select the variant.
+                  </Message>
+                </TextStyle>
+                {data.sellingPlanGroup.productVariants.edges.map(
+                  (product: ShopifyProductVariant) => {
                     return (
                       <Product key={product.node.id}>
                         <Thumbnail

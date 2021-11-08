@@ -30,6 +30,10 @@ export interface ProductVariant {
     id: string;
     title: string;
     sku: string;
+    featuredImage?: {
+      originalSrc: string;
+      altText: string;
+    };
   };
 }
 
