@@ -63,8 +63,8 @@ export const GET_SELLING_PLAN_GROUP_BY_ID = gql`
             id
             title
             sku
-            featuredImage {
-              originalSrc
+            image {
+              src
               altText
             }
           }

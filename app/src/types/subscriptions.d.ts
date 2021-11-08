@@ -30,8 +30,8 @@ export interface ProductVariant {
     id: string;
     title: string;
     sku: string;
-    featuredImage?: {
-      originalSrc: string;
+    image?: {
+      src: string;
       altText: string;
     };
   };

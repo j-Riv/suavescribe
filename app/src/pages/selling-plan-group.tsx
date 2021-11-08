@@ -204,8 +204,8 @@ function SellingPlanGroup() {
                     return (
                       <Product key={product.node.id}>
                         <Thumbnail
-                          source={product.node.featuredImage.originalSrc}
-                          alt={product.node.featuredImage.altText}
+                          source={product.node.image.src}
+                          alt={product.node.image.altText}
                         />
                         <p>{product.node.title}</p>
                       </Product>
