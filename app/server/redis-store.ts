@@ -47,7 +47,7 @@ class RedisStore {
       // Inside our try, we use the `setAsync` method to save our session.
       // This method returns a boolean (true is successful, false if not)
       return await this.setAsync(session.id, JSON.stringify(session));
-    } catch (err) {
+    } catch (err: any) {
       // throw errors, and handle them gracefully in your application
       logger.log('error', err.message);
       throw new Error(err);
@@ -79,7 +79,7 @@ class RedisStore {
       } else {
         return undefined;
       }
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
       throw new Error(err);
     }
@@ -96,7 +96,7 @@ class RedisStore {
       // Inside our try, we use the `delAsync` method to delete our session.
       // This method returns a boolean (true is successful, false if not)
       return await this.delAsync(id);
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
       throw new Error(err);
     }

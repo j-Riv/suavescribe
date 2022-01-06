@@ -104,14 +104,23 @@ export const updateCustomerSubscription = async (ctx: Context) => {
       if (verified) {
         const res = await pgStorage.loadCurrentShop(shop);
         if (res) {
+          const input: { status: string; nextBillingDate?: string } = {
+            status: status,
+          };
+          // if re-activating subscription set next billing date
+          if (status === 'ACTIVE') {
+            // generate tomorrows date
+            const today = new Date();
+            today.setDate(today.getDate() + 2);
+            const nextBillingDate = today.toISOString();
+            input.nextBillingDate = nextBillingDate;
+          }
           const client = createClient(shop, res.accessToken);
           let draftId = await updateSubscriptionContract(
             client,
             subscriptionContractId
           );
-          draftId = await updateSubscriptionDraft(client, draftId, {
-            status: status,
-          });
+          draftId = await updateSubscriptionDraft(client, draftId, input);
           const subscriptionId = await commitSubscriptionDraft(client, draftId);
           // send data
           ctx.body = { updatedSubscriptionContractId: subscriptionId };

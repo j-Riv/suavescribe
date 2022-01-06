@@ -66,7 +66,7 @@ class PgStore {
         };
       });
       return shops;
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
       throw new Error(err);
     }
@@ -90,7 +90,7 @@ class PgStore {
       } else {
         return undefined;
       }
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', new Error(err));
       throw new Error(err);
     }
@@ -111,7 +111,7 @@ class PgStore {
       } else {
         return false;
       }
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
       throw new Error(err);
     }
@@ -152,7 +152,7 @@ class PgStore {
           return false;
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
       throw new Error(err);
     }
@@ -195,7 +195,7 @@ class PgStore {
           return false;
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       // throw errors, and handle them gracefully in your application
       logger.log('error', err.message);
       throw new Error(err);
@@ -226,7 +226,7 @@ class PgStore {
         logger.log('info', `No session found!`);
         return undefined;
       }
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
       throw new Error(err);
     }
@@ -248,7 +248,7 @@ class PgStore {
       } else {
         return false;
       }
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
       throw new Error(err);
     }
@@ -279,7 +279,7 @@ class PgStore {
       )}') RETURNING *;
       `;
       return await this.client.query(query);
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
     }
   };
@@ -300,7 +300,7 @@ class PgStore {
       )}' WHERE shop = '${shop}' AND id = '${contract.id}' RETURNING *;
       `;
       return await this.client.query(query);
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
     }
   };
@@ -323,7 +323,7 @@ class PgStore {
         `;
       }
       return await this.client.query(query);
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
     }
   };
@@ -340,7 +340,7 @@ class PgStore {
       `;
       const res = await this.client.query(query);
       return res.rows;
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
     }
   };
@@ -356,7 +356,7 @@ class PgStore {
       `;
       const res = await this.client.query(query);
       return res.rows;
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
     }
   };
@@ -374,7 +374,7 @@ class PgStore {
       );
       const res = await this.createLocalContract(shop, contract);
       return res ? res.rowCount > 0 : false;
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
     }
   };
@@ -403,7 +403,7 @@ class PgStore {
         res = await this.createLocalContract(shop, contract);
       }
       return res.rowCount > 0;
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
     }
   };
@@ -466,7 +466,7 @@ class PgStore {
       const contractId = await commitSubscriptionDraft(client, updatedDraftId);
       logger.log('info', `Contract Id: ${contractId}`);
       return contractId;
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
     }
   };
@@ -527,7 +527,7 @@ class PgStore {
       const contractId = await commitSubscriptionDraft(client, updatedDraftId);
       logger.log('info', `Contract Id: ${contractId}`);
       return contractId;
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
     }
   };
@@ -542,7 +542,7 @@ class PgStore {
       const paymentMethodId = res.customerPaymentMethod.id;
       const customerId = await updatePaymentMethod(client, paymentMethodId);
       return customerId;
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
     }
   };
@@ -584,7 +584,7 @@ class PgStore {
         }
       };
       moveAlong();
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
     }
   };
@@ -599,7 +599,7 @@ class PgStore {
       `;
       const res = await this.client.query(query);
       return res.rows;
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
     }
   };

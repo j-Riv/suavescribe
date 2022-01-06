@@ -320,7 +320,7 @@ app.prepare().then(async () => {
       try {
         logger.log('info', `Syncing contracts for shop: ${shop}`);
         await pgStorage.saveAllContracts(shop, accessToken);
-      } catch (err) {
+      } catch (err: any) {
         logger.log('error', err.message);
       }
       ctx.res.statusCode = 200;
