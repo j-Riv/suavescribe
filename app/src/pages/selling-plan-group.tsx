@@ -177,7 +177,10 @@ function SellingPlanGroup() {
                   {data.sellingPlanGroup.sellingPlans.edges.map(
                     (sellingPlan: SellingPlan) => {
                       return (
-                        <li>{`${sellingPlan.node.name} <em>(${sellingPlan.node.id})</em>`}</li>
+                        <li>
+                          {sellingPlan.node.name}{' '}
+                          <em>({sellingPlan.node.id})</em>
+                        </li>
                       );
                     }
                   )}

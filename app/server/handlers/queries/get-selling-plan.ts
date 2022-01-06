@@ -59,7 +59,7 @@ export function SELLING_PLAN_GET() {
         name
         merchantCode
         summary
-        sellingPlans(first: 5) {
+        sellingPlans(first: 10) {
           edges {
             node {
               id
