@@ -10,7 +10,7 @@ export const GET_SELLING_PLAN_GROUP_BY_ID = gql`
       productCount
       productVariantCount
       options
-      sellingPlans(first: 3) {
+      sellingPlans(first: 10) {
         edges {
           node {
             id
