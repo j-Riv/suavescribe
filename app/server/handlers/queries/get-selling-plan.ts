@@ -19,6 +19,7 @@ interface SellingPlan {
   node: {
     id: string;
     name: string;
+    description: string;
     options: string[];
     position: number;
     billingPolicy: {
@@ -63,6 +64,7 @@ export function SELLING_PLAN_GET() {
             node {
               id
               name
+              description
               options
               position
               billingPolicy {

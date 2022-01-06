@@ -27,6 +27,7 @@ import {
   Product as ShopifyProduct,
   ProductVariant as ShopifyProductVariant,
 } from '../types/subscriptions';
+import { SellingPlan } from '../types/sellingplans';
 
 const Information = styled.div`
   .bold {
@@ -170,6 +171,17 @@ function SellingPlanGroup() {
                     {data.sellingPlanGroup.merchantCode}
                   </p>
                 </Information>
+              </Card>
+              <Card title="Selling Plans" sectioned>
+                <ul>
+                  {data.sellingPlanGroup.sellingPlans.edges.map(
+                    (sellingPlan: SellingPlan) => {
+                      return (
+                        <li>{`${sellingPlan.node.name} <em>(${sellingPlan.node.id})</em>`}</li>
+                      );
+                    }
+                  )}
+                </ul>
               </Card>
               <Card title="Products" sectioned>
                 <TextStyle variation="subdued">
