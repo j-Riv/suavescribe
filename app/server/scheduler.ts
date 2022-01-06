@@ -111,7 +111,7 @@ export const runBillingAttempts = async () => {
               }
             }
           }
-        } catch (err) {
+        } catch (err: any) {
           logger.log('error', err.message);
         }
       });
@@ -141,7 +141,7 @@ export const runBillingAttempts = async () => {
 //             contract.id
 //           );
 //           logger.log('info', `Created Billing Attempt: ${billingAttempt}`);
-//         } catch (err) {
+//         } catch (err: any) {
 //           logger.log('error', err.message);
 //         }
 //       });
@@ -160,7 +160,7 @@ export const runSubscriptionContractSync = async () => {
       const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
       await pgStorage.saveAllContracts(shop, token);
       return { msg: true };
-    } catch (err) {
+    } catch (err: any) {
       logger.log('error', err.message);
     }
   });
@@ -203,7 +203,7 @@ export const runCancellation = async () => {
             updatedDraftId
           );
           logger.log('info', `Contract Id: ${contractId}`);
-        } catch (err) {
+        } catch (err: any) {
           logger.log('error', err.message);
         }
       });
