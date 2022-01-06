@@ -57,6 +57,19 @@ export const GET_SELLING_PLAN_GROUP_BY_ID = gql`
           }
         }
       }
+      productVariants(first: 10) {
+        edges {
+          node {
+            id
+            title
+            sku
+            image {
+              src
+              altText
+            }
+          }
+        }
+      }
     }
   }
 `;
