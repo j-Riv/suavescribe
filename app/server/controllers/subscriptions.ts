@@ -8,6 +8,7 @@ import {
   removeProductVariantFromSellingPlanGroups,
   createClient,
   createSellingPlanGroup,
+  createSellingPlanGroupV2,
   updateSellingPlanGroup,
   deleteSellingPlanGroup,
   getSellingPlans,
@@ -91,6 +92,24 @@ export const createSubscriptionPlanGroup = async (ctx: Context) => {
     if (res) {
       ctx.client = createClient(shop, res.accessToken);
       const id = await createSellingPlanGroup(ctx);
+      ctx.body = id;
+    } else {
+      return (ctx.status = 401);
+    }
+  } catch (err: any) {
+    logger.log('error', err.message);
+    return (ctx.status = 500);
+  }
+};
+
+export const createSubscriptionPlanGroupV2 = async (ctx: Context) => {
+  try {
+    const shop = ctx.state.shop;
+    // this will have to call db and get accessToken
+    const res = await pgStorage.loadCurrentShop(shop);
+    if (res) {
+      ctx.client = createClient(shop, res.accessToken);
+      const id = await createSellingPlanGroupV2(ctx);
       ctx.body = id;
     } else {
       return (ctx.status = 401);
