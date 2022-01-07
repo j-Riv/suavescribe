@@ -2,6 +2,7 @@ import { createClient } from './client';
 import { getOneTimeUrl } from './mutations/get-one-time-url';
 import { getSubscriptionUrl } from './mutations/get-subscription-url';
 import { createSellingPlanGroup } from './mutations/create-selling-plan-group';
+import { createSellingPlanGroupV2 } from './mutations/create-selling-plan-group-v2';
 import { addProductToSellingPlanGroups } from './mutations/add-product-to-selling-plan-groups';
 import { addProductVariantToSellingPlanGroups } from './mutations/add-product-variant-to-selling-plan-groups';
 import { removeProductsFromSellingPlanGroup } from './mutations/remove-products-from-selling-plan-group';
@@ -26,6 +27,7 @@ export {
   getOneTimeUrl,
   getSubscriptionUrl,
   createSellingPlanGroup,
+  createSellingPlanGroupV2,
   addProductToSellingPlanGroups,
   addProductVariantToSellingPlanGroups,
   removeProductsFromSellingPlanGroup,

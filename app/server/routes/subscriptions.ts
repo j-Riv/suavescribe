@@ -6,6 +6,7 @@ import {
   getAllSubscriptionGroups,
   addProductToSubscriptionPlanGroup,
   createSubscriptionPlanGroup,
+  createSubscriptionPlanGroupV2,
   editSubscriptionPlanGroup,
   removeProductFromSubscriptionPlanGroup,
   deleteSubscriptionPlanGroup,
@@ -51,6 +52,12 @@ router.post(
   '/subscription-plan/create',
   verifyJwt,
   createSubscriptionPlanGroup
+);
+
+router.post(
+  '/subscription-plan/v2/create',
+  verifyJwt,
+  createSubscriptionPlanGroupV2
 );
 
 router.post('/subscription-plan/edit', verifyJwt, editSubscriptionPlanGroup);
