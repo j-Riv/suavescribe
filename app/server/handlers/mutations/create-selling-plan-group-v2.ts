@@ -3,7 +3,7 @@ import { gql } from '@apollo/client';
 import { Context } from 'koa';
 
 interface Body {
-  planTitle: string;
+  planGroupName: string;
   merchantCode: string;
   numberOfPlans: string;
   planGroupOption: string;
@@ -36,7 +36,7 @@ const cleanInterval = (interval: string) => {
 
 const createInput = (body: Body) => {
   const {
-    planTitle,
+    planGroupName,
     merchantCode,
     numberOfPlans,
     planGroupOption,
@@ -47,10 +47,9 @@ const createInput = (body: Body) => {
   // Set number of plans
   let plans: any[] = [];
   const planCount = parseInt(numberOfPlans);
-
   if (planCount > 1) {
     for (let i = 1; i <= planCount; i++) {
-      const currentPlan = sellingPlans[i];
+      const currentPlan = sellingPlans[i.toString()];
       // Set interval for naming
       const intervalTitle = cleanInterval(currentPlan.intervalOption);
       // savings
@@ -106,7 +105,7 @@ const createInput = (body: Body) => {
   const variables = {
     input: {
       appId: '4975729',
-      name: planTitle,
+      name: planGroupName,
       merchantCode: merchantCode, // 'subscribe-and-save'
       description: planGroupDescription,
       options: [planGroupOption], // 'Delivery every'
@@ -134,6 +133,7 @@ export const createSellingPlanGroupV2 = async (ctx: Context) => {
             sellingPlanGroup: {
               id: string;
             };
+            userErrors?: any;
           };
         };
       }) => {
