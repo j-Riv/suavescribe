@@ -99,7 +99,7 @@ const createInput = (body: Body) => {
           },
         ],
       };
-      sellingPlans.push(plans);
+      plans.push(sellingPlan);
     }
   }
 
@@ -111,7 +111,7 @@ const createInput = (body: Body) => {
       description: planGroupDescription,
       options: [planGroupOption], // 'Delivery every'
       position: 1,
-      sellingPlansToCreate: sellingPlans,
+      sellingPlansToCreate: plans,
     },
   };
   return variables;
