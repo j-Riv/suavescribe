@@ -51,7 +51,7 @@ router.post(
 router.post(
   '/subscription-plan/create',
   verifyJwt,
-  createSubscriptionPlanGroupV2
+  createSubscriptionPlanGroup
 );
 
 router.post(
