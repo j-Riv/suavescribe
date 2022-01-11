@@ -110,7 +110,7 @@ const createInput = (props: Props) => {
     }
     let sellingPlan: SellingPlan = {
       id: plan.node.id,
-      name: planName,
+      name: planName, // plan.node.name makes this use user input, right now it's being overwritten for better naming
       description: `${deliveryOption}, save ${percentage}% on every order. Auto renews, skip, cancel anytime.`,
       options: plan.node.options[0],
       position: plan.node.position,
