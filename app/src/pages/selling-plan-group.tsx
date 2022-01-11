@@ -5,7 +5,6 @@ import {
   Frame,
   Layout,
   Page,
-  Select,
   TextField,
   TextStyle,
   Thumbnail,
@@ -69,9 +68,10 @@ function SellingPlanGroup() {
   // state
   const [groupName, setGroupName] = useState<string>();
   const [groupDescription, setGroupDescription] = useState<string>();
+  const [groupOptions, setGroupOptions] = useState<string[]>();
+  const [options, setOptions] = useState<string>();
   const [merchantCode, setMerchantCode] = useState<string>();
   const [sellingPlans, setSellingPlans] = useState<SellingPlan[]>([]);
-  const [options, setOptions] = useState<string>();
 
   const [active, setActive] = useState<boolean>(false);
   const [toastMsg, setToastMsg] = useState<string>('');
@@ -93,8 +93,19 @@ function SellingPlanGroup() {
     setMerchantCode(merchantCode);
   };
 
+  const handleGroupOptions = (options: string) => {
+    let opts: string[] = [];
+    if (options.includes(',')) {
+      opts = options.split(',');
+      opts = opts.map((el: string) => el.trim());
+    } else {
+      opts = [options];
+    }
+    setOptions(options);
+    setGroupOptions(opts);
+  };
+
   const handleSellingPlans = (id: string, sellingPlan: any) => {
-    console.log(`Updating id: ${id} with`, sellingPlan);
     const updatedSellingPlans = sellingPlans.map((plan: any) => {
       if (plan.node.id === id) {
         const updatedPlan = {
@@ -124,7 +135,6 @@ function SellingPlanGroup() {
       }
       return plan;
     });
-    console.log('UPDATED SELLING PLANS', updatedSellingPlans);
     setSellingPlans(updatedSellingPlans);
   };
 
@@ -146,15 +156,13 @@ function SellingPlanGroup() {
       onCompleted: data => {
         if (data.sellingPlanGroup) {
           const sellingPlanGroup = data.sellingPlanGroup;
-          // new
           const plans = sellingPlanGroup.sellingPlans.edges;
-          console.log('SELLING PLANS', plans);
-          const sellingPlan = sellingPlanGroup.sellingPlans.edges[0];
           setGroupName(sellingPlanGroup.name);
           setGroupDescription(sellingPlanGroup.description);
           setMerchantCode(sellingPlanGroup.merchantCode);
           setSellingPlans(plans);
-          setOptions(sellingPlanGroup.options[0]);
+          setOptions(sellingPlanGroup.options.toString());
+          setGroupOptions([...sellingPlanGroup.options]);
         }
       },
     }
@@ -306,6 +314,12 @@ function SellingPlanGroup() {
                       label="Merchant Code"
                       type="text"
                     />
+                    <TextField
+                      value={options}
+                      onChange={value => handleGroupOptions(value)}
+                      label="Group Options"
+                      type="text"
+                    />
                   </Layout.Section>
                 </Layout>
               </Card>
@@ -325,8 +339,8 @@ function SellingPlanGroup() {
                 id={data.sellingPlanGroup.id}
                 groupName={groupName}
                 groupDescription={groupDescription}
+                groupOptions={groupOptions}
                 merchantCode={merchantCode}
-                options={options}
                 sellingPlans={sellingPlans}
                 toggleActive={toggleActive}
                 setMsg={setMsg}

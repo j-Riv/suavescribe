@@ -7,8 +7,8 @@ interface Props {
   id: string;
   groupName: string;
   groupDescription: string;
+  groupOptions: string[];
   merchantCode: string;
-  options: string;
   sellingPlans: any[];
   toggleActive: () => void;
   setMsg: (msg: string) => void;
@@ -91,8 +91,13 @@ const cleanInterval = (interval: string) => {
 };
 
 const createInput = (props: Props) => {
-  const { groupName, groupDescription, merchantCode, options, sellingPlans } =
-    props;
+  const {
+    groupName,
+    groupDescription,
+    merchantCode,
+    groupOptions,
+    sellingPlans,
+  } = props;
 
   // TODO SET GROUP INPUTS HERE, ALSO DEAL WITH UPDATING DESCRIPTION BASED ON NEW INPUTS
 
@@ -142,7 +147,7 @@ const createInput = (props: Props) => {
     name: groupName,
     merchantCode: merchantCode, // 'subscribe-and-save'
     description: groupDescription,
-    options: [options], // 'Delivery every'
+    options: [...groupOptions], // 'Delivery every'
     position: 1,
     sellingPlansToUpdate: plans,
   };
