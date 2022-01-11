@@ -1,11 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import {
   Card,
   Frame,
   Layout,
   Page,
-  Select,
   TextField,
   TextStyle,
   Thumbnail,
@@ -18,10 +17,12 @@ import { Redirect } from '@shopify/app-bridge/actions';
 import {
   GET_SELLING_PLAN_GROUP_BY_ID,
   DELETE_SELLING_PLAN_GROUP,
+  GET_ALL_SELLING_PLAN_GROUPS,
 } from '../handlers';
 import { formatId } from '../utils/formatters';
 import LoadingSellingPlan from '../components/LoadingSellingPlan';
 import ErrorState from '../components/ErrorState';
+import UpdateSellingPlanForm from '../components/UpdateSellingPlanForm';
 import UpdateSellingPlanGroupButton from '../components/UpdateSellingPlanGroupButton';
 import {
   Product as ShopifyProduct,
@@ -65,15 +66,77 @@ function SellingPlanGroup() {
     );
 
   // state
-  const [planTitle, setPlanTitle] = useState<string>();
-  const [merchantCode, setMerchantCode] = useState<string>();
+  const [groupName, setGroupName] = useState<string>();
+  const [groupDescription, setGroupDescription] = useState<string>();
+  const [groupOptions, setGroupOptions] = useState<string[]>();
   const [options, setOptions] = useState<string>();
-  const [interval, setInterval] = useState<string>();
-  const [percentOff, setPercentOff] = useState<string>();
+  const [merchantCode, setMerchantCode] = useState<string>();
+  const [sellingPlans, setSellingPlans] = useState<SellingPlan[]>([]);
 
   const [active, setActive] = useState<boolean>(false);
   const [toastMsg, setToastMsg] = useState<string>('');
   const [isError, setIsError] = useState<boolean>(false);
+
+  useEffect(() => {
+    console.log('CHANGES TO SELLING PLANS', sellingPlans);
+  }, [sellingPlans]);
+
+  const handleGroupName = (name: string) => {
+    setGroupName(name);
+  };
+
+  const handleGroupDescription = (description: string) => {
+    setGroupDescription(description);
+  };
+
+  const handleMerchantCode = (merchantCode: string) => {
+    setMerchantCode(merchantCode);
+  };
+
+  const handleGroupOptions = (options: string) => {
+    let opts: string[] = [];
+    if (options.includes(',')) {
+      opts = options.split(',');
+      opts = opts.map((el: string) => el.trim());
+    } else {
+      opts = [options];
+    }
+    setOptions(options);
+    setGroupOptions(opts);
+  };
+
+  const handleSellingPlans = (id: string, sellingPlan: any) => {
+    const updatedSellingPlans = sellingPlans.map((plan: any) => {
+      if (plan.node.id === id) {
+        const updatedPlan = {
+          node: {
+            ...plan.node,
+            name: sellingPlan.name,
+            options: [sellingPlan.options],
+            billingPolicy: {
+              interval: sellingPlan.interval,
+              intervalCount: sellingPlan.intervalCount,
+            },
+            deliveryPolicy: {
+              interval: sellingPlan.interval,
+              intervalCount: sellingPlan.intervalCount,
+            },
+            pricingPolicies: [
+              {
+                adjustmentType: 'PERCENTAGE',
+                adjustmentValue: {
+                  percentage: sellingPlan.percentOff,
+                },
+              },
+            ],
+          },
+        };
+        return updatedPlan;
+      }
+      return plan;
+    });
+    setSellingPlans(updatedSellingPlans);
+  };
 
   // Toast
   const toggleActive = useCallback(() => setActive(active => !active), []);
@@ -93,16 +156,13 @@ function SellingPlanGroup() {
       onCompleted: data => {
         if (data.sellingPlanGroup) {
           const sellingPlanGroup = data.sellingPlanGroup;
-          const sellingPlan = sellingPlanGroup.sellingPlans.edges[0];
-          const interval = sellingPlan.node.billingPolicy.interval;
-          const percentage = String(
-            sellingPlan.node.pricingPolicies[0].adjustmentValue.percentage
-          );
-          setPlanTitle(sellingPlanGroup.name);
+          const plans = sellingPlanGroup.sellingPlans.edges;
+          setGroupName(sellingPlanGroup.name);
+          setGroupDescription(sellingPlanGroup.description);
           setMerchantCode(sellingPlanGroup.merchantCode);
-          setOptions(sellingPlanGroup.options[0]);
-          setInterval(interval);
-          setPercentOff(percentage);
+          setSellingPlans(plans);
+          setOptions(sellingPlanGroup.options.toString());
+          setGroupOptions([...sellingPlanGroup.options]);
         }
       },
     }
@@ -177,7 +237,7 @@ function SellingPlanGroup() {
                   {data.sellingPlanGroup.sellingPlans.edges.map(
                     (sellingPlan: SellingPlan) => {
                       return (
-                        <li>
+                        <li key={sellingPlan.node.id}>
                           {sellingPlan.node.name}{' '}
                           <em>({sellingPlan.node.id})</em>
                         </li>
@@ -231,67 +291,63 @@ function SellingPlanGroup() {
             </Layout.Section>
             <Layout.AnnotatedSection
               title="Edit"
-              description="Edit Selling Plan"
+              description="You can edit the group name, description and merchant code. As well as the selling plans. Plan names should follow the ex: `Delivered every week (Save 10%)`"
             >
-              <Card sectioned>
+              <Card title="Selling Plan Group" sectioned>
                 <Layout>
                   <Layout.Section>
                     <TextField
-                      value={planTitle}
-                      onChange={planTitle => setPlanTitle(planTitle)}
-                      label="Plan Title"
+                      value={groupName}
+                      onChange={value => handleGroupName(value)}
+                      label="Group Name"
+                      type="text"
+                    />
+                    <TextField
+                      value={groupDescription}
+                      onChange={value => handleGroupDescription(value)}
+                      label="Group Description"
                       type="text"
                     />
                     <TextField
                       value={merchantCode}
-                      onChange={merchantCode => setMerchantCode(merchantCode)}
+                      onChange={value => handleMerchantCode(value)}
                       label="Merchant Code"
                       type="text"
                     />
                     <TextField
                       value={options}
-                      onChange={options => setOptions(options)}
-                      label="Options"
+                      onChange={value => handleGroupOptions(value)}
+                      label="Group Options"
                       type="text"
-                    />
-                  </Layout.Section>
-                  <Layout.Section>
-                    <Select
-                      label="Interval"
-                      options={[
-                        { label: 'Daily', value: 'DAY' },
-                        { label: 'Weekly', value: 'WEEK' },
-                        { label: 'Monthly', value: 'MONTH' },
-                        { label: 'Yearly', value: 'YEAR' },
-                      ]}
-                      onChange={interval => setInterval(interval)}
-                      value={interval}
-                    />
-                    <TextField
-                      value={percentOff}
-                      onChange={percentOff => setPercentOff(percentOff)}
-                      label="Percent Off (%)"
-                      type="number"
-                    />
-                  </Layout.Section>
-                  <Layout.Section>
-                    <UpdateSellingPlanGroupButton
-                      id={data.sellingPlanGroup.id}
-                      planTitle={planTitle}
-                      percentOff={percentOff}
-                      merchantCode={merchantCode}
-                      interval={interval}
-                      options={options}
-                      sellingPlans={data.sellingPlanGroup.sellingPlans.edges}
-                      toggleActive={toggleActive}
-                      setMsg={setMsg}
-                      setToastError={setToastError}
-                      refetch={refetch}
                     />
                   </Layout.Section>
                 </Layout>
               </Card>
+              {sellingPlans.map((plan: SellingPlan, index: number) => {
+                return (
+                  <UpdateSellingPlanForm
+                    key={plan.node.id}
+                    sellingPlan={plan}
+                    handleSellingPlans={handleSellingPlans}
+                    index={index}
+                  />
+                );
+              })}
             </Layout.AnnotatedSection>
+            <Layout.Section>
+              <UpdateSellingPlanGroupButton
+                id={data.sellingPlanGroup.id}
+                groupName={groupName}
+                groupDescription={groupDescription}
+                groupOptions={groupOptions}
+                merchantCode={merchantCode}
+                sellingPlans={sellingPlans}
+                toggleActive={toggleActive}
+                setMsg={setMsg}
+                setToastError={setToastError}
+                refetch={refetch}
+              />
+            </Layout.Section>
           </Layout>
           {toastMarkup}
         </Frame>

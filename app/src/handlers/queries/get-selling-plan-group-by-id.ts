@@ -6,6 +6,7 @@ export const GET_SELLING_PLAN_GROUP_BY_ID = gql`
       id
       name
       summary
+      description
       merchantCode
       productCount
       productVariantCount
@@ -31,6 +32,12 @@ export const GET_SELLING_PLAN_GROUP_BY_ID = gql`
                     percentage
                   }
                 }
+              }
+            }
+            deliveryPolicy {
+              ... on SellingPlanRecurringDeliveryPolicy {
+                interval
+                intervalCount
               }
             }
           }

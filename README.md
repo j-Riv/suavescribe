@@ -117,10 +117,15 @@ certificatesResolvers:
         entryPoint: insecure
 
 ```
-
 Run
 ```bash
 docker-compose up -d
+```
+
+```bash
+# to remove docker containers
+# --volumes to remove volumes
+docker system prune
 ```
 
 ## Logs

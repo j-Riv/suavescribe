@@ -18,13 +18,13 @@ export interface SellingPlan {
     description: string;
     options: string[];
     position: number;
-    billingPolicty: {
+    billingPolicy: {
       interval: string;
       intervalCount: number;
     };
     deliveryPolicy: {
       interval: string;
-      intervalcount: number;
+      intervalCount: number;
     };
     pricingPolicies: [
       {

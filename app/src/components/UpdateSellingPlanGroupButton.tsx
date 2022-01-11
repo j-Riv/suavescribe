@@ -5,11 +5,10 @@ import { UPDATE_SELLING_PLAN_GROUP } from '../handlers';
 
 interface Props {
   id: string;
-  planTitle: string;
-  percentOff: string;
+  groupName: string;
+  groupDescription: string;
+  groupOptions: string[];
   merchantCode: string;
-  interval: string;
-  options: string;
   sellingPlans: any[];
   toggleActive: () => void;
   setMsg: (msg: string) => void;
@@ -71,6 +70,7 @@ function UpdateSellingPlanGroupButton(props: Props) {
         },
       });
     } catch (e) {
+      console.log('ERROR', e.message);
       setToastError(true);
       setMsg('Error Updating Selling Plan Group');
       toggleActive();
@@ -92,40 +92,50 @@ const cleanInterval = (interval: string) => {
 
 const createInput = (props: Props) => {
   const {
-    planTitle,
-    percentOff,
+    groupName,
+    groupDescription,
     merchantCode,
-    interval,
-    options,
+    groupOptions,
     sellingPlans,
   } = props;
+
+  // TODO SET GROUP INPUTS HERE, ALSO DEAL WITH UPDATING DESCRIPTION BASED ON NEW INPUTS
+
   // Set interval for naming
-  const intervalTitle = cleanInterval(interval);
   const plans: SellingPlan[] = [];
   sellingPlans.forEach(plan => {
-    let deliveryOption = `Delivered every ${plan.node.position} ${intervalTitle}s`;
-    let planName = `${deliveryOption} (Save ${percentOff}%)`;
+    // Set interval for naming
+    const intervalTitle = cleanInterval(plan.node.billingPolicy.interval);
+    const percentage = plan.node.pricingPolicies[0].adjustmentValue.percentage;
+    let deliveryOption = `Delivered every ${plan.node.billingPolicy.intervalCount} ${intervalTitle}s`;
+    let planName = `${deliveryOption} (Save ${percentage}%)`;
     if (plan.node.position === 1) {
       deliveryOption = `Delivered every ${intervalTitle}`;
-      planName = `${deliveryOption} (Save ${percentOff}%)`;
+      planName = `${deliveryOption} (Save ${percentage}%)`;
     }
     let sellingPlan: SellingPlan = {
       id: plan.node.id,
-      name: planName,
-      description: `${deliveryOption}, save ${percentOff}% on every order. Auto renews, skip, cancel anytime.`,
-      options: deliveryOption,
+      name: planName, // plan.node.name makes this use user input, right now it's being overwritten for better naming
+      description: `${deliveryOption}, save ${percentage}% on every order. Auto renews, skip, cancel anytime.`,
+      options: plan.node.options[0],
       position: plan.node.position,
       billingPolicy: {
-        recurring: { interval: interval, intervalCount: plan.node.position },
+        recurring: {
+          interval: plan.node.billingPolicy.interval,
+          intervalCount: plan.node.billingPolicy.intervalCount,
+        },
       },
       deliveryPolicy: {
-        recurring: { interval: interval, intervalCount: plan.node.position },
+        recurring: {
+          interval: plan.node.deliveryPolicy.interval,
+          intervalCount: plan.node.deliveryPolicy.intervalCount,
+        },
       },
       pricingPolicies: [
         {
           fixed: {
             adjustmentType: 'PERCENTAGE',
-            adjustmentValue: { percentage: parseFloat(percentOff) },
+            adjustmentValue: { percentage: percentage },
           },
         },
       ],
@@ -134,10 +144,10 @@ const createInput = (props: Props) => {
   });
   const input = {
     appId: '4975729',
-    name: planTitle,
+    name: groupName,
     merchantCode: merchantCode, // 'subscribe-and-save'
-    description: `Delivered at ${intervalTitle}ly intervals at ${percentOff}% discount.`,
-    options: [options], // 'Delivery every'
+    description: groupDescription,
+    options: [...groupOptions], // 'Delivery every'
     position: 1,
     sellingPlansToUpdate: plans,
   };

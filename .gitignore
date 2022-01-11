@@ -30,3 +30,4 @@ data/traefik
 app/app_proxy/*
 
 NOTES.md
+CHANGES.md
