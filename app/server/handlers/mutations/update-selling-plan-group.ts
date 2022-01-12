@@ -4,10 +4,9 @@ import { Context } from 'koa';
 
 interface Body {
   sellingPlanGroupId: string;
-  planTitle: string;
-  percentageOff: string;
+  planGroupName: string;
+  planGroupDescription: string;
   merchantCode: string;
-  intervalOption: string;
   planGroupOption: string;
   sellingPlans: any[];
 }
@@ -69,40 +68,63 @@ const cleanInterval = (interval: string) => {
 const createInput = (body: Body) => {
   const {
     sellingPlanGroupId,
-    planTitle,
-    percentageOff,
+    planGroupName,
+    planGroupDescription,
     merchantCode,
-    intervalOption,
     planGroupOption,
     sellingPlans,
   } = body;
   // Set interval for naming
-  const intervalTitle = cleanInterval(intervalOption);
   const plans: SellingPlan[] = [];
   sellingPlans.forEach(plan => {
-    let deliveryOption = `Delivered every ${plan.position} ${intervalTitle}s`;
-    let planName = `${deliveryOption} (Save ${percentageOff}%)`;
-    if (plan.position === 1) {
-      deliveryOption = `Delivered every ${intervalTitle}`;
-      planName = `${deliveryOption} (Save ${percentageOff}%)`;
+    // Set interval for naming
+    const intervalTitle = cleanInterval(plan.billingPolicy.interval);
+    const percentage = plan.pricingPolicies[0].adjustmentValue.percentage;
+    const intervalCount = plan.billingPolicy.intervalCount;
+    const interval = plan.billingPolicy.interval;
+
+    // savings
+    let savingsDescription: string = '';
+    let savingsName: string = '';
+    if (parseInt(plan.pricingPolicies.percentage) > 0) {
+      savingsDescription = `, save ${percentage}% on every order`;
+      savingsName = ` (Save ${percentage}%)`;
     }
+    let planOption: string = `Delivered every `;
+    if (parseInt(intervalCount) > 1) {
+      planOption = `${planOption}${intervalCount} `;
+    }
+    planOption = `${planOption}${intervalTitle}`;
+    if (parseInt(intervalCount) > 1) {
+      planOption = `${planOption}s`;
+    }
+    if (parseInt(percentage) > 0) {
+      planOption = `${planOption}${savingsName}`;
+    }
+
     let sellingPlan: SellingPlan = {
       id: plan.id,
-      name: planName,
-      description: `${deliveryOption}, save ${percentageOff}% on every order. Auto renews, skip, cancel anytime.`,
-      options: deliveryOption,
+      name: planOption,
+      description: `${planOption}${savingsDescription}. Auto renews, skip, cancel anytime.`,
+      options: planOption,
       position: plan.position,
       billingPolicy: {
-        recurring: { interval: intervalOption, intervalCount: plan.position },
+        recurring: {
+          interval: interval,
+          intervalCount: parseInt(intervalCount),
+        },
       },
       deliveryPolicy: {
-        recurring: { interval: intervalOption, intervalCount: plan.position },
+        recurring: {
+          interval: interval,
+          intervalCount: parseInt(intervalCount),
+        },
       },
       pricingPolicies: [
         {
           fixed: {
             adjustmentType: 'PERCENTAGE',
-            adjustmentValue: { percentage: parseFloat(percentageOff) },
+            adjustmentValue: { percentage: parseInt(percentage) },
           },
         },
       ],
@@ -113,9 +135,9 @@ const createInput = (body: Body) => {
     id: sellingPlanGroupId,
     input: {
       appId: '4975729',
-      name: planTitle,
+      name: planGroupName,
       merchantCode: merchantCode, // 'subscribe-and-save'
-      description: `Delivered at ${intervalTitle}ly intervals at ${percentageOff}% discount.`,
+      description: planGroupDescription,
       options: [planGroupOption], // 'Delivery every'
       position: 1,
       sellingPlansToUpdate: plans,
