@@ -125,6 +125,7 @@ const createInput = (body: Body) => {
 };
 
 export const updateSellingPlanGroup = async (ctx: Context) => {
+  console.log('RUNNING UPDATE SELLING PLAN GROUP');
   const { client } = ctx;
   const body = ctx.request.body as any;
   const variables = createInput(body);

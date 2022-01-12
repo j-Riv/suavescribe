@@ -107,28 +107,42 @@ const createInput = (props: Props) => {
     // Set interval for naming
     const intervalTitle = cleanInterval(plan.node.billingPolicy.interval);
     const percentage = plan.node.pricingPolicies[0].adjustmentValue.percentage;
-    let deliveryOption = `Delivered every ${plan.node.billingPolicy.intervalCount} ${intervalTitle}s`;
-    let planName = `${deliveryOption} (Save ${percentage}%)`;
-    if (plan.node.position === 1) {
-      deliveryOption = `Delivered every ${intervalTitle}`;
-      planName = `${deliveryOption} (Save ${percentage}%)`;
+    const intervalCount = plan.node.billingPolicy.intervalCount;
+    const interval = plan.node.billingPolicy.interval;
+    // savings
+    let savingsDescription: string = '';
+    let savingsName: string = '';
+    if (parseInt(percentage) > 0) {
+      savingsDescription = `, save ${percentage}% on every order`;
+      savingsName = ` (Save ${percentage}%)`;
+    }
+    let planOption: string = `Delivered every `;
+    if (parseInt(intervalCount) > 1) {
+      planOption = `${planOption}${intervalCount} `;
+    }
+    planOption = `${planOption}${intervalTitle}`;
+    if (parseInt(intervalCount) > 1) {
+      planOption = `${planOption}s`;
+    }
+    if (parseInt(percentage) > 0) {
+      planOption = `${planOption}${savingsName}`;
     }
     let sellingPlan: SellingPlan = {
       id: plan.node.id,
-      name: planName, // plan.node.name makes this use user input, right now it's being overwritten for better naming
-      description: `${deliveryOption}, save ${percentage}% on every order. Auto renews, skip, cancel anytime.`,
+      name: planOption, // plan.node.name makes this use user input, right now it's being overwritten for better naming
+      description: `${planOption}${savingsDescription}. Auto renews, skip, cancel anytime.`,
       options: plan.node.options[0],
       position: plan.node.position,
       billingPolicy: {
         recurring: {
-          interval: plan.node.billingPolicy.interval,
-          intervalCount: plan.node.billingPolicy.intervalCount,
+          interval: interval,
+          intervalCount: intervalCount,
         },
       },
       deliveryPolicy: {
         recurring: {
-          interval: plan.node.deliveryPolicy.interval,
-          intervalCount: plan.node.deliveryPolicy.intervalCount,
+          interval: interval,
+          intervalCount: intervalCount,
         },
       },
       pricingPolicies: [

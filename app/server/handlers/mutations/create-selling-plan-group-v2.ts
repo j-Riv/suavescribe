@@ -69,12 +69,11 @@ const createInput = (body: Body) => {
       }
       // plan option
       if (parseInt(currentPlan.percentageOff) > 0) {
-        planOption = `${planOption} with a ${currentPlan.percentageOff}% discount`;
+        planOption = `${planOption}${savingsName}`;
       }
-      const planName = `${planOption}${savingsName}`;
 
       let sellingPlan = {
-        name: planName,
+        name: planOption,
         description: `${planOption}${savingsDescription}. Auto renews, skip, cancel anytime.`,
         options: planOption,
         position: currentPlan.id,
