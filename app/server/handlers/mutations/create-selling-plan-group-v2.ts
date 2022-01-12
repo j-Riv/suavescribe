@@ -124,7 +124,6 @@ export const createSellingPlanGroupV2 = async (ctx: Context) => {
   const body = ctx.request.body as any;
   // create input
   const variables = createInput(body);
-  console.log('VARIABLES', variables);
   const sellingPlanGroupId = await client
     .mutate({
       mutation: SELLING_PLAN_CREATE(),
@@ -141,12 +140,10 @@ export const createSellingPlanGroupV2 = async (ctx: Context) => {
           };
         };
       }) => {
-        const errors = response.data.sellingPlanGroupCreate.userErrors[0];
-        if (errors) {
-          console.log(
-            'ERRORS',
-            response.data.sellingPlanGroupCreate.userErrors[0]
-          );
+        const error = response.data.sellingPlanGroupCreate.userErrors[0];
+        if (error) {
+          console.log('ERROR', error);
+          return error;
         }
         return response.data.sellingPlanGroupCreate.sellingPlanGroup.id;
       }
