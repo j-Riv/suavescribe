@@ -60,11 +60,11 @@ const createInput = (body: Body) => {
         savingsName = ` (Save ${currentPlan.percentageOff}%)`;
       }
       let deliveryOption: string = `Delivered every `;
-      if (currentPlan.intervalCount > 1) {
+      if (parseInt(currentPlan.intervalCount) > 1) {
         deliveryOption = `${deliveryOption}${currentPlan.intervalCount} `;
       }
       deliveryOption = `${deliveryOption}${intervalTitle}`;
-      if (currentPlan.intervalCount > 1) {
+      if (parseInt(currentPlan.intervalCount) > 1) {
         deliveryOption = `${deliveryOption}s`;
       }
 
@@ -98,6 +98,7 @@ const createInput = (body: Body) => {
           },
         ],
       };
+      console.log('SELLING PLAN', sellingPlan);
       plans.push(sellingPlan);
     }
   }
@@ -121,6 +122,7 @@ export const createSellingPlanGroupV2 = async (ctx: Context) => {
   const body = ctx.request.body as any;
   // create input
   const variables = createInput(body);
+  console.log('VARIABLES', variables);
   const sellingPlanGroupId = await client
     .mutate({
       mutation: SELLING_PLAN_CREATE(),
@@ -137,6 +139,10 @@ export const createSellingPlanGroupV2 = async (ctx: Context) => {
           };
         };
       }) => {
+        console.log(
+          'ERRORS',
+          response.data.sellingPlanGroupCreate.userErrors[0]
+        );
         return response.data.sellingPlanGroupCreate.sellingPlanGroup.id;
       }
     );
