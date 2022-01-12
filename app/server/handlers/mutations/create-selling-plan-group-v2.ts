@@ -67,11 +67,10 @@ const createInput = (body: Body) => {
       if (parseInt(currentPlan.intervalCount) > 1) {
         planOption = `${planOption}s`;
       }
-
+      // plan option
       if (parseInt(currentPlan.percentageOff) > 0) {
         planOption = `${planOption} with a ${currentPlan.percentageOff}% discount`;
       }
-
       const planName = `${planOption}${savingsName}`;
 
       let sellingPlan = {
