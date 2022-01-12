@@ -109,8 +109,8 @@ export const createSubscriptionPlanGroupV2 = async (ctx: Context) => {
     const res = await pgStorage.loadCurrentShop(shop);
     if (res) {
       ctx.client = createClient(shop, res.accessToken);
-      const id = await createSellingPlanGroupV2(ctx);
-      ctx.body = id;
+      const response = await createSellingPlanGroupV2(ctx);
+      ctx.body = response;
     } else {
       return (ctx.status = 401);
     }
