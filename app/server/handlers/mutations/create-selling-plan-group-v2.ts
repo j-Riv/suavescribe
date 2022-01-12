@@ -141,10 +141,13 @@ export const createSellingPlanGroupV2 = async (ctx: Context) => {
           };
         };
       }) => {
-        console.log(
-          'ERRORS',
-          response.data.sellingPlanGroupCreate.userErrors[0]
-        );
+        const errors = response.data.sellingPlanGroupCreate.userErrors[0];
+        if (errors) {
+          console.log(
+            'ERRORS',
+            response.data.sellingPlanGroupCreate.userErrors[0]
+          );
+        }
         return response.data.sellingPlanGroupCreate.sellingPlanGroup.id;
       }
     );
