@@ -138,8 +138,9 @@ export const getSellingPlanById = async (ctx: Context) => {
       },
     })
     .then((response: { data: any }) => {
-      const filtered = buildResponse(response.data.sellingPlanGroup);
-      return filtered;
+      // const filtered = buildResponse(response.data.sellingPlanGroup);
+      // return filtered;
+      return response.data.sellingPlanGroup;
     });
 
   return sellingPlanGroup;
