@@ -78,15 +78,15 @@ const createInput = (body: Body) => {
   const plans: SellingPlan[] = [];
   sellingPlans.forEach(plan => {
     // Set interval for naming
-    const intervalTitle = cleanInterval(plan.billingPolicy.interval);
-    const percentage = plan.pricingPolicies[0].adjustmentValue.percentage;
-    const intervalCount = plan.billingPolicy.intervalCount;
-    const interval = plan.billingPolicy.interval;
+    const intervalTitle = cleanInterval(plan.intervalOption);
+    const percentage = plan.percentageOff;
+    const intervalCount = plan.intervalCount;
+    const interval = plan.intervalOption;
 
     // savings
     let savingsDescription: string = '';
     let savingsName: string = '';
-    if (parseInt(plan.pricingPolicies.percentage) > 0) {
+    if (parseInt(percentage) > 0) {
       savingsDescription = `, save ${percentage}% on every order`;
       savingsName = ` (Save ${percentage}%)`;
     }
@@ -147,7 +147,6 @@ const createInput = (body: Body) => {
 };
 
 export const updateSellingPlanGroup = async (ctx: Context) => {
-  console.log('RUNNING UPDATE SELLING PLAN GROUP');
   const { client } = ctx;
   const body = ctx.request.body as any;
   const variables = createInput(body);
@@ -164,9 +163,15 @@ export const updateSellingPlanGroup = async (ctx: Context) => {
             sellingPlanGroup: {
               id: string;
             };
+            userErrors?: any;
           };
         };
       }) => {
+        const error = response.data.sellingPlanGroupUpdate.userErrors[0];
+        if (error) {
+          console.log('ERROR', error);
+          return error;
+        }
         return response.data.sellingPlanGroupUpdate.sellingPlanGroup.id;
       }
     );
