@@ -36,7 +36,7 @@ function Index() {
     <Toast content={toastMsg} onDismiss={toggleActive} error={isError} />
   ) : null;
   // set subscriptions per page
-  const subsPerPage = 25;
+  const subsPerPage = 15;
   // search state
   const app = useAppBridge();
   const redirect = Redirect.create(app);
