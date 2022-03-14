@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
 import schedule from 'node-schedule';
-import mailgun from 'mailgun-js';
 import PgStore from './pg-store';
 import 'isomorphic-fetch';
 import {
@@ -12,6 +11,7 @@ import {
   commitSubscriptionDraft,
   getProductVariantById,
 } from './handlers';
+import { sendMailGunPause, sendMailGunRenew } from './utils';
 import logger from './logger';
 import { SubscriptionContract, SubscriptionLine } from './types/subscriptions';
 dotenv.config();
@@ -25,6 +25,7 @@ export const scheduler = () => {
   const everymin = '*/1 * * * *'; // every min
   const everyday3am = '0 0 3 * * *'; // every day at 1 am
   const everyday6am = '0 0 6 * * *'; // every day at 6 am
+  const everyday10am = '0 0 10 * * *'; // every day at 10 am
   const everyday12am = '0 0 0 * * *'; // every day at 12 am
   const everyhour = '0 0 */2 * * *'; // every 2 hours
 
@@ -41,6 +42,18 @@ export const scheduler = () => {
     logger.log('info', `Running Cleanup Sync Rule: ${everyday3am}`);
     runCancellation();
   });
+
+  // const renewalNotificationJob = schedule.scheduleJob(
+  //   everyday10am,
+  //   async function () {
+  //     logger.log(
+  //       'info',
+  //       `Running Renewal Notification Sync Rule: ${everyday10am}`
+  //     );
+  //     runRenewalNotification();
+  //   }
+  // );
+  // runRenewalNotification();
 };
 
 export const runBillingAttempts = async () => {
@@ -107,7 +120,7 @@ export const runBillingAttempts = async () => {
               // send email
               if (subscriptionId === contract.id) {
                 const email = shopifyContract.customer.email;
-                sendMailGun(email, shopifyContract, oosProducts);
+                sendMailGunPause(shop, email, shopifyContract, oosProducts);
               }
             }
           }
@@ -148,6 +161,49 @@ export const runBillingAttempts = async () => {
 //     }
 //   });
 // };
+
+export const runRenewalNotification = async () => {
+  console.log('RUNNING RENEWING SOON');
+  // get active shopify stores
+  const ACTIVE_SHOPIFY_SHOPS = await pgStorage.loadActiveShops();
+  const shops = Object.keys(ACTIVE_SHOPIFY_SHOPS);
+  // loop through active shops
+  shops.forEach(async (shop: string) => {
+    // get token
+    const token = ACTIVE_SHOPIFY_SHOPS[shop].accessToken;
+    // get all active contracts for shop
+    const now = new Date();
+    now.setDate(now.getDate() + 7);
+    const nextBillingDate = new Date(now).toISOString().substring(0, 10);
+    const contracts = await pgStorage.getLocalContractsRenewingSoonByShop(
+      shop,
+      nextBillingDate
+    );
+    if (contracts) {
+      console.log(`FOUND ${contracts.length} RENEWING SOON`);
+      // loop through contracts
+      contracts.forEach(async contract => {
+        // create billing attempt
+        try {
+          const client = createClient(shop, token);
+          // check billing date on shopify
+          const shopifyContract: SubscriptionContract =
+            await getSubscriptionContract(client, contract.id);
+
+          // send mailgun
+          await sendMailGunRenew(
+            shop,
+            shopifyContract.customer.email,
+            shopifyContract.customer.firstName,
+            nextBillingDate
+          );
+        } catch (err: any) {
+          logger.log('error', err.message);
+        }
+      });
+    }
+  });
+};
 
 export const runSubscriptionContractSync = async () => {
   console.log('RUNNING SUBSCRIPTION CONTRACT SYNC');
@@ -208,43 +264,5 @@ export const runCancellation = async () => {
         }
       });
     }
-  });
-};
-
-const sendMailGun = async (
-  email: string,
-  sub: SubscriptionContract,
-  oosProducts: string[]
-) => {
-  console.log('SENDING EMAIL VIA MAILGUN');
-  const mg = mailgun({
-    apiKey: process.env.MAILGUN_API_KEY,
-    domain: process.env.MAILGUN_DOMAIN,
-  });
-  // get oos products
-  let outOfStockList: string = '<ul>';
-  oosProducts.forEach(variantProduct => {
-    outOfStockList += `
-      <li>${variantProduct}</li>
-    `;
-  });
-  outOfStockList += '</ul>';
-  const id = sub.id.split('/');
-  const data = {
-    from: `${process.env.MAILGUN_SENDER} <no-reply@${process.env.MAILGUN_DOMAIN}>`,
-    to: `${email}`,
-    bcc: `${process.env.MAILGUN_ADMIN_EMAIL}`,
-    subject: 'Subscription Has Been Paused Due To Item(s) Being Out Of Stock',
-    html: `
-      <p>Subscription (${
-        id[id.length - 1]
-      }) has been paused due to the following items being out of stock:</p>
-      ${outOfStockList}
-    `,
-  };
-  mg.messages().send(data, function (error, body) {
-    if (error) console.error('ERROR', error);
-    console.log('MAILGUN RESPONSE', body);
-    return body.message;
   });
 };
