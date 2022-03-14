@@ -53,7 +53,7 @@ export const scheduler = () => {
   //     runRenewalNotification();
   //   }
   // );
-  // runRenewalNotification();
+  runRenewalNotification();
 };
 
 export const runBillingAttempts = async () => {
