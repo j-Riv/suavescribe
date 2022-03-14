@@ -12,7 +12,11 @@ import {
   updatePaymentMethod,
 } from './handlers';
 import { ApolloClient } from '@apollo/client';
-import { generateNextBillingDate, generateNewBillingDate } from './utils';
+import {
+  generateNextBillingDate,
+  generateNewBillingDate,
+  sendMailGunPaymentFailure,
+} from './utils';
 import logger from './logger';
 dotenv.config();
 
@@ -345,6 +349,25 @@ class PgStore {
     }
   };
 
+  /*
+    Gets all contracts with Next Billing Date of 7 days from Today for a given store.
+  */
+  getLocalContractsRenewingSoonByShop = async (
+    shop: string,
+    nextBillingDate: string
+  ) => {
+    try {
+      logger.log('info', `Gettting all contracts for shop: ${shop}`);
+      const query = `
+        SELECT * FROM subscription_contracts WHERE next_billing_date = '${nextBillingDate}' AND shop = '${shop}' AND status = 'ACTIVE' AND payment_failure_count < 2; 
+      `;
+      const res = await this.client.query(query);
+      return res.rows;
+    } catch (err: any) {
+      logger.log('error', err.message);
+    }
+  };
+
   getLocalContractsWithPaymentFailuresByShop = async (shop: string) => {
     try {
       logger.log(
@@ -524,9 +547,17 @@ class PgStore {
       );
       logger.log('info', `Updated Draft Id: ${updatedDraftId}`);
       // commit changes to draft
-      const contractId = await commitSubscriptionDraft(client, updatedDraftId);
-      logger.log('info', `Contract Id: ${contractId}`);
-      return contractId;
+      const subscriptionContract = await commitSubscriptionDraft(
+        client,
+        updatedDraftId
+      );
+      logger.log('info', `Contract Id: ${subscriptionContract.id}`);
+      // send email notification
+      const email = subscriptionContract.customer.email;
+      const firstName = subscriptionContract.customer.firstName;
+      await sendMailGunPaymentFailure(shop, email, firstName, nextBillingDate);
+
+      return subscriptionContract.id;
     } catch (err: any) {
       logger.log('error', err.message);
     }

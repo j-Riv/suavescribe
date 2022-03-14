@@ -8,6 +8,11 @@ export function SUBSCRIPTION_DRAFT_COMMIT() {
         contract {
           id
           status
+          customer {
+            email
+            firstName
+            lastName
+          }
         }
         userErrors {
           code
@@ -35,7 +40,7 @@ export const commitSubscriptionDraft = async (
       if (data.userErrors.length > 0) {
         return data.userErrors;
       }
-      return data.contract.id;
+      return data.contract;
     });
 
   return subscriptionDraftCommit;
