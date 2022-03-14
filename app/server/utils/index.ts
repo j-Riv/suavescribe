@@ -93,7 +93,7 @@ export const sendMailGunPause = async (
         id[id.length - 1]
       }) has been paused due to the following items being out of stock:</p>
       ${outOfStockList}
-      <p>To manage your subscription log in to your <a href="https://${shop}/account/login">account</a> and select manage subscriptions.</p>
+      <p>To manage your subscriptions, log in to your <a href="https://${shop}/account/login">account</a> and select manage subscriptions.</p>
     `,
   };
   mg.messages().send(data, function (error, body) {
@@ -119,7 +119,7 @@ export const sendMailGunRenew = async (
     to: `${email}`,
     bcc: `${process.env.MAILGUN_ADMIN_EMAIL}`,
     subject: `Subscription Will Renew Soon`,
-    html: `Hello ${name}, Your subscription will automatically renew on ${nextBillingDate}. To manage your subscription log in to your <a href="https://${shop}/account/login">account</a> and select manage subscriptions.`,
+    html: `Hello ${name}, Your subscription will automatically renew on ${nextBillingDate}. To manage your subscriptions, log in to your <a href="https://${shop}/account/login">account</a> and select manage subscriptions.`,
   };
   mg.messages().send(data, function (error, body) {
     if (error) console.error('ERROR', error);
