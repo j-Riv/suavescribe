@@ -49,33 +49,6 @@ export function CUSTOMER_SUBSCRIPTIONS_CONTRACTS_BY_ID_GET() {
                       }
                     }
                   }
-                  # orders(first: 3, reverse: true) {
-                  #   edges {
-                  #     node {
-                  #       id
-                  #       subtotalPriceSet {
-                  #         shopMoney {
-                  #           amount
-                  #         }
-                  #       }
-                  #       totalShippingPriceSet {
-                  #         shopMoney {
-                  #           amount
-                  #         }
-                  #       }
-                  #       totalTaxSet {
-                  #         shopMoney {
-                  #           amount
-                  #         }
-                  #       }
-                  #       totalPriceSet {
-                  #         shopMoney {
-                  #           amount
-                  #         }
-                  #       }
-                  #     }
-                  #   }
-                  # }
                   customerPaymentMethod {
                     id
                   }
