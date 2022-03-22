@@ -26,7 +26,29 @@ export function CUSTOMER_SUBSCRIPTIONS_CONTRACTS_BY_ID_GET() {
                   deliveryPrice {
                     amount
                   }
-                  # orders(first: 1, reverse: true) {
+                  customerPaymentMethod {
+                    instrument {
+                      ... on CustomerCreditCard {
+                        lastDigits
+                        expiryMonth
+                        expiryYear
+                        maskedNumber
+                        source
+                        brand
+                        name
+                        billingAddress {
+                          address1
+                          city
+                          country
+                          countryCode
+                          province
+                          provinceCode
+                          zip
+                        }
+                      }
+                    }
+                  }
+                  # orders(first: 3, reverse: true) {
                   #   edges {
                   #     node {
                   #       id
