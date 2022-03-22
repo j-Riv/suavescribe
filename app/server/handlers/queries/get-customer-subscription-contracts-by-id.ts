@@ -26,28 +26,35 @@ export function CUSTOMER_SUBSCRIPTIONS_CONTRACTS_BY_ID_GET() {
                   deliveryPrice {
                     amount
                   }
+                  # orders(first: 1, reverse: true) {
+                  #   edges {
+                  #     node {
+                  #       id
+                  #       subtotalPriceSet {
+                  #         shopMoney {
+                  #           amount
+                  #         }
+                  #       }
+                  #       totalShippingPriceSet {
+                  #         shopMoney {
+                  #           amount
+                  #         }
+                  #       }
+                  #       totalTaxSet {
+                  #         shopMoney {
+                  #           amount
+                  #         }
+                  #       }
+                  #       totalPriceSet {
+                  #         shopMoney {
+                  #           amount
+                  #         }
+                  #       }
+                  #     }
+                  #   }
+                  # }
                   customerPaymentMethod {
                     id
-                    # instrument {
-                    #   ... on CustomerCreditCard {
-                    #     lastDigits
-                    #     expiryMonth
-                    #     expiryYear
-                    #     maskedNumber
-                    #     source
-                    #     brand
-                    #     name
-                    #     billingAddress {
-                    #       address1
-                    #       city
-                    #       country
-                    #       countryCode
-                    #       province
-                    #       provinceCode
-                    #       zip
-                    #     }
-                    #   }
-                    # }
                   }
                   billingPolicy {
                     interval
@@ -69,6 +76,9 @@ export function CUSTOMER_SUBSCRIPTIONS_CONTRACTS_BY_ID_GET() {
                         phone
                       }
                     }
+                  }
+                  customerPaymentMethod {
+                    id
                   }
                   lines(first: 5) {
                     edges {
