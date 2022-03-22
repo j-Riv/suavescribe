@@ -27,6 +27,7 @@ export function CUSTOMER_SUBSCRIPTIONS_CONTRACTS_BY_ID_GET() {
                     amount
                   }
                   customerPaymentMethod {
+                    id
                     instrument {
                       ... on CustomerCreditCard {
                         lastDigits
@@ -98,9 +99,6 @@ export function CUSTOMER_SUBSCRIPTIONS_CONTRACTS_BY_ID_GET() {
                         phone
                       }
                     }
-                  }
-                  customerPaymentMethod {
-                    id
                   }
                   lines(first: 5) {
                     edges {
