@@ -28,29 +28,26 @@ export function CUSTOMER_SUBSCRIPTIONS_CONTRACTS_BY_ID_GET() {
                   }
                   customerPaymentMethod {
                     id
-                    instrument {
-                      ... on CustomerCreditCard {
-                        lastDigits
-                        expiryMonth
-                        expiryYear
-                        maskedNumber
-                        source
-                        brand
-                        name
-                        billingAddress {
-                          address1
-                          city
-                          country
-                          countryCode
-                          province
-                          provinceCode
-                          zip
-                        }
-                      }
-                    }
-                  }
-                  customerPaymentMethod {
-                    id
+                    # instrument {
+                    #   ... on CustomerCreditCard {
+                    #     lastDigits
+                    #     expiryMonth
+                    #     expiryYear
+                    #     maskedNumber
+                    #     source
+                    #     brand
+                    #     name
+                    #     billingAddress {
+                    #       address1
+                    #       city
+                    #       country
+                    #       countryCode
+                    #       province
+                    #       provinceCode
+                    #       zip
+                    #     }
+                    #   }
+                    # }
                   }
                   billingPolicy {
                     interval

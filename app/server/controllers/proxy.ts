@@ -63,6 +63,7 @@ export const getCustomerSubscriptions = async (ctx: Context) => {
               ctx,
               customerId
             );
+            console.log('SUBSCRIPTIONS', subscriptions);
             if (subscriptions.length > 0) {
               ctx.body = subscriptions;
             } else {
