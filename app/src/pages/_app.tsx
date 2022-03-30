@@ -42,7 +42,7 @@ function MyProvider({ children }) {
 
   const client = new ApolloClient({
     link: new HttpLink({
-      credentials: 'include',
+      credentials: 'same-origin',
       fetch: userLoggedInFetch(app), // ensures all apollo client triggered requests are authenticated
     }),
     cache: new InMemoryCache({
