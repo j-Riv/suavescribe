@@ -3,7 +3,7 @@
 Embedded Shopify Subscription app made with Node, [Next.js](https://nextjs.org/), [TypeScript](https://www.typescriptlang.org/) , [Shopify-koa-auth](https://github.com/Shopify/quilt/tree/master/packages/koa-shopify-auth), [Polaris](https://github.com/Shopify/polaris-react), and [App Bridge React](https://shopify.dev/tools/app-bridge/react-components).
 
 ## Archived
-> Re Building without Koa and NextJS in favor of ExpressJS and a React Front End. [Repo](https://github.com/j-Riv/shopify-subscription-app-node)
+> I've decided to rebuild this, remove Koa and NextJS in favor of ExpressJS and a React Front End. [Repo](https://github.com/j-Riv/shopify-subscription-app-node)
 
 ## Environmental Variables
 /app/.env
@@ -137,4 +137,4 @@ Logs can be found at /app/logs
 - [ ] Remove Koa and add ExpressJS instead.
 - [ ] Remove NextJS
 
-### Re Building without Koa and NextJS in favor of ExpressJS and a React Front End. [Repo](https://github.com/j-Riv/shopify-subscription-app-node)
+I've decided to rebuild this, remove Koa and NextJS in favor of ExpressJS and a React Front End. [Repo](https://github.com/j-Riv/shopify-subscription-app-node)
