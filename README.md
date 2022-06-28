@@ -134,4 +134,7 @@ Logs can be found at /app/logs
 
 ### Todo
 - [x] Update customer update subscription status mutation with next billing date
-- [ ] Update Selling Plan Group Page - add functionality to update individual selling plans, right now it updates them all with the user inputted values
+- [ ] Remove Koa and add ExpressJS instead.
+- [ ] Remove NextJS
+
+### Re Building without Koa and NextJS in favor of ExpressJS and a React Front End. [Repo](https://github.com/j-Riv/shopify-subscription-app-node)
